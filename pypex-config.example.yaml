@@ -1,0 +1,307 @@
+# 📄 PyPex - Archivo de Configuración de Ejemplo
+#
+# Este archivo muestra todas las opciones de configuración disponibles para PyPex.
+# Las opciones de línea de comandos tienen precedencia sobre estas configuraciones.
+#
+# 📚 Documentación completa: https://github.com/tu-repo/pypex/docs
+# 🎯 Para usar este archivo: pypex analyze --config pypex.yaml ./src
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔧 CONFIGURACIÓN GENERAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Formato de salida por defecto (text, html, json, csv)
+output_format: "text"
+
+# Tamaño máximo de archivo a procesar (en bytes)
+# Por defecto: 1048576 (1MB)
+max_file_size: 1048576  # 1MB
+
+# Perfil de umbrales para interpretación de métricas
+# Opciones: strict, normal, permissive
+thresholds_profile: "normal"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📊 CONFIGURACIÓN DE MÉTRICAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Métricas específicas a calcular (si no se especifica, se usan todas)
+# Comentar o eliminar para usar todas las métricas disponibles
+metrics:
+  - "cyclomatic_complexity"
+  - "cognitive_complexity"
+  - "nesting_depth"
+  - "lines_of_code"
+  - "parameter_count"
+  - "fan_in_out"
+  # - "essential_complexity"
+  # - "logical_complexity"
+  # - "comprehension_complexity"
+  # - "nested_comprehension_depth"
+  # - "exception_handling_complexity"
+  # - "generator_complexity"
+  # - "design_complexity"
+  # - "lcom4"
+
+# Métricas a excluir del análisis
+# Útil cuando quieres todas excepto algunas específicas
+exclude_metrics:
+  - "lcom4"  # Excluir cohesión LCOM4 (solo para clases)
+  # - "design_complexity"  # Excluir complejidad de diseño
+  # - "generator_complexity"  # Excluir complejidad de generadores
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🗂️ FILTROS DE ARCHIVOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Patrones glob para ignorar archivos y directorios
+ignore_patterns:
+  # Directorios comunes a ignorar
+  - "__pycache__"
+  - ".git"
+  - ".pytest_cache"
+  - ".mypy_cache"
+  - "venv"
+  - "env"
+  - ".env"
+  - "node_modules"
+
+  # Archivos de prueba
+  - "test_*.py"
+  - "*_test.py"
+  - "tests.py"
+
+  # Archivos de configuración
+  - "setup.py"
+  - "conftest.py"
+
+  # Archivos temporales
+  - "*.tmp"
+  - "*.bak"
+  - "*.pyc"
+  - "*.pyo"
+
+  # Notebooks y otros
+  - "*.ipynb"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📝 CONFIGURACIÓN DE LOGGING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Activar modo verboso (equivale a --verbose)
+verbose: false
+
+# Archivo donde guardar logs detallados
+log_file: null
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📊 PERFILES DE ANÁLISIS PREDEFINIDOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 🔴 PERFIL ESTRICTO (para código de alta calidad)
+# Descomenta para usar métricas estrictas
+# thresholds_profile: "strict"
+# metrics:
+#   - "cyclomatic_complexity"
+#   - "cognitive_complexity"
+#   - "nesting_depth"
+#   - "parameter_count"
+#   - "lines_of_code"
+
+# 🟡 PERFIL LEGACY (para código existente)
+# Descomenta para análisis de código legacy
+# thresholds_profile: "permissive"
+# exclude_metrics:
+#   - "essential_complexity"
+#   - "logical_complexity"
+#   - "design_complexity"
+
+# 🟢 PERFIL ARQUITECTÓNICO (para análisis de diseño)
+# Descomenta para enfoque en arquitectura
+# metrics:
+#   - "fan_in_out"
+#   - "lcom4"
+#   - "design_complexity"
+#   - "lines_of_code"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🎯 EJEMPLOS DE CONFIGURACIONES ESPECÍFICAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 📈 Para proyectos grandes (>1000 archivos)
+# max_file_size: 5242880  # 5MB
+# ignore_patterns:
+#   - "migrations"
+#   - "vendor"
+#   - "third_party"
+
+# 🧪 Para análisis de testing
+# metrics:
+#   - "cyclomatic_complexity"
+#   - "nesting_depth"
+#   - "parameter_count"
+# ignore_patterns: []  # No ignorar archivos de test
+
+# 🏗️ Para análisis de arquitectura
+# metrics:
+#   - "fan_in_out"
+#   - "lcom4"
+#   - "design_complexity"
+#   - "lines_of_code"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📚 DOCUMENTACIÓN DE MÉTRICAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 🔢 MÉTRICAS DE COMPLEJIDAD:
+# • cyclomatic_complexity:     Complejidad estructural (caminos de ejecución)
+# • cognitive_complexity:      Dificultad mental para entender el código
+# • nesting_depth:            Profundidad máxima de anidamiento
+# • essential_complexity:     Complejidad irreducible (elementos excepcionales)
+# • logical_complexity:       Complejidad de condiciones lógicas (and/or)
+
+# 📏 MÉTRICAS DE TAMAÑO:
+# • lines_of_code:            Líneas de código fuente, documentación, comentarios
+# • parameter_count:          Número de parámetros en funciones
+
+# 🔗 MÉTRICAS DE ACOPLAMIENTO:
+# • fan_in_out:               Dependencias entre componentes
+# • lcom4:                    Cohesión de clases (solo para clases)
+
+# 🏗️ MÉTRICAS DE DISEÑO:
+# • design_complexity:        Complejidad de diseño (llamadas inter-módulos)
+
+# 🐍 MÉTRICAS ESPECÍFICAS DE PYTHON:
+# • comprehension_complexity:      Complejidad de list/dict/set comprehensions
+# • nested_comprehension_depth:    Profundidad de comprehensions anidadas
+# • exception_handling_complexity: Complejidad de manejo de excepciones
+# • generator_complexity:          Complejidad de generadores (yield)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 💡 CONSEJOS DE USO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# 1. 🎯 Comience con el perfil "normal" y ajuste según necesidades
+# 2. 📊 Use métricas específicas para análisis focalizados
+# 3. 🗂️ Configure ignore_patterns para excluir código irrelevante
+# 4. 📈 Para proyectos grandes, aumente max_file_size
+# 5. 🔧 Las opciones CLI sobrescriben las del archivo de configuración
+# 6. 📝 Active verbose para debugging de configuración
+# 7. 🎨 Use formato HTML para reportes interactivos detallados
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📖 COMANDOS DE EJEMPLO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Usar este archivo de configuración:
+# pypex analyze --config pypex.yaml ./src
+
+# Sobrescribir métricas desde CLI:
+# pypex analyze --config pypex.yaml -m cyclomatic_complexity ./src
+
+# Excluir métricas adicionales:
+# pypex analyze --config pypex.yaml --exclude-metrics lcom4 ./src
+
+# Cambiar perfil de umbrales:
+# pypex analyze --config pypex.yaml --thresholds-profile strict ./src
+
+# Generar reporte específico:
+# pypex analyze --config pypex.yaml --format json --output results.json ./src
+
+# ========================================
+# CONFIGURACIÓN DE UMBRALES DE MÉTRICAS
+# ========================================
+# Personaliza los umbrales según tu proyecto y estándares de calidad.
+# Las métricas no especificadas aquí usarán sus umbrales por defecto.
+
+thresholds:
+  # === MÉTRICAS DE COMPLEJIDAD ===
+  
+  # Complejidad Ciclomática (caminos de ejecución independientes)
+  cyclomatic_complexity:
+    low: 10      # 1-10: Baja complejidad
+    medium: 20   # 11-20: Complejidad moderada
+    high: 50     # 21-50: Alta complejidad, 50+: Muy alta
+  
+  # Complejidad Cognitiva (dificultad de comprensión)
+  cognitive_complexity:
+    low: 15      # 0-15: Fácil de entender
+    medium: 25   # 16-25: Moderadamente complejo
+    high: 50     # 26+: Difícil de entender
+  
+  # Profundidad de Anidamiento
+  nesting_depth:
+    low: 3       # 1-3: Anidamiento simple
+    medium: 6    # 4-6: Anidamiento moderado
+    high: 9      # 7+: Anidamiento excesivo
+  
+  # === MÉTRICAS DE COHESIÓN ===
+  
+  # LCOM4 (Lack of Cohesion of Methods 4)
+  lcom4:
+    low: 1       # 1: Excelente cohesión
+    medium: 2    # 2: Buena cohesión
+    high: 4      # 3-4: Cohesión pobre
+  
+  # === MÉTRICAS DE ACOPLAMIENTO ===
+  
+  # Fan-In/Fan-Out (dependencias)
+  fan_in_out:
+    low: 5       # 1-5: Bajo acoplamiento
+    medium: 10   # 6-10: Acoplamiento moderado
+    high: 20     # 11+: Alto acoplamiento
+  
+  # === MÉTRICAS DE TAMAÑO ===
+  
+  # Número de Parámetros
+  parameter_count:
+    low: 3       # 1-3: Pocos parámetros
+    medium: 5    # 4-5: Parámetros moderados
+    high: 7      # 6+: Muchos parámetros
+  
+  # Líneas de Código
+  lines_of_code:
+    low: 30      # 1-30: Función pequeña
+    medium: 75   # 31-75: Función moderada
+    high: 150    # 76+: Función grande
+  
+  # === MÉTRICAS AVANZADAS ===
+  
+  # Complejidad Esencial
+  essential_complexity:
+    low: 1       # 1: Estructura simple
+    medium: 3    # 2-3: Estructura moderada
+    high: 6      # 4+: Estructura compleja
+  
+  # Complejidad Lógica
+  logical_complexity:
+    low: 2       # 1-2: Lógica simple
+    medium: 5    # 3-5: Lógica moderada
+    high: 10     # 6+: Lógica compleja
+  
+  # Métricas de Halstead (volumen del programa)
+  halstead:
+    low: 500     # 0-500: Programa pequeño
+    medium: 2000 # 501-2000: Programa moderado
+    high: 8000   # 2001+: Programa grande
+
+# ========================================
+# PERFILES DE CALIDAD PREDEFINIDOS
+# ========================================
+# Puedes cambiar el perfil activo para ajustar automáticamente todos los umbrales:
+# - "strict": Umbrales más bajos (mayor rigor en la calidad)
+# - "normal": Umbrales estándar (recomendado para la mayoría de proyectos)
+# - "permissive": Umbrales más altos (más tolerante para código legacy)
+
+# quality_profile: "normal"  # Descomenta para usar perfiles automáticos
+
+# ========================================
+# NOTAS IMPORTANTES
+# ========================================
+# 1. Las métricas no listadas aquí usarán sus umbrales por defecto
+# 2. Los umbrales se pueden modificar en tiempo de ejecución via API
+# 3. Los perfiles automáticos multiplican los umbrales base:
+#    - strict: x0.7 (más estricto)
+#    - normal: x1.0 (sin cambios)
+#    - permissive: x1.5 (más permisivo)
+# 4. Personaliza estos valores según las necesidades de tu proyecto
