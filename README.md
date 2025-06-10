@@ -9,6 +9,8 @@
 
 **Analizador profesional de métricas de calidad, complejidad, cohesión y mantenibilidad para proyectos Python**
 
+[📊 Ver Reporte PyPex del Proyecto](https://apenalba.github.io/TFG)
+
 [🚀 Instalación](#-instalación) • [📊 Características](#-características) • [🎯 Uso Rápido](#-uso-rápido) • [📖 Documentación](#-documentación) • [🤝 Contribuir](#-contribuir)
 
 </div>
