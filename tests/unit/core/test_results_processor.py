@@ -1485,3 +1485,29 @@ class TestGetTopEntitiesByMetricRegression:
         )
 
         assert [e["entity_name"] for e in top] == ["Service.run", "helper"]
+
+
+class TestCreateProjectReport:
+    """Distribuciones y totales usados por el reporter de consola."""
+
+    def test_distributions_and_totals(self):
+        project = _project_with_entities()
+        project.files["pkg/big.py"] = FileAnalysisResult(
+            file_path="pkg/big.py",
+            module_name="pkg.big",
+            file_size=0,
+            line_count=600,
+            entities=[_entity("tangled", "function", 25)],
+        )
+        project.total_lines_of_code = 640
+
+        report = ResultsProcessor().create_project_report(project)
+
+        assert report["file_size_distribution"] == {"small": 2, "medium": 0, "large": 1}
+        # Umbrales por defecto de complejidad ciclomática: low=10, medium=20
+        assert report["complexity_distribution"] == {"low": 2, "medium": 0, "high": 1}
+        assert report["totals"] == {
+            "cyclomatic_complexity": 9 + 4 + 25,
+            "cognitive_complexity": 0,
+            "lines_of_code": 640,
+        }

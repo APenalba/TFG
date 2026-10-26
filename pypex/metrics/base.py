@@ -22,7 +22,7 @@ Note:
 
 from abc import ABC, abstractmethod
 
-from pypex.metrics.thresholds import ComplexityLevel, get_threshold_config
+from pypex.metrics.thresholds import get_threshold_config
 from pypex.parser.code_entities import (
     Class,
     CodeEntity,
@@ -100,7 +100,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_function(self, function: Function) -> float | None:
+    def calculate_function(self, function: Function) -> float | dict[str, float] | None:
         """Calcula la métrica para una función.
 
         Args:
@@ -176,7 +176,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def interpret(self, value: float) -> ComplexityLevel:
+    def interpret(self, value: float) -> str:
         """Interpreta un valor de la métrica utilizando ThresholdConfig."""
         return get_threshold_config().interpret_value(self.name, value).value
 
@@ -318,7 +318,7 @@ class BaseMetric(IMetric):
                 f"método 'calculate' genérico de la métrica '{self.name}'."
             )
 
-    def calculate_function(self, function: Function) -> float | None:
+    def calculate_function(self, function: Function) -> float | dict[str, float] | None:
         """Método base para calcular métrica en función.
 
         Por defecto devuelve None indicando que la métrica no se implementa
@@ -382,6 +382,6 @@ class BaseMetric(IMetric):
         )
         return {"low": 5.0, "medium": 10.0, "high": 15.0}
 
-    def interpret(self, value: float) -> ComplexityLevel:
+    def interpret(self, value: float) -> str:
         """Interpreta un valor de la métrica utilizando ThresholdConfig."""
         return get_threshold_config().interpret_value(self.name, value).value

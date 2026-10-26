@@ -137,7 +137,7 @@ class AstroidNodeVisitor:
                     )
 
     def _extract_parameters(self, args_node: astroid_nodes.Arguments) -> list[Parameter]:
-        params = []
+        params: list[Parameter] = []
         if not args_node:
             return params
 

@@ -3,7 +3,8 @@
 import logging
 import sys
 import time
-from contextlib import AbstractContextManager, contextmanager
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -91,7 +92,7 @@ class RichProgressBar:
 
     def update(self, advance: int = 1, description: str | None = None) -> None:
         """Actualiza la barra de progreso."""
-        kwargs = {"advance": advance}
+        kwargs: dict[str, Any] = {"advance": advance}
         if description:
             kwargs["description"] = description
         self.progress.update(self.task_id, **kwargs)
@@ -126,7 +127,7 @@ class SimpleProgressBar:
         self.current = 0
         self.description = description
         self.start_time = time.time()
-        self.last_print_time = 0
+        self.last_print_time = 0.0
         self._print_progress()
 
     def update(self, advance: int = 1, description: str | None = None) -> None:
@@ -183,7 +184,7 @@ class ProgressBarManager:
     @contextmanager
     def create_progress_bar(
         self, total: int, description: str = "Progress", disable: bool = False
-    ) -> AbstractContextManager[IProgressBar]:
+    ) -> Iterator[IProgressBar]:
         """Crea una barra de progreso usando la mejor implementación disponible.
 
         Args:
@@ -518,6 +519,7 @@ def _configure_logger_handlers(logger: logging.Logger, log_file: str | Path | No
     logger.propagate = False
 
     # Handler de consola
+    console_handler: logging.Handler
     if _RICH_AVAILABLE:
         console_handler = RichHandler(
             console=Console(stderr=True), show_time=False, show_path=False

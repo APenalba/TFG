@@ -315,10 +315,6 @@ class TestConfigService:
         config.set("test_key", "test_value")
         config.set("verbose", True)
 
-        # El método reset_for_testing() actual solo llama a __init__()
-        # pero __init__ retorna inmediatamente si ya está inicializado,
-        # por lo que necesitamos resetear manualmente _initialized
-        config._initialized = False
         config.reset_for_testing()
 
         # Verificar que volvió a los valores por defecto

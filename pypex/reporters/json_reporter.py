@@ -275,7 +275,7 @@ class JSONReporter:
         self, file_result: FileAnalysisResult, include_source: bool = False
     ) -> dict[str, Any]:
         """Procesa un archivo para el reporte detallado."""
-        file_data = {
+        file_data: dict[str, Any] = {
             "file_info": {
                 "path": str(file_result.file_path),
                 "module_name": file_result.module_name,
@@ -320,7 +320,7 @@ class JSONReporter:
         self, entity: EntityAnalysisResult, include_source: bool = False
     ) -> dict[str, Any]:
         """Procesa una entidad para el reporte detallado."""
-        entity_data = {
+        entity_data: dict[str, Any] = {
             "name": entity.name,
             "type": entity.entity_type,
             "metrics": self._serialize_metrics_result(entity.metrics),
@@ -360,7 +360,7 @@ class JSONReporter:
 
     def _extract_key_metrics(self, project_metrics: MetricsResult) -> dict[str, Any]:
         """Extrae métricas clave del proyecto para el resumen."""
-        key_metrics = {}
+        key_metrics: dict[str, Any] = {}
 
         # Métricas principales a incluir en el resumen
         important_metrics = [
@@ -446,7 +446,7 @@ class JSONReporter:
 
     def _generate_aggregated_metrics(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera métricas agregadas por categoría."""
-        aggregated = {
+        aggregated: dict[str, dict[str, Any]] = {
             "complexity": {},
             "size": {},
             "coupling": {},
@@ -481,7 +481,7 @@ class JSONReporter:
         """Genera un análisis detallado de errores."""
         all_errors = results.get_all_errors()
 
-        error_analysis = {
+        error_analysis: dict[str, Any] = {
             "total_errors": len(all_errors),
             "by_severity": {},
             "by_component": {},
@@ -495,13 +495,13 @@ class JSONReporter:
             error_analysis["by_severity"][severity.value] = count
 
         # Análisis por componente
-        components = {}
+        components: dict[str, int] = {}
         for error in all_errors:
             components[error.component] = components.get(error.component, 0) + 1
         error_analysis["by_component"] = components
 
         # Análisis por archivo
-        files = {}
+        files: dict[str, int] = {}
         for error in all_errors:
             if error.file_path:
                 files[error.file_path] = files.get(error.file_path, 0) + 1
@@ -539,7 +539,7 @@ class JSONReporter:
 
     def _get_extended_file_metrics(self, file_result: FileAnalysisResult) -> dict[str, Any]:
         """Obtiene métricas extendidas de un archivo."""
-        metrics = {
+        metrics: dict[str, Any] = {
             "entity_count": len(file_result.entities),
             "function_count": len([e for e in file_result.entities if e.entity_type == "function"]),
             "class_count": len([e for e in file_result.entities if e.entity_type == "class"]),
@@ -622,7 +622,7 @@ class JSONReporter:
 
     def _generate_pattern_analysis(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera análisis de patrones en el código."""
-        patterns = {
+        patterns: dict[str, list[dict[str, Any]]] = {
             "large_classes": [],
             "long_methods": [],
             "god_classes": [],
@@ -730,7 +730,7 @@ class JSONReporter:
 
     def generate_metrics_only(self, analysis_results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera un reporte que contiene solo las métricas."""
-        metrics_report = {
+        metrics_report: dict[str, Any] = {
             "pypex_report": {
                 "version": "1.0",
                 "level": "metrics_only",

@@ -49,6 +49,7 @@ class MetricsRegistry:
     """
 
     _instance = None  # Para patrón Singleton
+    _auto_registered = False  # Métricas por defecto ya registradas
 
     def __new__(cls):
         """Implementa patrón Singleton para tener un único registro global."""
@@ -118,7 +119,7 @@ class MetricsRegistry:
         """
         return list(self._metrics.values())
 
-    def apply_all(self, entity: CodeEntity) -> dict[str, float | dict[str, float]]:
+    def apply_all(self, entity: CodeEntity) -> dict[str, float | dict[str, float] | None]:
         """Aplica todas las métricas registradas a una entidad.
 
         Llama a metric.calculate(entity) para cada métrica registrada.
@@ -129,7 +130,7 @@ class MetricsRegistry:
         Returns:
             Dict[str, Union[float, Dict[str, float]]]: Diccionario con nombres de métricas y sus valores/componentes.
         """
-        results: dict[str, float | dict[str, float]] = {}
+        results: dict[str, float | dict[str, float] | None] = {}
         for name, metric in self._metrics.items():
             try:
                 results[name] = metric.calculate(entity)
@@ -141,7 +142,7 @@ class MetricsRegistry:
 
         return results
 
-    def apply_project_level_metrics(self, project: Project) -> dict[str, dict[str, float]]:
+    def apply_project_level_metrics(self, project: Project) -> dict[str, dict[str, float] | None]:
         """Aplica el método `calculate_project` de cada métrica registrada a un proyecto.
 
         Args:
@@ -151,7 +152,7 @@ class MetricsRegistry:
             Dict[str, Dict[str, float]]: Diccionario con nombres de métricas y los componentes
                                          que cada una calcula para el proyecto.
         """
-        results: dict[str, dict[str, float]] = {}
+        results: dict[str, dict[str, float] | None] = {}
         for metric_name, metric in self._metrics.items():
             try:
                 # metric.calculate_project devuelve Dict[str, float]
@@ -225,7 +226,7 @@ def get_registry() -> MetricsRegistry:
     registry = MetricsRegistry()
 
     # Auto-registrar métricas por defecto la primera vez
-    if not hasattr(registry, "_auto_registered") or not registry._auto_registered:
+    if not registry._auto_registered:
         _register_default_metrics(registry)
         registry._auto_registered = True
 

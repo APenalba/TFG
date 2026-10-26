@@ -191,7 +191,7 @@ class LCOM4(BaseMetric):
             "total": lcom4_value,  # Para compatibilidad con umbrales
         }
 
-    def calculate_module(self, module: Module) -> dict[str, float | dict[str, float]] | None:
+    def calculate_module(self, module: Module) -> dict[str, float] | None:
         """LCOM4 no aplica a módulos.
 
         LCOM4 es una métrica específica para la cohesión interna de clases,
@@ -244,7 +244,7 @@ class LCOM4(BaseMetric):
         Returns:
             Dict[str, Set[str]]: Grafo donde cada método apunta a sus conectados.
         """
-        graph = defaultdict(set)
+        graph: defaultdict[str, set[str]] = defaultdict(set)
         method_names = {method.name for method in cls.methods}
 
         # Inicializar nodos del grafo
@@ -395,7 +395,7 @@ class LCOM4(BaseMetric):
         Returns:
             int: Número de componentes conectados.
         """
-        visited = set()
+        visited: set[str] = set()
         components = 0
 
         for node in graph:

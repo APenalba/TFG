@@ -135,7 +135,9 @@ class ResultsProcessor:
     ) -> dict[str, list[EntityAnalysisResult]]:
         """Encuentra entidades que superan umbrales específicos."""
 
-        problematic = {metric: [] for metric in thresholds.keys()}
+        problematic: dict[str, list[EntityAnalysisResult]] = {
+            metric: [] for metric in thresholds.keys()
+        }
 
         for file_result in results.files.values():
             if not file_result.was_successful:
@@ -412,6 +414,56 @@ class ResultsProcessor:
 
         return recommendations
 
+    def create_project_report(self, results: ProjectAnalysisResult) -> dict[str, dict[str, int]]:
+        """Genera distribuciones y totales del proyecto para los reportes.
+
+        - file_size_distribution: ficheros small (<100 líneas), medium (100-500)
+          y large (>500).
+        - complexity_distribution: funciones y métodos clasificados según los
+          umbrales "low" y "medium" de la complejidad ciclomática.
+        - totals: suma de complejidad ciclomática y cognitiva de funciones y
+          métodos, y líneas de código del proyecto.
+        """
+        file_size_distribution = {"small": 0, "medium": 0, "large": 0}
+        for file_result in results.files.values():
+            if file_result.line_count < 100:
+                file_size_distribution["small"] += 1
+            elif file_result.line_count <= 500:
+                file_size_distribution["medium"] += 1
+            else:
+                file_size_distribution["large"] += 1
+
+        thresholds = get_threshold_config().get_thresholds("cyclomatic_complexity")
+        complexity_distribution = {"low": 0, "medium": 0, "high": 0}
+        totals = {"cyclomatic_complexity": 0, "cognitive_complexity": 0}
+
+        def classify(entity: EntityAnalysisResult) -> None:
+            if entity.entity_type in ("function", "method"):
+                cognitive = entity.metrics.get_metric_value("cognitive_complexity")
+                if cognitive is not None:
+                    totals["cognitive_complexity"] += int(cognitive)
+                value = entity.metrics.get_metric_value("cyclomatic_complexity")
+                if value is not None:
+                    totals["cyclomatic_complexity"] += int(value)
+                    if value <= thresholds["low"]:
+                        complexity_distribution["low"] += 1
+                    elif value <= thresholds["medium"]:
+                        complexity_distribution["medium"] += 1
+                    else:
+                        complexity_distribution["high"] += 1
+            for child in entity.children:
+                classify(child)
+
+        for file_result in results.files.values():
+            for entity in file_result.entities:
+                classify(entity)
+
+        return {
+            "file_size_distribution": file_size_distribution,
+            "complexity_distribution": complexity_distribution,
+            "totals": {**totals, "lines_of_code": results.total_lines_of_code},
+        }
+
     def create_performance_report(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera un reporte de rendimiento del análisis."""
 
@@ -456,7 +508,7 @@ class ResultsProcessor:
         """Obtiene las entidades con los valores más altos para una métrica específica."""
 
         entity_types = entity_types or ["function", "class", "method"]
-        entities_with_values = []
+        entities_with_values: list[dict[str, Any]] = []
 
         def add_entity(
             entity: EntityAnalysisResult, file_path: str, parent_name: str | None = None
@@ -586,7 +638,7 @@ class ResultsProcessor:
             default_values = {"low": 5, "medium": 10, "high": 20}
             threshold_value = default_values.get(level, 20)
 
-        entities_with_file = []
+        entities_with_file: list[dict[str, Any]] = []
 
         for file_path, file_result in results.files.items():
             if not file_result.was_successful:
@@ -644,7 +696,7 @@ class ResultsProcessor:
         # Obtener todas las métricas registradas dinámicamente
         metrics_to_analyze = self._get_all_registered_metrics()
 
-        detailed_analysis = {}
+        detailed_analysis: dict[str, dict[str, Any]] = {}
         overall_issues = []
 
         for metric_name in metrics_to_analyze:

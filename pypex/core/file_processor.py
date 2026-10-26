@@ -16,6 +16,7 @@ import os
 import re
 from pathlib import Path
 from re import Pattern
+from typing import Any
 
 from pypex.core.interfaces import IFileProcessor, ParsingError
 from pypex.services.logging_service import get_logger
@@ -284,7 +285,7 @@ class FileProcessor(IFileProcessor):
             logger.error(f"Error inesperado leyendo {file_path}: {str(e)}")
             raise ValueError(f"Error al leer el archivo {file_path}: {str(e)}") from e
 
-    def process_file(self, file_path: str | Path) -> dict[str, any]:
+    def process_file(self, file_path: str | Path) -> dict[str, Any]:
         """Procesa un archivo Python y extrae su información estructural.
 
         Args:

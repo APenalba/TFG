@@ -29,6 +29,7 @@ Ejemplos de uso:
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 import click
 import yaml
@@ -69,13 +70,13 @@ def load_config_file(config_path: str) -> dict:
 
     try:
         with open(config_file, encoding="utf-8") as f:
-            if config_file.suffix.lower() in [".yaml", ".yml"]:
-                return yaml.safe_load(f) or {}
-            elif config_file.suffix.lower() == ".json":
-                return json.load(f)
+            config: dict[str, Any]
+            if config_file.suffix.lower() == ".json":
+                config = json.load(f)
             else:
-                # Intentar YAML por defecto
-                return yaml.safe_load(f) or {}
+                # YAML (.yaml/.yml) y, por defecto, cualquier otra extensión
+                config = yaml.safe_load(f) or {}
+            return config
     except (yaml.YAMLError, json.JSONDecodeError) as e:
         raise click.ClickException(
             f"Error al parsear archivo de configuración {config_path}: {e}"

@@ -36,7 +36,7 @@ class HTMLReporter:
         self.output_path = output_path
         self.processor = ResultsProcessor()
         self.renderer = HTMLRenderer()
-        self.organizer = None  # Se establece al generar el reporte
+        self.organizer: PackageOrganizer | None = None  # Se establece al generar el reporte
         self.config = get_config()
 
     def generate_report(self, analysis_results: ProjectAnalysisResult) -> None:
@@ -166,8 +166,8 @@ class HTMLReporter:
     def _build_body_content(
         self,
         results: ProjectAnalysisResult,
-        quality_report: dict[str, Any],
-        advanced_quality_report: dict[str, Any],
+        quality_report: dict[str, Any] | None,
+        advanced_quality_report: dict[str, Any] | None,
         performance_report: dict[str, Any],
     ) -> str:
         """
@@ -217,8 +217,8 @@ class HTMLReporter:
     def _build_analysis_content(
         self,
         results: ProjectAnalysisResult,
-        quality_report: dict[str, Any],
-        advanced_quality_report: dict[str, Any],
+        quality_report: dict[str, Any] | None,
+        advanced_quality_report: dict[str, Any] | None,
         performance_report: dict[str, Any],
     ) -> str:
         """
@@ -446,4 +446,5 @@ class HTMLReporter:
             self.organizer = PackageOrganizer(results.root_path)
 
         root = self.organizer.organize_files_hierarchically(results.files)
-        return self.organizer.get_package_statistics(root)
+        stats: dict[str, Any] = self.organizer.get_package_statistics(root)
+        return stats

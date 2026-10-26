@@ -173,7 +173,7 @@ class FanInOutMetric(BaseMetric):
             "high": 20.0,
         }
 
-        self._call_graph = {}  # Caché de grafo de llamadas
+        self._call_graph: dict[str, set[str]] = {}  # Caché de grafo de llamadas
 
     def _build_call_graph(self, project: Project) -> dict[str, set[str]]:
         """Construye un grafo de llamadas para el proyecto completo.
@@ -187,7 +187,7 @@ class FanInOutMetric(BaseMetric):
         # Solo construir el grafo si no está ya en caché
         if not self._call_graph:
             logger.debug("Construyendo grafo de llamadas para el proyecto")
-            call_graph = {}
+            call_graph: dict[str, set[str]] = {}
 
             # Registrar todas las entidades primero
             for module in project.modules:
