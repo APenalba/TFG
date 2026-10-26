@@ -122,7 +122,8 @@ class ThresholdConfig:
         if registry:
             try:
                 metric = registry.get_metric(metric_name)
-                return metric.get_default_thresholds()
+                thresholds: dict[str, float] = metric.get_default_thresholds()
+                return thresholds
             except Exception as e:
                 logger.warning(f"No se pudo obtener umbrales por defecto para {metric_name}: {e}")
 

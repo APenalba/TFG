@@ -100,7 +100,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_function(self, function: Function) -> float | None:
+    def calculate_function(self, function: Function) -> float | dict[str, float] | None:
         """Calcula la métrica para una función.
 
         Args:
@@ -318,7 +318,7 @@ class BaseMetric(IMetric):
                 f"método 'calculate' genérico de la métrica '{self.name}'."
             )
 
-    def calculate_function(self, function: Function) -> float | None:
+    def calculate_function(self, function: Function) -> float | dict[str, float] | None:
         """Método base para calcular métrica en función.
 
         Por defecto devuelve None indicando que la métrica no se implementa

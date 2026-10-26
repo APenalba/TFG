@@ -375,9 +375,9 @@ class AdvancedCouplingMetric(BaseMetric):
         all_instability = []
         all_abstractness = []
         all_distance = []
-        total_cbo = 0
-        total_rfc = 0
-        total_mpc = 0
+        total_cbo = 0.0
+        total_rfc = 0.0
+        total_mpc = 0.0
 
         for module in project.modules:
             module_metrics = self.calculate_module(module)
@@ -439,7 +439,7 @@ class AdvancedCouplingMetric(BaseMetric):
 
         return result
 
-    def calculate(self, entity: CodeEntity) -> dict[str, float] | None:
+    def calculate(self, entity: CodeEntity) -> float | dict[str, float] | None:
         """Calcula las métricas de acoplamiento avanzadas para una entidad específica.
 
         Args:
@@ -473,7 +473,8 @@ class AdvancedCouplingMetric(BaseMetric):
             float: Valor agregado de acoplamiento avanzado.
         """
         result = self.calculate(entity)
-        if result is None:
+        if not isinstance(result, dict):
+            # None, o el valor escalar de una función (no aplica)
             return 0.0
 
         if isinstance(entity, Class):

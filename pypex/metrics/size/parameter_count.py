@@ -401,14 +401,9 @@ class ParameterCountMetric(BaseMetric):
         elif isinstance(entity, Class):
             class_result = self.calculate_class(entity)
             return class_result.get("avg_parameters", 0.0)
-        elif isinstance(entity, Module):
-            module_result = self.calculate_module(entity)
-            # module_result is None for non-aggregatable metrics
-            return 0.0 if module_result is None else module_result.get("avg_parameters", 0.0)
-        elif isinstance(entity, Project):
-            project_result = self.calculate_project(entity)
-            # project_result is None for non-aggregatable metrics
-            return 0.0 if project_result is None else project_result.get("avg_parameters", 0.0)
+        elif isinstance(entity, (Module, Project)):
+            # El conteo de parámetros no se agrega a módulos ni proyectos
+            return 0.0
         else:
             logger.warning(f"Tipo de entidad no soportado: {type(entity)}")
             return 0.0
