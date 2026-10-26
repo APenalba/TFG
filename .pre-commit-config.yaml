@@ -16,12 +16,14 @@ repos:
         args: [--fix]
     -   id: ruff-format
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0
+-   repo: local
     hooks:
+    # Usa el entorno del proyecto (uv) para que mypy vea las mismas
+    # dependencias y tipos que en la CI
     -   id: mypy
+        name: mypy
+        entry: uv run mypy pypex
+        language: system
+        types: [python]
         files: ^pypex/
-        # Manual hasta corregir los errores heredados:
-        # uv run pre-commit run --hook-stage manual mypy --all-files
-        stages: [manual]
-        additional_dependencies: [types-pyyaml]
+        pass_filenames: false
