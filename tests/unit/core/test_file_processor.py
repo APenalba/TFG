@@ -116,7 +116,7 @@ class TestFileProcessor:
         normal_file.write_text("# normal file")
         assert processor.should_ignore(normal_file, tmp_path) is False
 
-    @patch('os.name', 'nt')
+    @pytest.mark.skipif(os.name != "nt", reason="Solo aplica en Windows")
     def test_should_ignore_windows_path_normalization(self, tmp_path):
         """Test normalización de rutas en Windows."""
         processor = FileProcessor(ignore_patterns=["**/__pycache__/**"])
