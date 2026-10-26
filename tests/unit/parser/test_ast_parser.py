@@ -63,20 +63,10 @@ class TestASTParser:
         assert isinstance(ast_tree, ast.Module)
 
         # Verificar que contiene las estructuras esperadas
-        functions = [
-            node
-            for node in ast.walk(ast_tree)
-            if isinstance(node, ast.FunctionDef)
-        ]
-        classes = [
-            node
-            for node in ast.walk(ast_tree)
-            if isinstance(node, ast.ClassDef)
-        ]
+        functions = [node for node in ast.walk(ast_tree) if isinstance(node, ast.FunctionDef)]
+        classes = [node for node in ast.walk(ast_tree) if isinstance(node, ast.ClassDef)]
         imports = [
-            node
-            for node in ast.walk(ast_tree)
-            if isinstance(node, (ast.Import, ast.ImportFrom))
+            node for node in ast.walk(ast_tree) if isinstance(node, (ast.Import, ast.ImportFrom))
         ]
 
         assert len(functions) == 3  # hello, __init__, greet

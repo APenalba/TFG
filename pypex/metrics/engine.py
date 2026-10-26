@@ -12,8 +12,6 @@ Note:
     Maneja automáticamente errores en métricas individuales sin afectar el análisis global.
 """
 
-from typing import Dict, List, Optional, Union
-
 from pypex.core.results import (
     AnalysisError,
     EntityAnalysisResult,
@@ -49,13 +47,13 @@ class MetricsEngine:
         >>> engine = MetricsEngine()
         >>> resultado = engine.calculate_all(mi_funcion)
         >>> print(resultado.metrics)
-        
+
     Note:
         Los errores en métricas individuales se capturan y reportan sin detener
         el análisis completo. Las métricas que no aplican devuelven None.
     """
 
-    def __init__(self, specific_metrics: Optional[List[IMetric]] = None):
+    def __init__(self, specific_metrics: list[IMetric] | None = None):
         """Inicializa el motor de métricas.
 
         Args:
@@ -71,9 +69,7 @@ class MetricsEngine:
             for metric in specific_metrics:
                 try:
                     self.registry.register_metric(metric)
-                    logger.debug(
-                        f"Métrica '{metric.name}' registrada desde el motor"
-                    )
+                    logger.debug(f"Métrica '{metric.name}' registrada desde el motor")
                 except ValueError:
                     # La métrica ya está registrada, ignoramos el error
                     pass
@@ -96,16 +92,14 @@ class MetricsEngine:
             if self.specific_metrics
             else self.registry.get_all_metrics_instances()
         )
-        metrics_dict: Dict[str, Union[float, Dict[str, float]]] = {}
-        errors: List[AnalysisError] = []
+        metrics_dict: dict[str, float | dict[str, float]] = {}
+        errors: list[AnalysisError] = []
 
         # Determinar el tipo de entidad
         entity_type = "unknown"
         if isinstance(entity, Function):
             entity_type = (
-                "function"
-                if not hasattr(entity, "is_method") or not entity.is_method
-                else "method"
+                "function" if not hasattr(entity, "is_method") or not entity.is_method else "method"
             )
         elif isinstance(entity, Class):
             entity_type = "class"
@@ -211,8 +205,8 @@ class MetricsEngine:
         """
         logger.debug(f"Calculando métricas para proyecto: {project.name}")
 
-        metrics_dict: Dict[str, Union[float, Dict[str, float]]] = {}
-        errors: List[AnalysisError] = []
+        metrics_dict: dict[str, float | dict[str, float]] = {}
+        errors: list[AnalysisError] = []
         metrics_to_apply = (
             self.specific_metrics
             if self.specific_metrics
@@ -228,9 +222,7 @@ class MetricsEngine:
                 if project_result is not None:
                     metrics_dict[metric.name] = project_result
                 else:
-                    logger.debug(
-                        f"Métrica '{metric.name}' no aplica a proyecto: {project.name}"
-                    )
+                    logger.debug(f"Métrica '{metric.name}' no aplica a proyecto: {project.name}")
 
             except Exception as e:
                 logger.warning(
@@ -252,9 +244,7 @@ class MetricsEngine:
             errors=errors,
         )
 
-    def get_entities_from_module(
-        self, module: Module
-    ) -> List[EntityAnalysisResult]:
+    def get_entities_from_module(self, module: Module) -> list[EntityAnalysisResult]:
         """Extrae entidades (funciones y clases) de un módulo con sus métricas.
 
         Args:
@@ -263,7 +253,7 @@ class MetricsEngine:
         Returns:
             List[EntityAnalysisResult]: Lista de entidades analizadas.
         """
-        entities: List[EntityAnalysisResult] = []
+        entities: list[EntityAnalysisResult] = []
 
         # Procesar funciones a nivel de módulo
         for func in module.functions:
@@ -280,7 +270,7 @@ class MetricsEngine:
 
         return entities
 
-    def get_metrics_info(self) -> Dict[str, Dict]:
+    def get_metrics_info(self) -> dict[str, dict]:
         """Obtiene información sobre todas las métricas disponibles (descripción, umbrales).
 
         Returns:

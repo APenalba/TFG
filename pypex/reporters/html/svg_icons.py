@@ -29,7 +29,6 @@ Iconos de carpetas:
 import re
 import uuid
 from pathlib import Path
-from typing import Dict, Optional
 
 
 class SVGIconManager:
@@ -38,7 +37,7 @@ class SVGIconManager:
     def __init__(self):
         """Inicializa el manager de iconos SVG."""
         self.assets_path = Path(__file__).parent.parent.parent / "assets"
-        self._svg_cache: Dict[str, str] = {}
+        self._svg_cache: dict[str, str] = {}
         self._load_svg_icons()
 
     def _load_svg_icons(self) -> None:
@@ -48,7 +47,7 @@ class SVGIconManager:
 
         for svg_file in self.assets_path.glob("*.svg"):
             try:
-                with open(svg_file, "r", encoding="utf-8") as f:
+                with open(svg_file, encoding="utf-8") as f:
                     svg_content = f.read()
                     # Limpiar el SVG removiendo atributos innecesarios
                     svg_content = self._clean_svg(svg_content)
@@ -71,9 +70,7 @@ class SVGIconManager:
 
         # Agregar clase CSS para styling
         if "class=" not in svg_content:
-            svg_content = svg_content.replace(
-                "<svg", '<svg class="file-icon"', 1
-            )
+            svg_content = svg_content.replace("<svg", '<svg class="file-icon"', 1)
 
         return svg_content.strip()
 
@@ -97,9 +94,7 @@ class SVGIconManager:
         svg_content = re.sub(r'id="([^"]+)"', replace_id, svg_content)
 
         # Reemplazar referencias a IDs (url(#id))
-        svg_content = re.sub(
-            r"url\(#([^)]+)\)", replace_url_reference, svg_content
-        )
+        svg_content = re.sub(r"url\(#([^)]+)\)", replace_url_reference, svg_content)
 
         return svg_content
 
@@ -121,34 +116,20 @@ class SVGIconManager:
 
         return "📄"  # Fallback para otros tipos
 
-    def get_python_folder_icon(
-        self, folder_name: str, is_open: bool = False
-    ) -> str:
+    def get_python_folder_icon(self, folder_name: str, is_open: bool = False) -> str:
         """Obtiene el icono apropiado para una carpeta Python."""
         folder_name_lower = folder_name.lower()
 
         # Carpetas específicas de Python
         if folder_name_lower in ["tests", "test"]:
-            icon_name = (
-                "folder_type_pytest_opened"
-                if is_open
-                else "folder_type_pytest"
-            )
-            return self.get_svg_icon(icon_name) or (
-                "🧪" if not is_open else "📂"
-            )
+            icon_name = "folder_type_pytest_opened" if is_open else "folder_type_pytest"
+            return self.get_svg_icon(icon_name) or ("🧪" if not is_open else "📂")
 
         # Carpetas Python genéricas
         python_folders = ["src", "lib", "pypex", "python"]
         if any(py_name in folder_name_lower for py_name in python_folders):
-            icon_name = (
-                "folder_type_python_opened"
-                if is_open
-                else "folder_type_python"
-            )
-            return self.get_svg_icon(icon_name) or (
-                "📁" if not is_open else "📂"
-            )
+            icon_name = "folder_type_python_opened" if is_open else "folder_type_python"
+            return self.get_svg_icon(icon_name) or ("📁" if not is_open else "📂")
 
         # Otros tipos de carpetas específicas
         folder_icons = {
@@ -169,9 +150,7 @@ class SVGIconManager:
 
         for folder_key, icon_name in folder_icons.items():
             if folder_key in folder_name_lower:
-                full_icon_name = (
-                    f"{icon_name}_opened" if is_open else icon_name
-                )
+                full_icon_name = f"{icon_name}_opened" if is_open else icon_name
                 svg_icon = self.get_svg_icon(full_icon_name)
                 if svg_icon:
                     return svg_icon
@@ -180,7 +159,7 @@ class SVGIconManager:
 
         return "📁"  # Fallback genérico
 
-    def get_svg_icon(self, icon_name: str) -> Optional[str]:
+    def get_svg_icon(self, icon_name: str) -> str | None:
         """Obtiene un icono SVG por nombre con IDs únicos para evitar conflictos."""
         svg_content = self._svg_cache.get(icon_name)
         if svg_content:

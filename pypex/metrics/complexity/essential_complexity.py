@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad esencial."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -115,11 +113,11 @@ class EssentialComplexityMetric(BaseMetric):
             description="Mide la complejidad irreducible basada en elementos de flujo excepcional.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para essential_complexity.
-        
+
         Basado en teoría de grafos de flujo de control.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -128,7 +126,6 @@ class EssentialComplexityMetric(BaseMetric):
             "medium": 3.0,
             "high": 6.0,
         }
-
 
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad esencial de una función.
@@ -143,9 +140,7 @@ class EssentialComplexityMetric(BaseMetric):
         Returns:
             float: Complejidad esencial de la función.
         """
-        logger.debug(
-            f"Calculando complejidad esencial para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad esencial para función: {function.name}")
 
         # Prioridad 1: Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
@@ -154,7 +149,10 @@ class EssentialComplexityMetric(BaseMetric):
             return float(essential_complexity)
 
         # Prioridad 2: Fallback usando control_flow_elements (para testing y compatibilidad)
-        if hasattr(function, 'control_flow_elements') and function.control_flow_elements is not None:
+        if (
+            hasattr(function, "control_flow_elements")
+            and function.control_flow_elements is not None
+        ):
             exceptional_elements = self._count_exceptional_elements_in_control_flow(
                 function.control_flow_elements
             )
@@ -208,7 +206,7 @@ class EssentialComplexityMetric(BaseMetric):
                 count_exceptional_elements(child, new_in_loop, in_function_body)
 
         # Analizar el cuerpo de la función
-        if hasattr(func_node, 'body'):
+        if hasattr(func_node, "body"):
             for stmt in func_node.body:
                 count_exceptional_elements(stmt)
         elif isinstance(func_node, astroid_nodes.Lambda):
@@ -227,23 +225,23 @@ class EssentialComplexityMetric(BaseMetric):
             bool: True si es el return final, False si es excepcional.
         """
         try:
-            if not hasattr(func_node, 'body') or not func_node.body:
+            if not hasattr(func_node, "body") or not func_node.body:
                 return True
 
             # Verificar si es la última statement directa del cuerpo de la función
             last_stmt = func_node.body[-1]
-            
+
             # Si el último statement es el return directamente
             if return_node is last_stmt:
                 return True
-            
+
             # Si está dentro del último statement (ej: if en la última línea)
             parent = return_node.parent
             while parent and parent is not func_node:
                 if parent is last_stmt:
                     return True
                 parent = parent.parent
-            
+
             return False
         except Exception:
             # En caso de error, asumir que no es final (más conservador)
@@ -262,11 +260,11 @@ class EssentialComplexityMetric(BaseMetric):
             int: Número de elementos excepcionales.
         """
         exceptional_count = 0
-        
+
         try:
             for element in control_flow_elements:
                 # Verificar si el elemento está marcado como excepcional
-                if hasattr(element, 'is_exceptional_flow') and element.is_exceptional_flow:
+                if hasattr(element, "is_exceptional_flow") and element.is_exceptional_flow:
                     exceptional_count += 1
         except (TypeError, AttributeError) as e:
             logger.debug(f"Error procesando control_flow_elements: {e}")
@@ -275,7 +273,7 @@ class EssentialComplexityMetric(BaseMetric):
 
         return exceptional_count
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad esencial para una clase.
 
         Analiza cada método de la clase para proporcionar estadísticas útiles
@@ -309,9 +307,7 @@ class EssentialComplexityMetric(BaseMetric):
             "max": max(method_essentials),
             "min": min(method_essentials),
             "method_count": float(len(cls.methods)),
-            "high_essential_methods": len(
-                [e for e in method_essentials if e >= 4]
-            ),
+            "high_essential_methods": len([e for e in method_essentials if e >= 4]),
         }
 
         return result
@@ -329,9 +325,7 @@ class EssentialComplexityMetric(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a módulos.
         """
-        logger.debug(
-            f"Complejidad esencial no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"Complejidad esencial no aplica a módulo: {module.name} - devolviendo None")
         return None
 
     def calculate_project(self, project: Project) -> None:

@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad de diseño."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -137,11 +135,11 @@ class DesignComplexityMetric(BaseMetric):
             description="Mide la complejidad de diseño basada en llamadas inter-módulos.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para design_complexity.
-        
+
         Basado en patrones de diseño y estructura.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -150,7 +148,6 @@ class DesignComplexityMetric(BaseMetric):
             "medium": 5.0,
             "high": 10.0,
         }
-
 
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad de diseño de una función.
@@ -161,9 +158,7 @@ class DesignComplexityMetric(BaseMetric):
         Returns:
             float: Complejidad de diseño de la función.
         """
-        logger.debug(
-            f"Calculando complejidad de diseño para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad de diseño para función: {function.name}")
 
         # Para esta implementación simplificada, usamos el número de llamadas
         # En una implementación más sofisticada, filtrarías por llamadas externas
@@ -171,11 +166,9 @@ class DesignComplexityMetric(BaseMetric):
 
         return float(design_complexity)
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad de diseño para una clase."""
-        logger.debug(
-            f"Calculando complejidad de diseño para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando complejidad de diseño para clase: {cls.name}")
 
         if not cls.methods:
             return {
@@ -213,9 +206,7 @@ class DesignComplexityMetric(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a módulos.
         """
-        logger.debug(
-            f"Complejidad de diseño no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"Complejidad de diseño no aplica a módulo: {module.name} - devolviendo None")
         return None
 
     def calculate_project(self, project: Project) -> None:

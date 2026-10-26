@@ -16,7 +16,6 @@ Note:
 
 import ast
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
 
 from pypex.services.logging_service import get_logger
 
@@ -28,12 +27,12 @@ def _calculate_sloc(filepath: Path, start_line: int, end_line: int) -> int:
     if not filepath or not filepath.exists():
         return 0
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             lines = f.readlines()
         total_lines = len(lines)
         start = start_line if isinstance(start_line, int) and start_line > 0 else 1
         end = end_line if isinstance(end_line, int) and end_line >= start else total_lines
-        
+
         if end > total_lines:
             end = total_lines
         if start > end:
@@ -41,7 +40,7 @@ def _calculate_sloc(filepath: Path, start_line: int, end_line: int) -> int:
                 f"SLOC: start_line ({start}) > end_line ({end}) en {filepath}, ajustando a rango válido."
             )
             start = 1
-            
+
         sloc = 0
         for i in range(start - 1, end):
             line = lines[i].strip()
@@ -60,10 +59,10 @@ def _calculate_sloc(filepath: Path, start_line: int, end_line: int) -> int:
 
 class ASTNodeVisitor(ast.NodeVisitor):
     """Visitante robusto para AST estándar de Python con recolección de métricas.
-    
+
     Esta clase extiende ast.NodeVisitor para recorrer el AST estándar de Python
     y recolectar métricas básicas de código.
-    
+
     Attributes:
         function_count: Número de funciones encontradas
         class_count: Número de clases encontradas
@@ -87,24 +86,24 @@ class ASTNodeVisitor(ast.NodeVisitor):
         self.loop_count = 0
         self.try_except_count = 0
 
-        self.complexity_nodes: List[ast.AST] = []
-        self.call_graph: Dict[str, Set[str]] = {}
-        self.variables: Set[str] = set()
-        
-        self.current_function: Optional[str] = None
-        self.function_stack: List[str] = []
+        self.complexity_nodes: list[ast.AST] = []
+        self.call_graph: dict[str, set[str]] = {}
+        self.variables: set[str] = set()
+
+        self.current_function: str | None = None
+        self.function_stack: list[str] = []
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visita una definición de función."""
         self.function_count += 1
         self.call_graph[node.name] = set()
-        
+
         self.function_stack.append(node.name)
         old_function = self.current_function
         self.current_function = node.name
-        
+
         self.generic_visit(node)
-        
+
         self.function_stack.pop()
         self.current_function = old_function
 
@@ -112,13 +111,13 @@ class ASTNodeVisitor(ast.NodeVisitor):
         """Visita una definición de función asíncrona."""
         self.function_count += 1
         self.call_graph[node.name] = set()
-        
+
         self.function_stack.append(node.name)
         old_function = self.current_function
         self.current_function = node.name
-        
+
         self.generic_visit(node)
-        
+
         self.function_stack.pop()
         self.current_function = old_function
 
@@ -186,7 +185,7 @@ class ASTNodeVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         """Visita una llamada a función."""
         if self.current_function and self.current_function in self.call_graph:
-            called_func_name: Optional[str] = None
+            called_func_name: str | None = None
             if isinstance(node.func, ast.Name):
                 called_func_name = node.func.id
             elif isinstance(node.func, ast.Attribute):
@@ -215,7 +214,7 @@ class ASTNodeVisitor(ast.NodeVisitor):
             self.variables.add(node.target.id)
         self.generic_visit(node)
 
-    def get_metrics(self) -> Dict[str, any]:
+    def get_metrics(self) -> dict[str, any]:
         """Obtiene las métricas básicas recolectadas."""
         return {
             "function_count": self.function_count,

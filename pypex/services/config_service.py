@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 
 # Singleton para el servicio de configuración
@@ -14,7 +14,7 @@ class ConfigService:
     def __new__(cls):
         """Implementación del patrón Singleton."""
         if cls._instance is None:
-            cls._instance = super(ConfigService, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
@@ -45,7 +45,7 @@ class ConfigService:
             # Configuración de logging
             "logging": {
                 "console_level": "INFO",
-                "file_level": "INFO", 
+                "file_level": "INFO",
                 "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                 "date_format": "%Y-%m-%d %H:%M:%S",
             },
@@ -56,7 +56,7 @@ class ConfigService:
 
         self._initialized = True
 
-    def load_from_file(self, file_path: Union[str, Path]) -> None:
+    def load_from_file(self, file_path: str | Path) -> None:
         """Carga la configuración desde un archivo JSON.
 
         Args:
@@ -68,17 +68,15 @@ class ConfigService:
         """
         path = Path(file_path)
         if not path.exists():
-            raise FileNotFoundError(
-                f"El archivo de configuración {file_path} no existe"
-            )
+            raise FileNotFoundError(f"El archivo de configuración {file_path} no existe")
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             config_data = json.load(f)
 
         # Actualizar configuración con los valores del archivo
         self._update_config(config_data)
 
-    def update_from_dict(self, config_dict: Dict[str, Any]) -> None:
+    def update_from_dict(self, config_dict: dict[str, Any]) -> None:
         """Actualiza la configuración desde un diccionario.
 
         Args:
@@ -86,7 +84,7 @@ class ConfigService:
         """
         self._update_config(config_dict)
 
-    def _update_config(self, new_config: Dict[str, Any]) -> None:
+    def _update_config(self, new_config: dict[str, Any]) -> None:
         """Actualización recursiva de la configuración.
 
         Args:
@@ -104,9 +102,7 @@ class ConfigService:
                 # Si no es un diccionario o no existe, asignar directamente
                 self._config[key] = value
 
-    def _update_config_dict(
-        self, target: Dict[str, Any], source: Dict[str, Any]
-    ) -> None:
+    def _update_config_dict(self, target: dict[str, Any], source: dict[str, Any]) -> None:
         """Actualiza un diccionario de configuración de forma recursiva.
 
         Args:
@@ -114,11 +110,7 @@ class ConfigService:
             source: Diccionario origen.
         """
         for key, value in source.items():
-            if (
-                isinstance(value, dict)
-                and key in target
-                and isinstance(target[key], dict)
-            ):
+            if isinstance(value, dict) and key in target and isinstance(target[key], dict):
                 self._update_config_dict(target[key], value)
             else:
                 target[key] = value
@@ -168,7 +160,7 @@ class ConfigService:
         else:
             self._config[key] = value
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Obtiene toda la configuración.
 
         Returns:

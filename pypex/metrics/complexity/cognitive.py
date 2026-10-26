@@ -1,7 +1,6 @@
 """Módulo para calcular la complejidad cognitiva."""
 
 import ast
-from typing import Dict, Optional, Union
 
 import astroid
 
@@ -139,26 +138,24 @@ class CognitiveComplexity(BaseMetric):
             description="Mide la dificultad de comprensión del código para los desarrolladores.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para complejidad cognitiva.
-        
+
         Basado en investigación de SonarSource y mejores prácticas:
         - 0-15: Fácil de entender
         - 16-25: Moderadamente complejo
         - 26+: Difícil de entender, refactoring recomendado
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
         return {
-            "low": 15.0,   # 0-15: fácil de entender
-            "medium": 25.0, # 16-25: moderadamente complejo
-            "high": 50.0,   # 26+: difícil de entender
+            "low": 15.0,  # 0-15: fácil de entender
+            "medium": 25.0,  # 16-25: moderadamente complejo
+            "high": 50.0,  # 26+: difícil de entender
         }
 
-    def _calculate_cognitive_complexity_ast(
-        self, node: ast.AST, nesting_level: int = 0
-    ) -> int:
+    def _calculate_cognitive_complexity_ast(self, node: ast.AST, nesting_level: int = 0) -> int:
         """Calcula la complejidad cognitiva de un nodo AST.
 
         Args:
@@ -187,9 +184,7 @@ class CognitiveComplexity(BaseMetric):
 
         # Recursivamente analizar hijos
         for child in ast.iter_child_nodes(node):
-            complexity += self._calculate_cognitive_complexity_ast(
-                child, nesting_level
-            )
+            complexity += self._calculate_cognitive_complexity_ast(child, nesting_level)
 
         return complexity
 
@@ -220,9 +215,7 @@ class CognitiveComplexity(BaseMetric):
         ):
             complexity += 1  # B0: Incremento base por estructura de control
             complexity += nesting_level  # N: Incremento por anidamiento
-            new_nesting_level += (
-                1  # Incrementa el nivel para los hijos de esta estructura
-            )
+            new_nesting_level += 1  # Incrementa el nivel para los hijos de esta estructura
 
         elif isinstance(node, astroid.nodes.Match):
             complexity += 1  # B0: Incremento base por la estructura match
@@ -258,24 +251,18 @@ class CognitiveComplexity(BaseMetric):
             current_child_nesting_level = new_nesting_level
             child_increment = 0
 
-            if isinstance(node, astroid.nodes.Match) and isinstance(
-                child, astroid.nodes.MatchCase
-            ):
+            if isinstance(node, astroid.nodes.Match) and isinstance(child, astroid.nodes.MatchCase):
                 # Cada MatchCase (case) añade +1 a la complejidad
                 # y su cuerpo está anidado dentro del Match.
                 complexity += 1  # B0: Incremento por cada case
-                current_child_nesting_level += (
-                    1  # Cuerpo del case está más anidado
-                )
+                current_child_nesting_level += 1  # Cuerpo del case está más anidado
             elif isinstance(node, astroid.nodes.Try) and isinstance(
                 child, astroid.nodes.ExceptHandler
             ):
                 # Cada ExceptHandler (except/except*) añade +1
                 # y su cuerpo está anidado.
                 complexity += 1  # B0: Incremento por cada except/except*
-                current_child_nesting_level += (
-                    1  # Cuerpo del handler está más anidado
-                )
+                current_child_nesting_level += 1  # Cuerpo del handler está más anidado
 
             complexity += self._calculate_cognitive_complexity_astroid(
                 child, current_child_nesting_level
@@ -296,10 +283,8 @@ class CognitiveComplexity(BaseMetric):
         Returns:
             float: Complejidad cognitiva de la función.
         """
-        logger.debug(
-            f"Calculando complejidad cognitiva para función: {function.name}"
-        )
-        
+        logger.debug(f"Calculando complejidad cognitiva para función: {function.name}")
+
         # Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
             complexity = self._calculate_cognitive_complexity_astroid(function.astroid_node, 0)
@@ -309,7 +294,7 @@ class CognitiveComplexity(BaseMetric):
         logger.debug(f"No hay nodo AST disponible para {function.name}")
         return 0.0
 
-    def calculate_class(self, cls: Class) -> Optional[Dict[str, float]]:
+    def calculate_class(self, cls: Class) -> dict[str, float] | None:
         """Calcula estadísticas de complejidad cognitiva para una clase.
 
         Analiza la complejidad cognitiva de los métodos de la clase para
@@ -322,9 +307,7 @@ class CognitiveComplexity(BaseMetric):
             Optional[Dict[str, float]]: Estadísticas de complejidad cognitiva de la clase,
                                       o None si no hay métodos.
         """
-        logger.debug(
-            f"Calculando estadísticas de complejidad cognitiva para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando estadísticas de complejidad cognitiva para clase: {cls.name}")
 
         if not cls.methods:
             logger.debug(f"Clase {cls.name} sin métodos - devolviendo None")
@@ -343,9 +326,7 @@ class CognitiveComplexity(BaseMetric):
             "max": max(method_complexities),
             "min": min(method_complexities),
             "method_count": float(len(cls.methods)),
-            "high_complexity_methods": len(
-                [c for c in method_complexities if c > 15]
-            ),
+            "high_complexity_methods": len([c for c in method_complexities if c > 15]),
         }
 
         return result
@@ -373,9 +354,7 @@ class CognitiveComplexity(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a módulos.
         """
-        logger.debug(
-            f"Complejidad cognitiva no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"Complejidad cognitiva no aplica a módulo: {module.name} - devolviendo None")
         return None
 
     def calculate_project(self, project: Project) -> None:

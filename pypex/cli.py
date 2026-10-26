@@ -29,7 +29,6 @@ Ejemplos de uso:
 import json
 import logging
 from pathlib import Path
-from typing import List, Optional
 
 import click
 import yaml
@@ -37,16 +36,15 @@ import yaml
 from pypex import __version__
 from pypex.core.analyzer import Analyzer
 from pypex.core.file_processor import FileProcessor
-from pypex.core.project import Project
 from pypex.metrics import get_registry
 from pypex.parser.ast_parser import ASTParser
 from pypex.reporters import ReporterRegistry
 from pypex.services.config_service import get_config
 from pypex.services.logging_service import (
     configure_logging,
+    configure_presentation_service,
     get_logger,
     get_presentation_service,
-    configure_presentation_service,
 )
 
 logger = get_logger(__name__)
@@ -67,12 +65,10 @@ def load_config_file(config_path: str) -> dict:
     config_file = Path(config_path)
 
     if not config_file.exists():
-        raise click.ClickException(
-            f"Archivo de configuración no encontrado: {config_path}"
-        )
+        raise click.ClickException(f"Archivo de configuración no encontrado: {config_path}")
 
     try:
-        with open(config_file, "r", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             if config_file.suffix.lower() in [".yaml", ".yml"]:
                 return yaml.safe_load(f) or {}
             elif config_file.suffix.lower() == ".json":
@@ -81,18 +77,12 @@ def load_config_file(config_path: str) -> dict:
                 # Intentar YAML por defecto
                 return yaml.safe_load(f) or {}
     except (yaml.YAMLError, json.JSONDecodeError) as e:
-        raise click.ClickException(
-            f"Error al parsear archivo de configuración {config_path}: {e}"
-        )
+        raise click.ClickException(f"Error al parsear archivo de configuración {config_path}: {e}")
     except Exception as e:
-        raise click.ClickException(
-            f"Error al leer archivo de configuración {config_path}: {e}"
-        )
+        raise click.ClickException(f"Error al leer archivo de configuración {config_path}: {e}")
 
 
-def validate_metrics_list(
-    metrics: List[str], exclude_metrics: List[str]
-) -> List[str]:
+def validate_metrics_list(metrics: list[str], exclude_metrics: list[str]) -> list[str]:
     """Valida y procesa la lista de métricas a usar.
 
     Args:
@@ -132,9 +122,7 @@ def validate_metrics_list(
         final_metrics = [m for m in final_metrics if m not in exclude_metrics]
 
     if not final_metrics:
-        raise click.ClickException(
-            "No quedan métricas válidas después de aplicar filtros."
-        )
+        raise click.ClickException("No quedan métricas válidas después de aplicar filtros.")
 
     return final_metrics
 
@@ -153,7 +141,7 @@ def validate_metrics_list(
     help="Archivo donde guardar los logs detallados del análisis.",
     metavar="ARCHIVO",
 )
-def main(verbose: bool, log_file: Optional[str] = None):
+def main(verbose: bool, log_file: str | None = None):
     """🐍 PyPex: Analizador Avanzado de Complejidad de Código Python
 
     PyPex es una herramienta profesional para analizar código Python y calcular
@@ -265,26 +253,22 @@ def main(verbose: bool, log_file: Optional[str] = None):
     "--thresholds-profile",
     "-t",
     default="normal",
-    type=click.Choice(
-        ["strict", "normal", "permissive"], case_sensitive=False
-    ),
+    type=click.Choice(["strict", "normal", "permissive"], case_sensitive=False),
     help="Perfil de umbrales para la interpretación de métricas.",
     show_default=True,
 )
 @click.option(
     "--verbosity",
     default="normal",
-    type=click.Choice(
-        ["quiet", "normal", "verbose", "debug"], case_sensitive=False
-    ),
+    type=click.Choice(["quiet", "normal", "verbose", "debug"], case_sensitive=False),
     help="Nivel de detalle para la salida en consola (solo aplica con formato 'console').",
     show_default=True,
 )
 def analyze(
     path: str,
-    output: Optional[str],
+    output: str | None,
     format: str,
-    config: Optional[str],
+    config: str | None,
     max_file_size: int,
     ignore: tuple,
     metrics: tuple,
@@ -383,9 +367,7 @@ def analyze(
         if output:
             config_obj.set("output_path", output)
 
-        logger.info(
-            f"Usando perfil de umbrales: {thresholds_profile} (para selección de análisis)"
-        )
+        logger.info(f"Usando perfil de umbrales: {thresholds_profile} (para selección de análisis)")
 
         # Configurar el analizador
         config_dict = {
@@ -405,13 +387,9 @@ def analyze(
         registry = get_registry()
 
         # Obtener métricas de configuración del archivo si no se especificaron en CLI
-        cli_metrics = (
-            list(metrics) if metrics else file_config.get("metrics", [])
-        )
+        cli_metrics = list(metrics) if metrics else file_config.get("metrics", [])
         cli_exclude = (
-            list(exclude_metrics)
-            if exclude_metrics
-            else file_config.get("exclude_metrics", [])
+            list(exclude_metrics) if exclude_metrics else file_config.get("exclude_metrics", [])
         )
 
         # Validar y procesar métricas
@@ -427,22 +405,14 @@ def analyze(
                     configured_metrics.append(metric)
                     logger.debug(f"Métrica configurada: {metric_name}")
                 except Exception as e:
-                    logger.warning(
-                        f"Error al cargar métrica {metric_name}: {str(e)}"
-                    )
+                    logger.warning(f"Error al cargar métrica {metric_name}: {str(e)}")
 
             if configured_metrics:
                 specific_metrics = configured_metrics
-                logger.info(
-                    f"Configuradas {len(configured_metrics)} métricas específicas"
-                )
-                logger.info(
-                    f"Métricas activas: {', '.join(final_metrics_names)}"
-                )
+                logger.info(f"Configuradas {len(configured_metrics)} métricas específicas")
+                logger.info(f"Métricas activas: {', '.join(final_metrics_names)}")
                 if cli_exclude:
-                    logger.info(
-                        f"Métricas excluidas: {', '.join(cli_exclude)}"
-                    )
+                    logger.info(f"Métricas excluidas: {', '.join(cli_exclude)}")
             else:
                 logger.warning(
                     "No se pudieron cargar métricas válidas. Usando todas las disponibles."
@@ -471,21 +441,15 @@ def analyze(
                 logger.info(f"Reporte {format} generado en {output_path}")
 
                 presentation_service = get_presentation_service()
-                presentation_service.print_success(
-                    f"Reporte generado exitosamente: {output_path}"
-                )
+                presentation_service.print_success(f"Reporte generado exitosamente: {output_path}")
                 presentation_service.print_info(f"Formato: {format.upper()}")
                 if output_path.stat().st_size > 0:
                     size_mb = output_path.stat().st_size / (1024 * 1024)
-                    presentation_service.print_info(
-                        f"Tamaño: {size_mb:.2f} MB"
-                    )
+                    presentation_service.print_info(f"Tamaño: {size_mb:.2f} MB")
 
             except Exception as e:
                 logger.error(f"Error al generar reporte: {e}")
-                raise click.ClickException(
-                    f"Error al generar reporte {format}: {e}"
-                )
+                raise click.ClickException(f"Error al generar reporte {format}: {e}")
         else:
             # Sin archivo de salida: usar ConsoleReporter o fallback
             if format == "console":
@@ -496,14 +460,10 @@ def analyze(
                     )
 
                     console_reporter = ConsoleReporter(use_colors=True)
-                    console_reporter.generate_report(
-                        results, verbosity=verbosity, show_files=True
-                    )
+                    console_reporter.generate_report(results, verbosity=verbosity, show_files=True)
                 except Exception as e:
                     logger.error(f"Error usando ConsoleReporter: {e}")
-                    raise click.ClickException(
-                        f"Error al mostrar resultados en consola: {e}"
-                    )
+                    raise click.ClickException(f"Error al mostrar resultados en consola: {e}")
             else:
                 # Para formatos html/json sin output, mostrar error
                 raise click.ClickException(
@@ -582,24 +542,12 @@ def thresholds():
 
         # Agregar columnas a la tabla
         if hasattr(thresholds_table, "add_column"):
-            thresholds_table.add_column(
-                "#", style="bold dim", width=3, justify="right"
-            )
-            thresholds_table.add_column(
-                "Métrica", style="bold cyan", width=25, no_wrap=False
-            )
-            thresholds_table.add_column(
-                "🟢 Bajo", style="bold green", justify="center", width=8
-            )
-            thresholds_table.add_column(
-                "🟡 Medio", style="bold yellow", justify="center", width=8
-            )
-            thresholds_table.add_column(
-                "🔴 Alto", style="bold red", justify="center", width=8
-            )
-            thresholds_table.add_column(
-                "📖 Descripción", style="dim", width=65, no_wrap=False
-            )
+            thresholds_table.add_column("#", style="bold dim", width=3, justify="right")
+            thresholds_table.add_column("Métrica", style="bold cyan", width=25, no_wrap=False)
+            thresholds_table.add_column("🟢 Bajo", style="bold green", justify="center", width=8)
+            thresholds_table.add_column("🟡 Medio", style="bold yellow", justify="center", width=8)
+            thresholds_table.add_column("🔴 Alto", style="bold red", justify="center", width=8)
+            thresholds_table.add_column("📖 Descripción", style="dim", width=65, no_wrap=False)
 
             # Mostrar thresholds para métricas disponibles con numeración
             for idx, metric_name in enumerate(available_metrics, 1):
@@ -629,9 +577,7 @@ def thresholds():
                         description,
                     )
                 except Exception as e:
-                    logger.warning(
-                        f"Error obteniendo thresholds para {metric_name}: {e}"
-                    )
+                    logger.warning(f"Error obteniendo thresholds para {metric_name}: {e}")
                     thresholds_table.add_row(
                         str(idx),
                         metric_name.replace("_", " ").title(),
@@ -669,9 +615,7 @@ def thresholds():
                     metric = registry.get_metric(metric_name)
                     thresholds = threshold_config.get_thresholds(metric_name)
 
-                    click.echo(
-                        f"\n{idx:2d}. 📊 {metric_name.replace('_', ' ').title()}"
-                    )
+                    click.echo(f"\n{idx:2d}. 📊 {metric_name.replace('_', ' ').title()}")
                     click.echo(
                         f"     🟢 Bajo: {thresholds.get('low', 'N/A'):<8} "
                         f"🟡 Medio: {thresholds.get('medium', 'N/A'):<8} "
@@ -702,15 +646,11 @@ def thresholds():
                         click.echo(f"     📖 {desc}")
 
                 except Exception as e:
-                    logger.warning(
-                        f"Error obteniendo thresholds para {metric_name}: {e}"
-                    )
+                    logger.warning(f"Error obteniendo thresholds para {metric_name}: {e}")
                     click.echo(f"\n{idx:2d}. ❌ {metric_name} - Error: {e}")
 
             click.echo("\n" + "=" * 80)
-            click.echo(
-                "💡 Cambiar perfil: Use --thresholds-profile strict|normal|permissive"
-            )
+            click.echo("💡 Cambiar perfil: Use --thresholds-profile strict|normal|permissive")
             click.echo("📚 Más información: https://github.com/APenalba/TFG")
 
     except Exception as e:

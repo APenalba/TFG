@@ -9,7 +9,7 @@ Interfaces:
 
 Classes:
     BaseMetric: Implementación base con funcionalidad común
-    
+
 Exceptions:
     MetricError: Excepción base para errores en métricas
     MetricNotFoundError: Métrica solicitada no encontrada
@@ -21,7 +21,6 @@ Note:
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Union
 
 from pypex.metrics.thresholds import ComplexityLevel, get_threshold_config
 from pypex.parser.code_entities import (
@@ -50,11 +49,11 @@ class InvalidEntityError(MetricError):
 
 class IMetric(ABC):
     """Interfaz base para todas las métricas de complejidad de código.
-    
+
     Define el contrato que deben implementar todas las métricas del sistema.
     Soporta cálculo específico por tipo de entidad (función, clase, módulo, proyecto)
     y proporciona funcionalidades para interpretación y manejo de umbrales.
-    
+
     Methods:
         calculate: Calcula la métrica para cualquier entidad
         calculate_function: Calcula para funciones específicamente
@@ -85,9 +84,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate(
-        self, entity: CodeEntity
-    ) -> Union[float, Dict[str, float], None]:
+    def calculate(self, entity: CodeEntity) -> float | dict[str, float] | None:
         """Calcula la métrica para una entidad de código.
 
         Args:
@@ -103,7 +100,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_function(self, function: Function) -> Optional[float]:
+    def calculate_function(self, function: Function) -> float | None:
         """Calcula la métrica para una función.
 
         Args:
@@ -114,7 +111,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_class(self, cls: Class) -> Optional[Dict[str, float]]:
+    def calculate_class(self, cls: Class) -> dict[str, float] | None:
         """Calcula la métrica para la *definición* de una clase.
 
         Los métodos dentro de la clase son manejados por el MetricsEngine.
@@ -130,7 +127,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_module(self, module: Module) -> Optional[Dict[str, float]]:
+    def calculate_module(self, module: Module) -> dict[str, float] | None:
         """Calcula la métrica para la *definición* de un módulo.
 
         Funciones y clases dentro del módulo son manejados por el MetricsEngine.
@@ -147,9 +144,7 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def calculate_project(
-        self, project: Project
-    ) -> Optional[Dict[str, float]]:
+    def calculate_project(self, project: Project) -> dict[str, float] | None:
         """Calcula la métrica a nivel de proyecto.
 
         Esto es para componentes de la métrica que son inherentes al proyecto
@@ -165,17 +160,17 @@ class IMetric(ABC):
         """
 
     @abstractmethod
-    def get_thresholds(self) -> Dict[str, float]:
+    def get_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales para interpretar la métrica desde ThresholdConfig."""
         return get_threshold_config().get_thresholds(self.name)
 
     @abstractmethod
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto específicos de esta métrica.
-        
+
         Cada métrica debe definir sus propios umbrales por defecto basados
         en investigación y mejores prácticas para esa métrica específica.
-        
+
         Returns:
             Dict[str, float]: Diccionario con umbrales por defecto (low, medium, high).
         """
@@ -218,9 +213,7 @@ class IMetric(ABC):
                     return float(result[key])
 
             # Si no hay clave obvia, sumar valores numéricos
-            numeric_values = [
-                v for v in result.values() if isinstance(v, (int, float))
-            ]
+            numeric_values = [v for v in result.values() if isinstance(v, (int, float))]
             if numeric_values:
                 return sum(numeric_values)
 
@@ -233,23 +226,23 @@ class IMetric(ABC):
 
 class BaseMetric(IMetric):
     """Implementación base para métricas con funcionalidad común predefinida.
-    
+
     Esta clase proporciona una implementación común de la interfaz IMetric,
     incluyendo dispatching automático por tipo de entidad, manejo de umbrales
     y funcionalidades de interpretación. Las métricas concretas solo necesitan
     implementar los métodos específicos de cálculo.
-    
+
     Attributes:
         _name: Nombre único de la métrica
         _description: Descripción de la métrica
-        
+
     Example:
         >>> class MiMetrica(BaseMetric):
         ...     def calculate_function(self, function):
         ...         return len(function.parameters)
         >>> metrica = MiMetrica("params", "Cuenta parámetros")
         >>> valor = metrica.calculate(mi_funcion)
-        
+
     Note:
         Los métodos calculate_* deben devolver None si la métrica no aplica
         al tipo de entidad específico.
@@ -284,9 +277,7 @@ class BaseMetric(IMetric):
         """
         return self._description
 
-    def calculate(
-        self, entity: CodeEntity
-    ) -> Union[float, Dict[str, float], None]:
+    def calculate(self, entity: CodeEntity) -> float | dict[str, float] | None:
         """Calcula la métrica para una entidad de código.
 
         Delega a los métodos calculate_X específicos según el tipo de entidad.
@@ -304,9 +295,7 @@ class BaseMetric(IMetric):
             InvalidEntityError: Si la entidad no es de un tipo soportado o si
                                 se intenta calcular un Proyecto genéricamente.
         """
-        logger.debug(
-            f"Calculando métrica {self.name} para entidad {entity.name}"
-        )
+        logger.debug(f"Calculando métrica {self.name} para entidad {entity.name}")
         if isinstance(entity, Function):
             return self.calculate_function(entity)
         elif isinstance(entity, Class):
@@ -323,15 +312,13 @@ class BaseMetric(IMetric):
                 f"no está destinado a entidades Project."
             )
         else:
-            logger.error(
-                f"Tipo de entidad no soportado: {type(entity).__name__}"
-            )
+            logger.error(f"Tipo de entidad no soportado: {type(entity).__name__}")
             raise InvalidEntityError(
                 f"El tipo de entidad {type(entity).__name__} no está soportado por el "
                 f"método 'calculate' genérico de la métrica '{self.name}'."
             )
 
-    def calculate_function(self, function: Function) -> Optional[float]:
+    def calculate_function(self, function: Function) -> float | None:
         """Método base para calcular métrica en función.
 
         Por defecto devuelve None indicando que la métrica no se implementa
@@ -342,7 +329,7 @@ class BaseMetric(IMetric):
         )
         return None
 
-    def calculate_class(self, cls: Class) -> Optional[Dict[str, float]]:
+    def calculate_class(self, cls: Class) -> dict[str, float] | None:
         """Método base para calcular métrica en clase.
 
         Por defecto devuelve None indicando que la métrica no se implementa
@@ -353,7 +340,7 @@ class BaseMetric(IMetric):
         )
         return None
 
-    def calculate_module(self, module: Module) -> Optional[Dict[str, float]]:
+    def calculate_module(self, module: Module) -> dict[str, float] | None:
         """Método base para calcular métrica en módulo.
 
         Por defecto devuelve None indicando que la métrica no se implementa
@@ -364,9 +351,7 @@ class BaseMetric(IMetric):
         )
         return None
 
-    def calculate_project(
-        self, project: Project
-    ) -> Optional[Dict[str, float]]:
+    def calculate_project(self, project: Project) -> dict[str, float] | None:
         """Método base para calcular métrica en proyecto.
 
         Por defecto devuelve None indicando que la métrica no se implementa
@@ -377,22 +362,24 @@ class BaseMetric(IMetric):
         )
         return None
 
-    def get_thresholds(self) -> Dict[str, float]:
+    def get_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales para interpretar la métrica desde ThresholdConfig."""
         return get_threshold_config().get_thresholds(self.name)
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto específicos de esta métrica.
-        
+
         Implementación por defecto que devuelve umbrales genéricos.
         Las métricas específicas deben sobreescribir este método con
         umbrales basados en investigación y mejores prácticas.
-        
+
         Returns:
             Dict[str, float]: Diccionario con umbrales genéricos por defecto.
         """
-        logger.warning(f"Métrica '{self.name}' usando umbrales genéricos. "
-                      f"Considere implementar get_default_thresholds() específicos.")
+        logger.warning(
+            f"Métrica '{self.name}' usando umbrales genéricos. "
+            f"Considere implementar get_default_thresholds() específicos."
+        )
         return {"low": 5.0, "medium": 10.0, "high": 15.0}
 
     def interpret(self, value: float) -> ComplexityLevel:

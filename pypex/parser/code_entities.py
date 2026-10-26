@@ -5,7 +5,7 @@ fuente Python para análisis estático y cálculo de métricas.
 
 Classes:
     CodeEntity: Clase base para todas las entidades analizables
-    Function: Representación de funciones y métodos 
+    Function: Representación de funciones y métodos
     Class: Representación de clases con métodos y atributos
     Module: Representación de módulos Python completos
     Project: Representación de proyectos de software completos
@@ -17,7 +17,7 @@ Classes:
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
 
 import astroid
 
@@ -29,28 +29,20 @@ class CodeEntity:
     name: str
     line_start: int = 0
     line_end: int = 0
-    source_file: Optional[Union[str, Path]] = None
+    source_file: str | Path | None = None
 
     source_lines_of_code: int = 0
     docstring_sloc: int = 0
     comment_sloc: int = 0
     blank_lines_count: int = 0
 
-    astroid_node: Optional[astroid.nodes.NodeNG] = field(
-        default=None, repr=False, compare=False
-    )
-    ast_node: Optional[ast.AST] = field(
-        default=None, repr=False, compare=False
-    )
+    astroid_node: astroid.nodes.NodeNG | None = field(default=None, repr=False, compare=False)
+    ast_node: ast.AST | None = field(default=None, repr=False, compare=False)
 
     @property
     def length(self) -> int:
         """Calcula la longitud total en líneas de la entidad de código."""
-        if (
-            self.line_end is None
-            or self.line_start is None
-            or self.line_end < self.line_start
-        ):
+        if self.line_end is None or self.line_start is None or self.line_end < self.line_start:
             return 0
         return self.line_end - self.line_start + 1
 
@@ -60,8 +52,8 @@ class Parameter:
     """Representa un parámetro de una función o método."""
 
     name: str
-    default_value: Optional[str] = None
-    annotation: Optional[str] = None
+    default_value: str | None = None
+    annotation: str | None = None
     is_variadic_positional: bool = False
     is_variadic_keyword: bool = False
     is_positional_only: bool = False
@@ -73,8 +65,8 @@ class DecoratorEntity:
     """Representa un decorador aplicado a una función o clase."""
 
     name: str
-    qualified_name: Optional[str] = None
-    args: List[str] = field(default_factory=list)
+    qualified_name: str | None = None
+    args: list[str] = field(default_factory=list)
     line_start: int = 0
     line_end: int = 0
 
@@ -83,18 +75,18 @@ class DecoratorEntity:
 class Function(CodeEntity):
     """Representa una función o método en el código fuente."""
 
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: list[Parameter] = field(default_factory=list)
     is_method: bool = False
     is_async: bool = False
     is_lambda: bool = False
     is_generator: bool = False
-    parent_class: Optional[str] = None
-    docstring: Optional[str] = None
-    returns: Optional[str] = None
-    decorators: List[DecoratorEntity] = field(default_factory=list)
+    parent_class: str | None = None
+    docstring: str | None = None
+    returns: str | None = None
+    decorators: list[DecoratorEntity] = field(default_factory=list)
 
-    calls: Set[str] = field(default_factory=set)
-    local_variables: Set[str] = field(default_factory=set)
+    calls: set[str] = field(default_factory=set)
+    local_variables: set[str] = field(default_factory=set)
 
     yield_expressions_count: int = 0
     assert_statements_count: int = 0
@@ -106,10 +98,10 @@ class Function(CodeEntity):
     else_blocks_in_loops_count: int = 0
     exception_handlers_count: int = 0
 
-    global_variables_accessed: Set[str] = field(default_factory=set)
-    global_variables_modified: Set[str] = field(default_factory=set)
-    nonlocal_variables_accessed: Set[str] = field(default_factory=set)
-    nonlocal_variables_modified: Set[str] = field(default_factory=set)
+    global_variables_accessed: set[str] = field(default_factory=set)
+    global_variables_modified: set[str] = field(default_factory=set)
+    nonlocal_variables_accessed: set[str] = field(default_factory=set)
+    nonlocal_variables_modified: set[str] = field(default_factory=set)
 
     @property
     def signature(self) -> str:
@@ -123,7 +115,9 @@ class Function(CodeEntity):
                 param_str += f" = {p.default_value}"
             params_str_list.append(param_str)
 
-        signature_str = f"{'async ' if self.is_async else ''}def {self.name}({', '.join(params_str_list)})"
+        signature_str = (
+            f"{'async ' if self.is_async else ''}def {self.name}({', '.join(params_str_list)})"
+        )
         if self.returns:
             signature_str += f" -> {self.returns}"
         return signature_str
@@ -133,22 +127,22 @@ class Function(CodeEntity):
 class Class(CodeEntity):
     """Representa una clase en el código fuente."""
 
-    docstring: Optional[str] = None
-    base_classes: List[str] = field(default_factory=list)
-    decorators: List[DecoratorEntity] = field(default_factory=list)
+    docstring: str | None = None
+    base_classes: list[str] = field(default_factory=list)
+    decorators: list[DecoratorEntity] = field(default_factory=list)
 
-    methods: List[Function] = field(default_factory=list)
-    attributes: Dict[str, str] = field(default_factory=dict)
-    inner_classes: List["Class"] = field(default_factory=list)
+    methods: list[Function] = field(default_factory=list)
+    attributes: dict[str, str] = field(default_factory=dict)
+    inner_classes: list["Class"] = field(default_factory=list)
 
-    defined_instance_attributes: Set[str] = field(default_factory=set)
+    defined_instance_attributes: set[str] = field(default_factory=set)
 
     is_abstract_class: bool = False
-    abstract_methods_list: List[str] = field(default_factory=list)
+    abstract_methods_list: list[str] = field(default_factory=list)
     is_dataclass: bool = False
     is_exception_class: bool = False
     inheritance_depth: int = 0
-    mro_qnames: List[str] = field(default_factory=list)
+    mro_qnames: list[str] = field(default_factory=list)
 
     static_methods_count: int = 0
     class_methods_count: int = 0
@@ -185,12 +179,12 @@ class Import:
 
     module: str
     line: int
-    names: List[str] = field(default_factory=list)
+    names: list[str] = field(default_factory=list)
     is_from: bool = False
     level: int = 0
     is_wildcard_import: bool = False
     is_conditional: bool = False
-    aliases: Dict[str, str] = field(default_factory=dict)
+    aliases: dict[str, str] = field(default_factory=dict)
 
     @property
     def is_relative(self) -> bool:
@@ -202,16 +196,16 @@ class Import:
 class Module(CodeEntity):
     """Representa un archivo de código Python (módulo)."""
 
-    path: Optional[Path] = None
-    docstring: Optional[str] = None
-    functions: List[Function] = field(default_factory=list)
-    classes: List[Class] = field(default_factory=list)
-    imports: List[Import] = field(default_factory=list)
-    variables: Dict[str, str] = field(default_factory=dict)
-    module_level_constants: Dict[str, Any] = field(default_factory=dict)
+    path: Path | None = None
+    docstring: str | None = None
+    functions: list[Function] = field(default_factory=list)
+    classes: list[Class] = field(default_factory=list)
+    imports: list[Import] = field(default_factory=list)
+    variables: dict[str, str] = field(default_factory=dict)
+    module_level_constants: dict[str, Any] = field(default_factory=dict)
 
-    future_imports: Set[str] = field(default_factory=set)
-    shebang: Optional[str] = None
+    future_imports: set[str] = field(default_factory=set)
+    shebang: str | None = None
     is_package_init: bool = False
     has_main_block: bool = False
 
@@ -223,7 +217,7 @@ class Module(CodeEntity):
         return ""
 
     @property
-    def dependencies(self) -> Set[str]:
+    def dependencies(self) -> set[str]:
         """Obtiene un conjunto de nombres de módulos de los que este módulo depende."""
         deps = set()
         for imp in self.imports:
@@ -241,14 +235,14 @@ class Project(CodeEntity):
     """Representa un proyecto de software completo, compuesto por múltiples módulos."""
 
     name: str
-    root_path: Optional[Path] = None
-    modules: List[Module] = field(default_factory=list)
+    root_path: Path | None = None
+    modules: list[Module] = field(default_factory=list)
 
     total_sloc_code: int = 0
     total_sloc_docstrings: int = 0
     total_sloc_comments: int = 0
     total_blank_lines: int = 0
-    external_dependencies: Set[str] = field(default_factory=set)
+    external_dependencies: set[str] = field(default_factory=set)
 
     @property
     def module_count(self) -> int:
@@ -265,9 +259,9 @@ class Project(CodeEntity):
         """Obtiene el número total de clases definidas en todos los módulos del proyecto."""
         return sum(len(module.classes) for module in self.modules)
 
-    def get_dependency_graph(self) -> Dict[str, Set[str]]:
+    def get_dependency_graph(self) -> dict[str, set[str]]:
         """Genera un grafo de dependencias entre los módulos del proyecto."""
-        graph: Dict[str, Set[str]] = {}
+        graph: dict[str, set[str]] = {}
         for module in self.modules:
             graph[module.name] = module.dependencies
         return graph

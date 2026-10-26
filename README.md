@@ -805,15 +805,16 @@ uv run pre-commit run --all-files
 from pypex.metrics.base import IMetric
 from pypex.parser.code_entities import CodeEntity
 
+
 class MiMetrica(IMetric):
     @property
     def name(self) -> str:
         return "mi_metrica"
-    
+
     @property
     def description(self) -> str:
         return "Descripción de mi métrica"
-    
+
     def calculate(self, entity: CodeEntity) -> float:
         # Implementar cálculo
         return 0.0

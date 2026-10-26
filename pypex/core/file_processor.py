@@ -15,7 +15,7 @@ Note:
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Pattern, Tuple, Union
+from re import Pattern
 
 from pypex.core.interfaces import IFileProcessor, ParsingError
 from pypex.services.logging_service import get_logger
@@ -25,18 +25,18 @@ logger = get_logger(__name__)
 
 class FileProcessor(IFileProcessor):
     """Procesador robusto de archivos y directorios de código Python.
-    
+
     Esta clase implementa la interfaz IFileProcessor y proporciona funcionalidades
     completas para el manejo de archivos Python en proyectos de análisis estático.
-    
+
     Gestiona patrones de exclusión complejos usando sintaxis glob, con soporte
     para patrones absolutos y relativos. Incluye validación de tamaños de archivo,
     manejo de permisos y lectura robusta con múltiples encodings.
-    
+
     Attributes:
         ignore_patterns: Lista de patrones glob para ignorar archivos/directorios
         max_file_size: Tamaño máximo de archivo a procesar en bytes
-        
+
     Example:
         >>> processor = FileProcessor(
         ...     ignore_patterns=["**/tests/**", "**/*.pyc"],
@@ -48,7 +48,7 @@ class FileProcessor(IFileProcessor):
 
     def __init__(
         self,
-        ignore_patterns: Optional[List[str]] = None,
+        ignore_patterns: list[str] | None = None,
         max_file_size: int = 1024 * 1024,  # 1MB por defecto
     ):
         """Inicializa el procesador de archivos.
@@ -69,18 +69,22 @@ class FileProcessor(IFileProcessor):
             "**/.ipynb_checkpoints/**",
         ]
         self.max_file_size = max_file_size
-        
-        logger.debug(f"FileProcessor inicializado con {len(self.ignore_patterns)} patrones de exclusión")
-        logger.debug(f"Tamaño máximo de archivo: {max_file_size / (1024*1024):.1f}MB")
-        
+
+        logger.debug(
+            f"FileProcessor inicializado con {len(self.ignore_patterns)} patrones de exclusión"
+        )
+        logger.debug(f"Tamaño máximo de archivo: {max_file_size / (1024 * 1024):.1f}MB")
+
         (
             self._compiled_absolute_patterns,
             self._compiled_relative_patterns,
         ) = self._compile_patterns()
-        
-        logger.debug(f"Compilados {len(self._compiled_absolute_patterns)} patrones absolutos y {len(self._compiled_relative_patterns)} patrones relativos")
 
-    def _compile_patterns(self) -> Tuple[List[Pattern], List[Pattern]]:
+        logger.debug(
+            f"Compilados {len(self._compiled_absolute_patterns)} patrones absolutos y {len(self._compiled_relative_patterns)} patrones relativos"
+        )
+
+    def _compile_patterns(self) -> tuple[list[Pattern], list[Pattern]]:
         """Compila los patrones glob a expresiones regulares.
 
         Returns:
@@ -88,8 +92,8 @@ class FileProcessor(IFileProcessor):
                 - Patrones compilados para matching absoluto (contienen '**' o similar).
                 - Patrones compilados para matching relativo (anclados ^...$).
         """
-        compiled_absolute_patterns: List[Pattern] = []
-        compiled_relative_patterns: List[Pattern] = []
+        compiled_absolute_patterns: list[Pattern] = []
+        compiled_relative_patterns: list[Pattern] = []
         re_flags = re.IGNORECASE if os.name == "nt" else 0
 
         for pattern_glob in self.ignore_patterns:
@@ -112,9 +116,7 @@ class FileProcessor(IFileProcessor):
                 # e.g., "**/*.md", "**/foo.py", "**/temp*"
                 # Matches if path ends with item_pattern_glob, anywhere in the path.
                 item_pattern_glob = pattern_glob[3:]
-                item_regex_part = item_pattern_glob.replace(
-                    ".", r"\."
-                ).replace("*", r"[^/\\]*")
+                item_regex_part = item_pattern_glob.replace(".", r"\.").replace("*", r"[^/\\]*")
                 temp_re_core = f".*{item_regex_part}$"
                 is_absolute_pattern_logic = True
             else:
@@ -129,18 +131,12 @@ class FileProcessor(IFileProcessor):
                 is_absolute_pattern_logic = False
 
             if is_absolute_pattern_logic:
-                compiled_absolute_patterns.append(
-                    re.compile(temp_re_core, re_flags)
-                )
+                compiled_absolute_patterns.append(re.compile(temp_re_core, re_flags))
             else:
-                compiled_relative_patterns.append(
-                    re.compile(temp_re_core, re_flags)
-                )
+                compiled_relative_patterns.append(re.compile(temp_re_core, re_flags))
         return compiled_absolute_patterns, compiled_relative_patterns
 
-    def should_ignore(
-        self, path_to_check: Union[str, Path], scan_root_abs: Path
-    ) -> bool:
+    def should_ignore(self, path_to_check: str | Path, scan_root_abs: Path) -> bool:
         """Determina si un archivo o directorio debe ser ignorado.
 
         Args:
@@ -163,9 +159,7 @@ class FileProcessor(IFileProcessor):
 
         # 2. Check relative patterns against path relative to scan_root_abs
         try:
-            relative_path_str = str(
-                path_to_check_abs.relative_to(scan_root_abs)
-            )
+            relative_path_str = str(path_to_check_abs.relative_to(scan_root_abs))
             if os.name == "nt":
                 relative_path_str = relative_path_str.replace("\\", "/")
 
@@ -187,7 +181,7 @@ class FileProcessor(IFileProcessor):
 
         return False
 
-    def find_python_files(self, path: Union[str, Path]) -> List[Path]:
+    def find_python_files(self, path: str | Path) -> list[Path]:
         """Encuentra todos los archivos Python en una ruta.
 
         Args:
@@ -201,7 +195,7 @@ class FileProcessor(IFileProcessor):
         """
         path_obj = Path(path).resolve()
         scan_root_abs = path_obj
-        
+
         logger.debug(f"Iniciando búsqueda de archivos Python en: {path_obj}")
 
         if not path_obj.exists():
@@ -209,9 +203,7 @@ class FileProcessor(IFileProcessor):
             raise FileNotFoundError(f"La ruta {path} no existe")
 
         if path_obj.is_file():
-            if path_obj.suffix == ".py" and not self.should_ignore(
-                path_obj, scan_root_abs
-            ):
+            if path_obj.suffix == ".py" and not self.should_ignore(path_obj, scan_root_abs):
                 logger.debug(f"Archivo Python individual encontrado: {path_obj}")
                 return [path_obj]
             logger.debug(f"Archivo ignorado o no es Python: {path_obj}")
@@ -219,16 +211,14 @@ class FileProcessor(IFileProcessor):
 
         python_files = []
         logger.debug(f"Explorando directorio recursivamente: {path_obj}")
-        
+
         for root, dirs, files in os.walk(path_obj):
             current_root_path = Path(root)
-            
+
             # Filtrar directorios a ignorar
             initial_dirs_count = len(dirs)
             dirs[:] = [
-                d
-                for d in dirs
-                if not self.should_ignore(current_root_path / d, scan_root_abs)
+                d for d in dirs if not self.should_ignore(current_root_path / d, scan_root_abs)
             ]
             ignored_dirs_count = initial_dirs_count - len(dirs)
             if ignored_dirs_count > 0:
@@ -244,12 +234,16 @@ class FileProcessor(IFileProcessor):
                         files_found_in_dir += 1
 
             if files_found_in_dir > 0:
-                logger.debug(f"Encontrados {files_found_in_dir} archivos Python en {current_root_path}")
+                logger.debug(
+                    f"Encontrados {files_found_in_dir} archivos Python en {current_root_path}"
+                )
 
-        logger.info(f"Búsqueda completada: {len(python_files)} archivos Python encontrados en total")
+        logger.info(
+            f"Búsqueda completada: {len(python_files)} archivos Python encontrados en total"
+        )
         return python_files
 
-    def read_file(self, file_path: Union[str, Path]) -> str:
+    def read_file(self, file_path: str | Path) -> str:
         """Lee el contenido de un archivo.
 
         Args:
@@ -262,35 +256,35 @@ class FileProcessor(IFileProcessor):
             FileNotFoundError: Si el archivo no existe.
         """
         path = Path(file_path)
-        
+
         logger.debug(f"Leyendo archivo: {path}")
-        
+
         if not path.exists() or not path.is_file():
             logger.error(f"El archivo {file_path} no existe o no es un archivo")
             raise FileNotFoundError(f"El archivo {file_path} no existe")
 
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 content = f.read()
             logger.debug(f"Archivo leído correctamente con UTF-8: {len(content)} caracteres")
             return content
         except UnicodeDecodeError as e:
             logger.warning(f"Error de codificación UTF-8 en {path}: {e}. Intentando con latin-1")
             try:
-                with open(path, "r", encoding="latin-1") as f:
+                with open(path, encoding="latin-1") as f:
                     content = f.read()
                 logger.debug(f"Archivo leído con latin-1: {len(content)} caracteres")
                 return content
             except Exception as e:
-                logger.error(f"No se puede leer el archivo {file_path} con ninguna codificación: {str(e)}")
-                raise ValueError(
-                    f"No se puede leer el archivo {file_path}: {str(e)}"
+                logger.error(
+                    f"No se puede leer el archivo {file_path} con ninguna codificación: {str(e)}"
                 )
+                raise ValueError(f"No se puede leer el archivo {file_path}: {str(e)}")
         except Exception as e:
             logger.error(f"Error inesperado leyendo {file_path}: {str(e)}")
             raise ValueError(f"Error al leer el archivo {file_path}: {str(e)}")
 
-    def process_file(self, file_path: Union[str, Path]) -> Dict[str, any]:
+    def process_file(self, file_path: str | Path) -> dict[str, any]:
         """Procesa un archivo Python y extrae su información estructural.
 
         Args:
@@ -308,9 +302,7 @@ class FileProcessor(IFileProcessor):
             raise FileNotFoundError(f"El archivo {file_path} no existe")
 
         if path.suffix != ".py":
-            raise ParsingError(
-                f"El archivo {file_path} no es un archivo Python"
-            )
+            raise ParsingError(f"El archivo {file_path} no es un archivo Python")
 
         try:
             content = self.read_file(file_path)
@@ -327,6 +319,4 @@ class FileProcessor(IFileProcessor):
 
             return file_info
         except Exception as e:
-            raise ParsingError(
-                f"Error al procesar el archivo {file_path}: {str(e)}"
-            )
+            raise ParsingError(f"Error al procesar el archivo {file_path}: {str(e)}")

@@ -19,7 +19,7 @@ Exceptions:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 
 # Importar las estructuras principales
 from pypex.core.results import FileAnalysisResult, ProjectAnalysisResult
@@ -49,11 +49,11 @@ class ParsingError(PypexError):
 # Interfaces para los componentes principales
 class IAnalyzer(ABC):
     """Interfaz principal que coordina todo el proceso de análisis de código.
-    
+
     Define el contrato para analizadores que procesan código Python y calculan
     métricas de complejidad. Soporta análisis tanto de archivos individuales
     como de proyectos completos.
-    
+
     Methods:
         analyze_project: Analiza un proyecto completo
         analyze_file: Analiza un archivo individual
@@ -64,7 +64,7 @@ class IAnalyzer(ABC):
 
     @abstractmethod
     def analyze_project(
-        self, path: ProjectPath, config: Optional[Dict[str, Any]] = None
+        self, path: ProjectPath, config: dict[str, Any] | None = None
     ) -> ProjectAnalysisResult:
         """
         Analiza un proyecto completo en la ruta especificada.
@@ -83,7 +83,7 @@ class IAnalyzer(ABC):
 
     @abstractmethod
     def analyze_file(
-        self, file_path: FilePath, config: Optional[Dict[str, Any]] = None
+        self, file_path: FilePath, config: dict[str, Any] | None = None
     ) -> FileAnalysisResult:
         """
         Analiza un único archivo Python.
@@ -101,7 +101,7 @@ class IAnalyzer(ABC):
         """
 
     @abstractmethod
-    def set_reporters(self, reporters: List[Any]) -> None:
+    def set_reporters(self, reporters: list[Any]) -> None:
         """
         Configura los generadores de informes a utilizar.
 
@@ -110,7 +110,7 @@ class IAnalyzer(ABC):
         """
 
     @abstractmethod
-    def set_metrics(self, metrics: List[Any]) -> None:
+    def set_metrics(self, metrics: list[Any]) -> None:
         """
         Configura las métricas a calcular durante el análisis.
 
@@ -120,7 +120,7 @@ class IAnalyzer(ABC):
 
     @abstractmethod
     def analyze(
-        self, path: ProjectPath, config: Optional[Dict[str, Any]] = None
+        self, path: ProjectPath, config: dict[str, Any] | None = None
     ) -> ProjectAnalysisResult:
         """
         Analiza la ruta especificada, que puede ser un archivo o directorio.
@@ -139,10 +139,10 @@ class IAnalyzer(ABC):
 
 class IFileProcessor(ABC):
     """Interfaz para procesamiento de archivos Python individuales.
-    
+
     Define el contrato para procesadores que manejan descoberta de archivos,
     filtrado de patrones, validación y lectura de contenido de archivos Python.
-    
+
     Methods:
         find_python_files: Descubre archivos Python en una ruta
         should_ignore: Verifica si un archivo debe ser ignorado
@@ -151,7 +151,7 @@ class IFileProcessor(ABC):
     """
 
     @abstractmethod
-    def process_file(self, file_path: FilePath) -> Dict[str, Any]:
+    def process_file(self, file_path: FilePath) -> dict[str, Any]:
         """
         Procesa un archivo Python y extrae su información estructural.
 
@@ -179,7 +179,7 @@ class IFileProcessor(ABC):
         """
 
     @abstractmethod
-    def find_python_files(self, path: ProjectPath) -> List[Path]:
+    def find_python_files(self, path: ProjectPath) -> list[Path]:
         """
         Encuentra todos los archivos Python en una ruta.
 
@@ -212,10 +212,10 @@ class IFileProcessor(ABC):
 
 class IProject(ABC):
     """Interfaz para gestión de proyectos de código Python.
-    
+
     Define el contrato para gestores que manejan la estructura completa
     de un proyecto Python, incluyendo descoberta y parseo de archivos.
-    
+
     Methods:
         parse_file: Parsea un archivo específico del proyecto
         parse_all_files: Parsea todos los archivos del proyecto
@@ -234,11 +234,11 @@ class IProject(ABC):
 
     @property
     @abstractmethod
-    def python_files(self) -> List[Path]:
+    def python_files(self) -> list[Path]:
         """Lista de archivos Python en el proyecto."""
 
     @abstractmethod
-    def parse_file(self, file_path: Path) -> Optional[Any]:
+    def parse_file(self, file_path: Path) -> Any | None:
         """
         Parsea un archivo específico del proyecto.
 
@@ -254,7 +254,7 @@ class IProject(ABC):
         """Parsea todos los archivos del proyecto."""
 
     @abstractmethod
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Obtiene un resumen del proyecto.
 
@@ -265,10 +265,10 @@ class IProject(ABC):
 
 class IASTParser(ABC):
     """Interfaz para parseo de archivos Python usando AST.
-    
+
     Define el contrato para parsers que procesan código Python usando
     tanto AST estándar como Astroid para análisis avanzado.
-    
+
     Methods:
         parse_file: Parsea usando AST estándar de Python
         parse_with_astroid: Parsea usando Astroid para análisis avanzado

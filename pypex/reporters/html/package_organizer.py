@@ -3,7 +3,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from pypex.core.results import FileAnalysisResult
 
@@ -16,8 +16,8 @@ class PackageNode:
 
     name: str
     full_path: str
-    files: List[Tuple[str, FileAnalysisResult]]
-    children: Dict[str, "PackageNode"]
+    files: list[tuple[str, FileAnalysisResult]]
+    children: dict[str, "PackageNode"]
     is_root: bool = False
     node_type: str = "directory"  # "directory", "file", "root"
 
@@ -49,9 +49,7 @@ class PackageOrganizer:
         # Inicializar el manager de iconos SVG
         self.svg_manager = SVGIconManager()
 
-    def organize_files_hierarchically(
-        self, files: Dict[str, FileAnalysisResult]
-    ) -> PackageNode:
+    def organize_files_hierarchically(self, files: dict[str, FileAnalysisResult]) -> PackageNode:
         """
         Organiza los archivos en una estructura jerárquica de packages.
 
@@ -62,9 +60,7 @@ class PackageOrganizer:
             Nodo raíz de la estructura jerárquica
         """
         # Icono de carpeta raíz con Python
-        root_icon = self.svg_manager.get_python_folder_icon(
-            self.base_dir, is_open=True
-        )
+        root_icon = self.svg_manager.get_python_folder_icon(self.base_dir, is_open=True)
 
         root = PackageNode(
             name=f"{root_icon} {self.base_dir}",
@@ -131,17 +127,13 @@ class PackageOrganizer:
 
         # Navegar/crear la estructura de directorios
         current_node = root
-        for i, part in enumerate(
-            path_parts[:-1]
-        ):  # Excluir el nombre del archivo
+        for i, part in enumerate(path_parts[:-1]):  # Excluir el nombre del archivo
             if part not in current_node.children:
                 # Crear nuevo nodo para este directorio
                 full_path = "/".join(path_parts[: i + 1])
 
                 # Determinar el icono según el tipo de directorio usando SVG
-                icon = self.svg_manager.get_python_folder_icon(
-                    part, is_open=False
-                )
+                icon = self.svg_manager.get_python_folder_icon(part, is_open=False)
 
                 current_node.children[part] = PackageNode(
                     name=f"{icon} {part}",
@@ -158,9 +150,7 @@ class PackageOrganizer:
     def _get_directory_icon(self, directory_name: str) -> str:
         """Obtiene el icono apropiado para un directorio (método legacy)."""
         # Usar el nuevo sistema SVG en lugar de emojis
-        return self.svg_manager.get_python_folder_icon(
-            directory_name, is_open=False
-        )
+        return self.svg_manager.get_python_folder_icon(directory_name, is_open=False)
 
     def _get_file_icon(self, file_result: FileAnalysisResult) -> str:
         """Obtiene el icono apropiado para un archivo según su estado y tipo."""
@@ -173,8 +163,8 @@ class PackageOrganizer:
         return self.svg_manager.get_python_file_icon(file_name)
 
     def generate_flat_package_dict(
-        self, files: Dict[str, FileAnalysisResult]
-    ) -> Dict[str, List[Tuple[str, FileAnalysisResult]]]:
+        self, files: dict[str, FileAnalysisResult]
+    ) -> dict[str, list[tuple[str, FileAnalysisResult]]]:
         """
         Genera la estructura de packages plana (para compatibilidad).
 
@@ -202,7 +192,7 @@ class PackageOrganizer:
 
         return dict(packages)
 
-    def get_package_statistics(self, root: PackageNode) -> Dict[str, Any]:
+    def get_package_statistics(self, root: PackageNode) -> dict[str, Any]:
         """
         Obtiene estadísticas de la estructura de packages.
 

@@ -2,7 +2,7 @@
 
 import os
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from pypex.core.results import ProjectAnalysisResult
 from pypex.core.results_processor import ResultsProcessor
@@ -61,7 +61,7 @@ class HTMLReporter:
                 f"Reporte HTML generado exitosamente en: {os.path.abspath(self.output_path)}"
             )
 
-        except IOError as e:
+        except OSError as e:
             logger.error(
                 f"Error al escribir el reporte HTML en {self.output_path}: {e}",
                 exc_info=True,
@@ -84,15 +84,11 @@ class HTMLReporter:
         """
         # Generar reportes usando el processor (que ya usa la configuración)
         quality_report = self.processor.generate_quality_report(results)
-        advanced_quality_report = (
-            self.processor.generate_detailed_quality_report(results)
-        )
+        advanced_quality_report = self.processor.generate_detailed_quality_report(results)
         performance_report = self.processor.create_performance_report(results)
 
         # Construir índice de módulos con estructura jerárquica
-        module_links_html = self.renderer.render_hierarchical_module_index(
-            results
-        )
+        module_links_html = self.renderer.render_hierarchical_module_index(results)
 
         # Construir contenido principal del cuerpo
         analysis_content = self._build_analysis_content(
@@ -108,9 +104,7 @@ class HTMLReporter:
         )
 
         # Determinar score para el header
-        header_score = self._get_header_score(
-            quality_report, advanced_quality_report
-        )
+        header_score = self._get_header_score(quality_report, advanced_quality_report)
 
         # Ensamblar HTML completo
         return f"""
@@ -168,9 +162,9 @@ class HTMLReporter:
     def _build_body_content(
         self,
         results: ProjectAnalysisResult,
-        quality_report: Dict[str, Any],
-        advanced_quality_report: Dict[str, Any],
-        performance_report: Dict[str, Any],
+        quality_report: dict[str, Any],
+        advanced_quality_report: dict[str, Any],
+        performance_report: dict[str, Any],
     ) -> str:
         """
         Construye el contenido principal del cuerpo del reporte.
@@ -188,54 +182,40 @@ class HTMLReporter:
 
         # Errores globales si existen
         if results.global_errors:
-            content_sections.append(
-                self.renderer.render_global_errors(results.global_errors)
-            )
+            content_sections.append(self.renderer.render_global_errors(results.global_errors))
 
         # Resumen del proyecto (usar el reporte disponible)
         summary_report = quality_report or advanced_quality_report
         if summary_report:
-            content_sections.append(
-                self.renderer.render_project_summary(results, summary_report)
-            )
+            content_sections.append(self.renderer.render_project_summary(results, summary_report))
 
         # Renderizar análisis según disponibilidad
         if quality_report:
-            content_sections.append(
-                self.renderer.render_quality_section(quality_report)
-            )
+            content_sections.append(self.renderer.render_quality_section(quality_report))
 
         if advanced_quality_report:
             content_sections.append(
-                self.renderer.render_advanced_quality_section(
-                    advanced_quality_report
-                )
+                self.renderer.render_advanced_quality_section(advanced_quality_report)
             )
 
         # Reporte de rendimiento
-        content_sections.append(
-            self.renderer.render_performance_section(performance_report)
-        )
+        content_sections.append(self.renderer.render_performance_section(performance_report))
 
         # Métricas de proyecto si están disponibles
         if results.project_metrics:
-            content_sections.append(
-                self.renderer.render_project_metrics(results.project_metrics)
-            )
+            content_sections.append(self.renderer.render_project_metrics(results.project_metrics))
 
         # Análisis detallado de módulos con estructura jerárquica
-        content_sections.append(
-            self.renderer.render_hierarchical_modules_section(results)
-        )
+        content_sections.append(self.renderer.render_hierarchical_modules_section(results))
 
         return "\n".join(content_sections)
 
     def _build_analysis_content(
         self,
         results: ProjectAnalysisResult,
-        quality_report: Dict[str, Any],
-        advanced_quality_report: Dict[str, Any],
-        performance_report: Dict[str, Any],
+        quality_report: dict[str, Any],
+        advanced_quality_report: dict[str, Any],
+        performance_report: dict[str, Any],
     ) -> str:
         """
         Construye el contenido de análisis del proyecto (original body_content).
@@ -253,45 +233,31 @@ class HTMLReporter:
 
         # Errores globales si existen
         if results.global_errors:
-            content_sections.append(
-                self.renderer.render_global_errors(results.global_errors)
-            )
+            content_sections.append(self.renderer.render_global_errors(results.global_errors))
 
         # Resumen del proyecto (usar el reporte disponible)
         summary_report = quality_report or advanced_quality_report
         if summary_report:
-            content_sections.append(
-                self.renderer.render_project_summary(results, summary_report)
-            )
+            content_sections.append(self.renderer.render_project_summary(results, summary_report))
 
         # Renderizar análisis según disponibilidad
         if quality_report:
-            content_sections.append(
-                self.renderer.render_quality_section(quality_report)
-            )
+            content_sections.append(self.renderer.render_quality_section(quality_report))
 
         if advanced_quality_report:
             content_sections.append(
-                self.renderer.render_advanced_quality_section(
-                    advanced_quality_report
-                )
+                self.renderer.render_advanced_quality_section(advanced_quality_report)
             )
 
         # Reporte de rendimiento
-        content_sections.append(
-            self.renderer.render_performance_section(performance_report)
-        )
+        content_sections.append(self.renderer.render_performance_section(performance_report))
 
         # Métricas de proyecto si están disponibles
         if results.project_metrics:
-            content_sections.append(
-                self.renderer.render_project_metrics(results.project_metrics)
-            )
+            content_sections.append(self.renderer.render_project_metrics(results.project_metrics))
 
         # Análisis detallado de módulos con estructura jerárquica
-        content_sections.append(
-            self.renderer.render_hierarchical_modules_section(results)
-        )
+        content_sections.append(self.renderer.render_hierarchical_modules_section(results))
 
         return "\n".join(content_sections)
 
@@ -318,14 +284,10 @@ class HTMLReporter:
         analysis_links = ['<li><a href="#summary">📊 Resumen del Proyecto</a></li>']
 
         if quality_report:
-            analysis_links.append(
-                '<li><a href="#quality">🎯 Análisis de Calidad</a></li>'
-            )
+            analysis_links.append('<li><a href="#quality">🎯 Análisis de Calidad</a></li>')
 
         if advanced_quality_report:
-            analysis_links.append(
-                '<li><a href="#advanced-quality">🔍 Análisis Avanzado</a></li>'
-            )
+            analysis_links.append('<li><a href="#advanced-quality">🔍 Análisis Avanzado</a></li>')
 
         analysis_links.extend(
             [
@@ -374,7 +336,7 @@ class HTMLReporter:
                 <div class='sidebar-panel nav-panel'>
                     <div class='explorer-title'>Navegación del Análisis</div>
                     <ul class='nav-list analysis-nav'>
-                        {''.join(analysis_links)}
+                        {"".join(analysis_links)}
                     </ul>
 
                     {self._build_quick_stats(results)}
@@ -466,9 +428,7 @@ class HTMLReporter:
         else:
             return "quality-poor"
 
-    def get_package_statistics(
-        self, results: ProjectAnalysisResult
-    ) -> Dict[str, Any]:
+    def get_package_statistics(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """
         Obtiene estadísticas de la estructura de packages del proyecto.
 

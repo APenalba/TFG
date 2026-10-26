@@ -1,7 +1,5 @@
 """Módulo para calcular métricas de acoplamiento avanzadas."""
 
-from typing import Dict, List, Optional, Set, Union
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import (
     Class,
@@ -205,11 +203,11 @@ class AdvancedCouplingMetric(BaseMetric):
             description="Calcula métricas de acoplamiento avanzadas: CBO, RFC, MPC para clases; Ca, Ce, Instability, Abstractness y Distance from Main Sequence para módulos.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para advanced_coupling.
-        
+
         Basado en CBO (Coupling Between Objects).
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -219,8 +217,7 @@ class AdvancedCouplingMetric(BaseMetric):
             "high": 20.0,
         }
 
-
-    def calculate_function(self, function: Function) -> Optional[float]:
+    def calculate_function(self, function: Function) -> float | None:
         """Las métricas de acoplamiento avanzadas no se aplican a funciones individuales.
 
         Args:
@@ -229,12 +226,10 @@ class AdvancedCouplingMetric(BaseMetric):
         Returns:
             None: Estas métricas no aplican a funciones.
         """
-        logger.debug(
-            f"Métricas de acoplamiento avanzadas no aplican a función: {function.name}"
-        )
+        logger.debug(f"Métricas de acoplamiento avanzadas no aplican a función: {function.name}")
         return None
 
-    def calculate_class(self, cls: Class) -> Optional[Dict[str, float]]:
+    def calculate_class(self, cls: Class) -> dict[str, float] | None:
         """Calcula métricas de acoplamiento avanzadas para una clase (CBO, RFC, MPC).
 
         Args:
@@ -243,9 +238,7 @@ class AdvancedCouplingMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Métricas de acoplamiento de la clase.
         """
-        logger.debug(
-            f"Calculando acoplamiento avanzado para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando acoplamiento avanzado para clase: {cls.name}")
 
         # CBO: Coupling Between Objects
         # Incluye herencia y referencias a otras clases
@@ -297,7 +290,7 @@ class AdvancedCouplingMetric(BaseMetric):
             "external_methods_called": float(len(external_methods)),
         }
 
-    def calculate_module(self, module: Module) -> Optional[Dict[str, float]]:
+    def calculate_module(self, module: Module) -> dict[str, float] | None:
         """Calcula métricas de acoplamiento avanzadas para un módulo (Ca, Ce, I, A, D).
 
         Nota: Para Ca (Afferent Coupling) se necesita información de todo el proyecto,
@@ -309,9 +302,7 @@ class AdvancedCouplingMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Métricas de acoplamiento del módulo.
         """
-        logger.debug(
-            f"Calculando acoplamiento avanzado para módulo: {module.name}"
-        )
+        logger.debug(f"Calculando acoplamiento avanzado para módulo: {module.name}")
 
         # Ce: Efferent Coupling - módulos que este módulo importa
         ce = len(module.imports)
@@ -322,9 +313,7 @@ class AdvancedCouplingMetric(BaseMetric):
 
         # Abstractness: clases abstractas / total de clases
         total_classes = len(module.classes)
-        abstract_classes = sum(
-            1 for cls in module.classes if cls.is_abstract_class
-        )
+        abstract_classes = sum(1 for cls in module.classes if cls.is_abstract_class)
         abstractness = 0.0
         if total_classes > 0:
             abstractness = abstract_classes / total_classes
@@ -350,9 +339,7 @@ class AdvancedCouplingMetric(BaseMetric):
             "imports_count": float(len(module.imports)),
         }
 
-    def calculate_project(
-        self, project: Project
-    ) -> Optional[Dict[str, float]]:
+    def calculate_project(self, project: Project) -> dict[str, float] | None:
         """Calcula métricas de acoplamiento avanzadas agregadas para un proyecto.
 
         Aquí se puede calcular correctamente Ca para cada módulo ya que tenemos
@@ -364,9 +351,7 @@ class AdvancedCouplingMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Métricas de acoplamiento agregadas del proyecto.
         """
-        logger.debug(
-            f"Calculando acoplamiento avanzado para proyecto: {project.name}"
-        )
+        logger.debug(f"Calculando acoplamiento avanzado para proyecto: {project.name}")
 
         # Crear mapeo de nombres de módulos
         module_names = {module.name for module in project.modules}
@@ -433,12 +418,8 @@ class AdvancedCouplingMetric(BaseMetric):
             # Estadísticas de módulos
             "avg_ca": sum(all_ca) / module_count if module_count > 0 else 0.0,
             "avg_ce": sum(all_ce) / module_count if module_count > 0 else 0.0,
-            "avg_instability": sum(all_instability) / module_count
-            if module_count > 0
-            else 0.0,
-            "avg_abstractness": sum(all_abstractness) / module_count
-            if module_count > 0
-            else 0.0,
+            "avg_instability": sum(all_instability) / module_count if module_count > 0 else 0.0,
+            "avg_abstractness": sum(all_abstractness) / module_count if module_count > 0 else 0.0,
             "avg_distance_main_sequence": sum(all_distance) / module_count
             if module_count > 0
             else 0.0,
@@ -458,7 +439,7 @@ class AdvancedCouplingMetric(BaseMetric):
 
         return result
 
-    def calculate(self, entity: CodeEntity) -> Union[Dict[str, float], None]:
+    def calculate(self, entity: CodeEntity) -> dict[str, float] | None:
         """Calcula las métricas de acoplamiento avanzadas para una entidad específica.
 
         Args:

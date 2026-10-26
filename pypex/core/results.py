@@ -27,11 +27,11 @@ Note:
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypeAlias, Union
+from typing import Any, TypeAlias
 
-MetricValue: TypeAlias = Union[float, int]
-MetricComponents: TypeAlias = Dict[str, MetricValue]
-MetricResult: TypeAlias = Union[MetricValue, MetricComponents]
+MetricValue: TypeAlias = float | int
+MetricComponents: TypeAlias = dict[str, MetricValue]
+MetricResult: TypeAlias = MetricValue | MetricComponents
 
 
 class ErrorSeverity(Enum):
@@ -49,8 +49,8 @@ class AnalysisError:
     message: str
     severity: ErrorSeverity
     component: str  # analyzer, parser, metric, etc.
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
+    file_path: str | None = None
+    line_number: int | None = None
 
     def __str__(self) -> str:
         location = (
@@ -67,13 +67,13 @@ class MetricsResult:
 
     entity_name: str
     entity_type: str
-    metrics: Dict[str, MetricResult]
-    errors: List[AnalysisError] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, MetricResult]
+    errors: list[AnalysisError] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def get_metric_value(
-        self, metric_name: str, component: Optional[str] = None
-    ) -> Optional[MetricValue]:
+        self, metric_name: str, component: str | None = None
+    ) -> MetricValue | None:
         """Obtiene el valor de una métrica específica."""
         if metric_name not in self.metrics:
             return None
@@ -86,9 +86,7 @@ class MetricsResult:
             return result.get(component)
         return None
 
-    def has_errors(
-        self, min_severity: ErrorSeverity = ErrorSeverity.WARNING
-    ) -> bool:
+    def has_errors(self, min_severity: ErrorSeverity = ErrorSeverity.WARNING) -> bool:
         """Verifica si hay errores de al menos cierta severidad."""
         severities = [
             ErrorSeverity.WARNING,
@@ -96,10 +94,7 @@ class MetricsResult:
             ErrorSeverity.CRITICAL,
         ]
         min_index = severities.index(min_severity)
-        return any(
-            severities.index(error.severity) >= min_index
-            for error in self.errors
-        )
+        return any(severities.index(error.severity) >= min_index for error in self.errors)
 
 
 @dataclass
@@ -109,8 +104,8 @@ class EntityAnalysisResult:
     name: str
     entity_type: str
     metrics: MetricsResult
-    children: List["EntityAnalysisResult"] = field(default_factory=list)
-    source_info: Dict[str, Any] = field(default_factory=dict)
+    children: list["EntityAnalysisResult"] = field(default_factory=list)
+    source_info: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -122,21 +117,19 @@ class FileAnalysisResult:
     file_size: int
     line_count: int
 
-    module_metrics: Optional[MetricsResult] = None
-    entities: List[EntityAnalysisResult] = field(default_factory=list)
+    module_metrics: MetricsResult | None = None
+    entities: list[EntityAnalysisResult] = field(default_factory=list)
 
     analysis_time_ms: float = 0.0
-    errors: List[AnalysisError] = field(default_factory=list)
-    warnings: List[AnalysisError] = field(default_factory=list)
+    errors: list[AnalysisError] = field(default_factory=list)
+    warnings: list[AnalysisError] = field(default_factory=list)
 
-    basic_ast_data: Optional[Dict[str, Any]] = None
+    basic_ast_data: dict[str, Any] | None = None
 
     @property
     def was_successful(self) -> bool:
         """Indica si el análisis fue exitoso (sin errores críticos)."""
-        return not any(
-            error.severity == ErrorSeverity.CRITICAL for error in self.errors
-        )
+        return not any(error.severity == ErrorSeverity.CRITICAL for error in self.errors)
 
     @property
     def has_detailed_metrics(self) -> bool:
@@ -153,10 +146,10 @@ class ProjectAnalysisResult:
     analysis_timestamp: str
 
     # Métricas agregadas a nivel proyecto
-    project_metrics: Optional[MetricsResult] = None
+    project_metrics: MetricsResult | None = None
 
     # Resultados por archivo
-    files: Dict[str, FileAnalysisResult] = field(default_factory=dict)
+    files: dict[str, FileAnalysisResult] = field(default_factory=dict)
 
     # Resumen estadístico
     total_files: int = 0
@@ -166,9 +159,9 @@ class ProjectAnalysisResult:
     analysis_time_ms: float = 0.0
 
     # Errores globales
-    global_errors: List[AnalysisError] = field(default_factory=list)
+    global_errors: list[AnalysisError] = field(default_factory=list)
 
-    def get_summary_stats(self) -> Dict[str, Any]:
+    def get_summary_stats(self) -> dict[str, Any]:
         """Genera estadísticas resumen del proyecto."""
         return {
             "project_name": self.project_name,
@@ -176,25 +169,19 @@ class ProjectAnalysisResult:
             "successful_files": self.successful_files,
             "failed_files": self.failed_files,
             "success_rate": (
-                (self.successful_files / self.total_files * 100)
-                if self.total_files > 0
-                else 0
+                (self.successful_files / self.total_files * 100) if self.total_files > 0 else 0
             ),
             "total_lines_of_code": self.total_lines_of_code,
             "analysis_time_seconds": self.analysis_time_ms / 1000,
             "critical_errors": len(
-                [
-                    e
-                    for e in self.global_errors
-                    if e.severity == ErrorSeverity.CRITICAL
-                ]
+                [e for e in self.global_errors if e.severity == ErrorSeverity.CRITICAL]
             ),
             "has_project_metrics": self.project_metrics is not None,
         }
 
     def get_hot_spots(
         self, metric_name: str, threshold: float, limit: int = 10
-    ) -> List[EntityAnalysisResult]:
+    ) -> list[EntityAnalysisResult]:
         """Encuentra las entidades con valores más altos para una métrica."""
         hot_spots = []
 
@@ -222,21 +209,13 @@ class ProjectAnalysisResult:
 
     def get_all_errors(
         self, min_severity: ErrorSeverity = ErrorSeverity.WARNING
-    ) -> List[AnalysisError]:
+    ) -> list[AnalysisError]:
         """Obtiene todos los errores del análisis filtrados por severidad."""
-        all_errors = [
-            e
-            for e in self.global_errors
-            if e.severity.value >= min_severity.value
-        ]
+        all_errors = [e for e in self.global_errors if e.severity.value >= min_severity.value]
 
         for file_result in self.files.values():
             all_errors.extend(
-                [
-                    e
-                    for e in file_result.errors
-                    if e.severity.value >= min_severity.value
-                ]
+                [e for e in file_result.errors if e.severity.value >= min_severity.value]
             )
             if file_result.module_metrics:
                 all_errors.extend(
@@ -249,19 +228,11 @@ class ProjectAnalysisResult:
 
             for entity in file_result.entities:
                 all_errors.extend(
-                    [
-                        e
-                        for e in entity.metrics.errors
-                        if e.severity.value >= min_severity.value
-                    ]
+                    [e for e in entity.metrics.errors if e.severity.value >= min_severity.value]
                 )
                 for child in entity.children:
                     all_errors.extend(
-                        [
-                            e
-                            for e in child.metrics.errors
-                            if e.severity.value >= min_severity.value
-                        ]
+                        [e for e in child.metrics.errors if e.severity.value >= min_severity.value]
                     )
 
         return sorted(

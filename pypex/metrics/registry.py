@@ -18,7 +18,6 @@ Note:
 import importlib
 import inspect
 import pkgutil
-from typing import Dict, List, Union
 
 from pypex.metrics.base import IMetric, MetricNotFoundError
 from pypex.parser.code_entities import CodeEntity, Project
@@ -54,14 +53,14 @@ class MetricsRegistry:
     def __new__(cls):
         """Implementa patrón Singleton para tener un único registro global."""
         if cls._instance is None:
-            cls._instance = super(MetricsRegistry, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
         """Inicializa el registro de métricas."""
         if not getattr(self, "_initialized", False):
-            self._metrics: Dict[str, IMetric] = {}
+            self._metrics: dict[str, IMetric] = {}
             self._initialized = True
             logger.debug("Registro de métricas inicializado")
 
@@ -81,9 +80,7 @@ class MetricsRegistry:
                     f"Métrica '{metric.name}' ya registrada con la misma instancia. Omitiendo."
                 )
                 return
-            raise ValueError(
-                f"Ya existe una métrica con el nombre '{metric.name}'"
-            )
+            raise ValueError(f"Ya existe una métrica con el nombre '{metric.name}'")
 
         self._metrics[metric.name] = metric
         logger.debug(f"Métrica '{metric.name}' registrada")
@@ -101,13 +98,11 @@ class MetricsRegistry:
             MetricNotFoundError: Si la métrica no existe.
         """
         if name not in self._metrics:
-            raise MetricNotFoundError(
-                f"No existe una métrica con el nombre '{name}'"
-            )
+            raise MetricNotFoundError(f"No existe una métrica con el nombre '{name}'")
 
         return self._metrics[name]
 
-    def get_available_metrics(self) -> List[str]:
+    def get_available_metrics(self) -> list[str]:
         """Obtiene los nombres de todas las métricas disponibles.
 
         Returns:
@@ -115,7 +110,7 @@ class MetricsRegistry:
         """
         return list(self._metrics.keys())
 
-    def get_all_metrics_instances(self) -> List[IMetric]:
+    def get_all_metrics_instances(self) -> list[IMetric]:
         """Obtiene todas las instancias de métricas registradas.
 
         Returns:
@@ -123,9 +118,7 @@ class MetricsRegistry:
         """
         return list(self._metrics.values())
 
-    def apply_all(
-        self, entity: CodeEntity
-    ) -> Dict[str, Union[float, Dict[str, float]]]:
+    def apply_all(self, entity: CodeEntity) -> dict[str, float | dict[str, float]]:
         """Aplica todas las métricas registradas a una entidad.
 
         Llama a metric.calculate(entity) para cada métrica registrada.
@@ -136,7 +129,7 @@ class MetricsRegistry:
         Returns:
             Dict[str, Union[float, Dict[str, float]]]: Diccionario con nombres de métricas y sus valores/componentes.
         """
-        results: Dict[str, Union[float, Dict[str, float]]] = {}
+        results: dict[str, float | dict[str, float]] = {}
         for name, metric in self._metrics.items():
             try:
                 results[name] = metric.calculate(entity)
@@ -148,9 +141,7 @@ class MetricsRegistry:
 
         return results
 
-    def apply_project_level_metrics(
-        self, project: Project
-    ) -> Dict[str, Dict[str, float]]:
+    def apply_project_level_metrics(self, project: Project) -> dict[str, dict[str, float]]:
         """Aplica el método `calculate_project` de cada métrica registrada a un proyecto.
 
         Args:
@@ -160,7 +151,7 @@ class MetricsRegistry:
             Dict[str, Dict[str, float]]: Diccionario con nombres de métricas y los componentes
                                          que cada una calcula para el proyecto.
         """
-        results: Dict[str, Dict[str, float]] = {}
+        results: dict[str, dict[str, float]] = {}
         for metric_name, metric in self._metrics.items():
             try:
                 # metric.calculate_project devuelve Dict[str, float]
@@ -169,9 +160,7 @@ class MetricsRegistry:
                 logger.warning(
                     f"Error al aplicar métrica de proyecto '{metric_name}' al proyecto {project.name}: {str(e)}"
                 )
-                results[metric_name] = {
-                    "error": -1.0
-                }  # O un valor que indique error
+                results[metric_name] = {"error": -1.0}  # O un valor que indique error
         return results
 
     def discover_metrics(self, package_name: str = "pypex.metrics") -> None:
@@ -185,9 +174,7 @@ class MetricsRegistry:
         try:
             package = importlib.import_module(package_name)
 
-            for _, name, is_pkg in pkgutil.iter_modules(
-                package.__path__, package.__name__ + "."
-            ):
+            for _, name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
                 if is_pkg:
                     # Recursivamente explorar subpaquetes
                     self.discover_metrics(name)
@@ -201,9 +188,7 @@ class MetricsRegistry:
                                 and issubclass(obj, IMetric)
                                 and obj.__module__ == module.__name__
                                 and obj is not IMetric
-                                and not inspect.isabstract(
-                                    obj
-                                )  # Ignorar clases abstractas
+                                and not inspect.isabstract(obj)  # Ignorar clases abstractas
                             ):
                                 # Instanciar la métrica y registrarla
                                 try:
@@ -227,9 +212,7 @@ class MetricsRegistry:
                 f"No se pudo importar el paquete de métricas base '{package_name}' para descubrimiento: {str(e)}"
             )
         except Exception as e:
-            logger.error(
-                f"Error general al descubrir métricas en '{package_name}': {str(e)}"
-            )
+            logger.error(f"Error general al descubrir métricas en '{package_name}': {str(e)}")
 
 
 # Singleton para acceso global
@@ -240,18 +223,18 @@ def get_registry() -> MetricsRegistry:
         MetricsRegistry: Instancia del registro.
     """
     registry = MetricsRegistry()
-    
+
     # Auto-registrar métricas por defecto la primera vez
-    if not hasattr(registry, '_auto_registered') or not registry._auto_registered:
+    if not hasattr(registry, "_auto_registered") or not registry._auto_registered:
         _register_default_metrics(registry)
         registry._auto_registered = True
-    
+
     return registry
 
 
 def _register_default_metrics(registry: MetricsRegistry) -> None:
     """Registra las métricas por defecto del sistema.
-    
+
     Args:
         registry: Instancia del registro donde registrar las métricas.
     """
@@ -283,7 +266,7 @@ def _register_default_metrics(registry: MetricsRegistry) -> None:
         from pypex.metrics.design.design_complexity import DesignComplexityMetric
         from pypex.metrics.size.lines_of_code import LinesOfCodeMetric
         from pypex.metrics.size.parameter_count import ParameterCountMetric
-        
+
         registry.register_metric(CyclomaticComplexity())
         registry.register_metric(CognitiveComplexity())
         registry.register_metric(NestingDepth())
@@ -300,8 +283,8 @@ def _register_default_metrics(registry: MetricsRegistry) -> None:
         registry.register_metric(AdvancedCouplingMetric())
         registry.register_metric(LinesOfCodeMetric())
         registry.register_metric(ParameterCountMetric())
-        
+
         logger.debug("Métricas por defecto registradas automáticamente")
-        
+
     except Exception as e:
         logger.warning(f"Error registrando métricas por defecto: {e}")

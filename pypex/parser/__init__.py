@@ -22,9 +22,10 @@ Note:
 Autor: Alejandro Penalba Tarrida
 Licencia: MIT
 """
+
+from .ast_parser import ASTParser
 from .astroid_visitor import AstroidNodeVisitor
 from .node_visitor import ASTNodeVisitor
-from .ast_parser import ASTParser
 
 __all__ = [
     "ASTNodeVisitor",

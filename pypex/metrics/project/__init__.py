@@ -12,4 +12,4 @@ Licencia: MIT
 # - Métricas de dependencias entre módulos
 # - Índices de estabilidad
 # - Métricas de acoplamiento aferente/eferente
-# - Análisis de ciclos de dependencias 
+# - Análisis de ciclos de dependencias

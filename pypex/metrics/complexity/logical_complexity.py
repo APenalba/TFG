@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad lógica."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -99,11 +97,11 @@ class LogicalComplexityMetric(BaseMetric):
             description="Mide la complejidad de condiciones lógicas basada en operadores booleanos.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para logical_complexity.
-        
+
         Basado en operadores lógicos y de decisión.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -112,7 +110,6 @@ class LogicalComplexityMetric(BaseMetric):
             "medium": 5.0,
             "high": 10.0,
         }
-
 
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad lógica de una función.
@@ -126,9 +123,7 @@ class LogicalComplexityMetric(BaseMetric):
         Returns:
             float: Complejidad lógica de la función.
         """
-        logger.debug(
-            f"Calculando complejidad lógica para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad lógica para función: {function.name}")
 
         # Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
@@ -163,7 +158,7 @@ class LogicalComplexityMetric(BaseMetric):
             if isinstance(node, astroid_nodes.BoolOp):
                 # Cada operador lógico incrementa la complejidad
                 # Si hay n valores, hay n-1 operadores
-                if hasattr(node, 'values') and len(node.values) > 1:
+                if hasattr(node, "values") and len(node.values) > 1:
                     logical_ops_count += len(node.values) - 1
 
             # Recursión sobre todos los hijos
@@ -171,7 +166,7 @@ class LogicalComplexityMetric(BaseMetric):
                 count_logical_operators(child)
 
         # Analizar el cuerpo de la función
-        if hasattr(func_node, 'body'):
+        if hasattr(func_node, "body"):
             for stmt in func_node.body:
                 count_logical_operators(stmt)
         elif isinstance(func_node, astroid_nodes.Lambda):
@@ -179,7 +174,7 @@ class LogicalComplexityMetric(BaseMetric):
 
         return logical_ops_count
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad lógica para una clase.
 
         Analiza cada método de la clase para proporcionar estadísticas útiles
@@ -213,9 +208,7 @@ class LogicalComplexityMetric(BaseMetric):
             "max": max(method_logicals),
             "min": min(method_logicals),
             "method_count": float(len(cls.methods)),
-            "complex_logic_methods": len(
-                [l for l in method_logicals if l >= 6]
-            ),
+            "complex_logic_methods": len([l for l in method_logicals if l >= 6]),
         }
 
         return result
@@ -233,9 +226,7 @@ class LogicalComplexityMetric(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a módulos.
         """
-        logger.debug(
-            f"Complejidad lógica no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"Complejidad lógica no aplica a módulo: {module.name} - devolviendo None")
         return None
 
     def calculate_project(self, project: Project) -> None:
@@ -247,7 +238,5 @@ class LogicalComplexityMetric(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a proyectos.
         """
-        logger.debug(
-            f"Complejidad lógica no aplica a proyecto: {project.name} - devolviendo None"
-        )
+        logger.debug(f"Complejidad lógica no aplica a proyecto: {project.name} - devolviendo None")
         return None

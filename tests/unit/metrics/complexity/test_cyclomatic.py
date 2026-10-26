@@ -8,56 +8,63 @@ import pytest
 
 from pypex.metrics.complexity.cyclomatic import CyclomaticComplexity
 from pypex.parser.code_entities import Class
-from tests.unit.metrics.test_utils import (
-    TestEntityFactory,
-    AssertionHelpers
-)
+from tests.unit.metrics.test_utils import AssertionHelpers, TestEntityFactory
 
 
 class TestCyclomaticComplexityBasic:
     """Tests básicos para la métrica de Complejidad Ciclomática."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.assertions = AssertionHelpers()
         self.metric = CyclomaticComplexity()
-    
+
     def test_metric_properties(self):
         """Verifica las propiedades básicas de la métrica."""
         assert self.metric.name == "cyclomatic_complexity"
         assert "complejidad" in self.metric.description.lower()
         assert "estructural" in self.metric.description.lower()
         assert len(self.metric.description) > 50  # Descripción detallada
-    
+
     def test_metric_interface_compliance(self):
         """Verifica que la métrica cumple con la interfaz IMetric."""
         # Verificar propiedades básicas
-        assert hasattr(self.metric, 'name'), "La métrica debe tener propiedad 'name'"
-        assert hasattr(self.metric, 'description'), "La métrica debe tener propiedad 'description'"
+        assert hasattr(self.metric, "name"), "La métrica debe tener propiedad 'name'"
+        assert hasattr(self.metric, "description"), "La métrica debe tener propiedad 'description'"
         assert isinstance(self.metric.name, str), "El nombre debe ser string"
         assert isinstance(self.metric.description, str), "La descripción debe ser string"
         assert len(self.metric.name) > 0, "El nombre no puede estar vacío"
         assert len(self.metric.description) > 0, "La descripción no puede estar vacía"
-        
+
         # Verificar métodos obligatorios
-        assert callable(getattr(self.metric, 'calculate', None)), "Debe implementar calculate()"
-        assert callable(getattr(self.metric, 'calculate_function', None)), "Debe implementar calculate_function()"
-        assert callable(getattr(self.metric, 'calculate_class', None)), "Debe implementar calculate_class()"
-        assert callable(getattr(self.metric, 'calculate_module', None)), "Debe implementar calculate_module()"
-        assert callable(getattr(self.metric, 'calculate_project', None)), "Debe implementar calculate_project()"
-        assert callable(getattr(self.metric, 'get_thresholds', None)), "Debe implementar get_thresholds()"
-        assert callable(getattr(self.metric, 'interpret', None)), "Debe implementar interpret()"
+        assert callable(getattr(self.metric, "calculate", None)), "Debe implementar calculate()"
+        assert callable(getattr(self.metric, "calculate_function", None)), (
+            "Debe implementar calculate_function()"
+        )
+        assert callable(getattr(self.metric, "calculate_class", None)), (
+            "Debe implementar calculate_class()"
+        )
+        assert callable(getattr(self.metric, "calculate_module", None)), (
+            "Debe implementar calculate_module()"
+        )
+        assert callable(getattr(self.metric, "calculate_project", None)), (
+            "Debe implementar calculate_project()"
+        )
+        assert callable(getattr(self.metric, "get_thresholds", None)), (
+            "Debe implementar get_thresholds()"
+        )
+        assert callable(getattr(self.metric, "interpret", None)), "Debe implementar interpret()"
 
 
 class TestCyclomaticComplexityFunctions:
     """Tests para cálculo de complejidad ciclomática en funciones."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.metric = CyclomaticComplexity()
-    
+
     def test_simple_function_complexity(self):
         """Test función simple sin estructuras de control (complejidad = 1)."""
         code = """
@@ -67,10 +74,10 @@ def simple_func():
     return x + y
 """
         func = self.factory.create_function_from_code(code, "simple_func")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 1.0  # Complejidad base
-    
+
     def test_function_with_single_if(self):
         """Test función con un solo if."""
         code = """
@@ -80,7 +87,7 @@ def function_with_if(x):
     return 0
 """
         func = self.factory.create_function_from_code(code, "function_with_if")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 2.0  # 1 base + 1 if
 
@@ -96,7 +103,7 @@ def function_with_elif(x):
         return 0
 """
         func = self.factory.create_function_from_code(code, "function_with_elif")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 4.0  # 1 base + 1 if + 1 elif + 1 else condition check
 
@@ -118,7 +125,7 @@ def function_with_loops(data):
     return result
 """
         func = self.factory.create_function_from_code(code, "function_with_loops")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 4.0  # 1 base + 1 for + 1 while + 1 async for
 
@@ -135,7 +142,7 @@ def function_with_exceptions(x, y):
     return result
 """
         func = self.factory.create_function_from_code(code, "function_with_exceptions")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 3.0  # 1 base + 2 except handlers
 
@@ -152,7 +159,7 @@ def function_with_match(value):
             return "other"
 """
         func = self.factory.create_function_from_code(code, "function_with_match")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 4.0  # 1 base + 3 cases
 
@@ -167,7 +174,7 @@ def function_with_boolean_ops(x, y, z):
     return None
 """
         func = self.factory.create_function_from_code(code, "function_with_boolean_ops")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 7.0  # 1 base + 1 if + 1 and + 1 elif + 2 or
 
@@ -193,7 +200,7 @@ def complex_function(data, threshold):
     return result if total > 0 else []  # No extra complexity for ternary in return
 """
         func = self.factory.create_function_from_code(code, "complex_function")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 7.0  # Updated to match actual calculation
 
@@ -204,10 +211,10 @@ def empty_function():
     pass
 """
         func = self.factory.create_function_from_code(code, "empty_function")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 1.0  # Solo complejidad base
-    
+
     def test_function_with_no_control_flow_elements(self):
         """Test función sin elementos de control de flujo."""
         code = """
@@ -218,7 +225,7 @@ def no_control_flow():
     return z
 """
         func = self.factory.create_function_from_code(code, "no_control_flow")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 1.0  # Solo complejidad base
 
@@ -233,49 +240,48 @@ def function_mixed_elements():
     return 0
 """
         func = self.factory.create_function_from_code(code, "function_mixed_elements")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 2.0  # 1 base + 1 if
 
 
 class TestCyclomaticComplexityClasses:
     """Tests para cálculo de complejidad ciclomática en clases."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.metric = CyclomaticComplexity()
         self.assertions = AssertionHelpers()
-    
+
     def test_empty_class(self):
         """Test clase sin métodos."""
         empty_class = Class(name="EmptyClass")
         empty_class.methods = []
-        
+
         result = self.metric.calculate_class(empty_class)
-        
+
         expected_keys = ["average", "max", "min", "method_count", "high_complexity_methods"]
         self.assertions.assert_metric_result_structure(result, expected_keys)
         assert result["method_count"] == 0.0
-    
+
     def test_class_with_simple_methods(self):
         """Test clase con métodos simples."""
         code1 = "def method1(self): return 1"
-        code2 = "def method2(self): return 2" 
+        code2 = "def method2(self): return 2"
         code3 = "def method3(self): return 3"
-        
+
         cls = self.factory.create_class_with_methods(
-            class_name="SimpleClass",
-            method_names=["method1", "method2", "method3"]
+            class_name="SimpleClass", method_names=["method1", "method2", "method3"]
         )
-        
+
         # Crear métodos con código real
         cls.methods[0] = self.factory.create_function_from_code(code1, "method1")
-        cls.methods[1] = self.factory.create_function_from_code(code2, "method2") 
+        cls.methods[1] = self.factory.create_function_from_code(code2, "method2")
         cls.methods[2] = self.factory.create_function_from_code(code3, "method3")
-        
+
         result = self.metric.calculate_class(cls)
-        
+
         assert result["average"] == 1.0  # Todos tienen complejidad 1
         assert result["max"] == 1.0
         assert result["min"] == 1.0
@@ -315,8 +321,7 @@ def complex(self, data):
 """  # Complejidad 7 (actualizada)
 
         cls = self.factory.create_class_with_methods(
-            class_name="VaryingComplexityClass",
-            method_names=["simple", "medium", "complex"]
+            class_name="VaryingComplexityClass", method_names=["simple", "medium", "complex"]
         )
 
         cls.methods[0] = self.factory.create_function_from_code(simple_code, "simple")
@@ -364,10 +369,9 @@ def complex_method(self, data):
 """  # This should calculate to a specific complexity, let me test first
 
         cls = self.factory.create_class_with_methods(
-            class_name="HighComplexityClass",
-            method_names=["complex1", "complex2", "complex3"]
+            class_name="HighComplexityClass", method_names=["complex1", "complex2", "complex3"]
         )
-    
+
         cls.methods[0] = self.factory.create_function_from_code(high_complexity_code, "complex1")
         cls.methods[1] = self.factory.create_function_from_code(high_complexity_code, "complex2")
         cls.methods[2] = self.factory.create_function_from_code(high_complexity_code, "complex3")
@@ -383,49 +387,49 @@ def complex_method(self, data):
 
 class TestCyclomaticComplexityModuleAndProject:
     """Tests para cálculo de complejidad ciclomática en módulos y proyectos."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.metric = CyclomaticComplexity()
-    
+
     def test_module_returns_none(self):
         """Test que el módulo retorna None (no aplicable)."""
         module = self.factory.create_module_with_entities("TestModule")
-        
+
         result = self.metric.calculate_module(module)
-        
+
         assert result is None
-    
+
     def test_project_returns_none(self):
         """Test que el proyecto retorna None (no aplicable)."""
         project = self.factory.create_project_with_modules("TestProject")
-        
+
         result = self.metric.calculate_project(project)
-        
+
         assert result is None
 
 
 class TestCyclomaticComplexityEdgeCases:
     """Tests para casos extremos y edge cases."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.metric = CyclomaticComplexity()
-    
+
     def test_extremely_complex_function(self):
         """Test función con complejidad extremadamente alta."""
         # Crear función con muchos if statements
-        conditions = '\n'.join([f"    if x == {i}: return {i}" for i in range(20)])
+        conditions = "\n".join([f"    if x == {i}: return {i}" for i in range(20)])
         code = f"""
 def extremely_complex(x):
 {conditions}
     return 0
 """
-        
+
         complex_func = self.factory.create_function_from_code(code, "extremely_complex")
-        
+
         complexity = self.metric.calculate_function(complex_func)
         assert complexity == 21.0  # 1 base + 20 if statements
 
@@ -479,12 +483,12 @@ def only_irrelevant():
     print(x + y)
     return x * y
 """
-        
+
         func = self.factory.create_function_from_code(code, "only_irrelevant")
-        
+
         complexity = self.metric.calculate_function(func)
         assert complexity == 1.0  # Solo complejidad base
-    
+
     def test_get_aggregated_value_consistency(self):
         """Test consistencia de get_aggregated_value."""
         code = """
@@ -494,12 +498,12 @@ def test_func(x):
     return 0
 """
         func = self.factory.create_function_from_code(code, "test_func")
-        
+
         direct_value = self.metric.calculate_function(func)
         aggregated_value = self.metric.get_aggregated_value(func)
-        
+
         assert direct_value == aggregated_value
-    
+
     def test_get_aggregated_value_with_class(self):
         """Test get_aggregated_value con clase."""
         code1 = "def method1(self): return 1"
@@ -509,14 +513,14 @@ def method2(self, x):
         return x
     return 0
 """
-        
+
         cls = self.factory.create_class_with_methods()
         cls.methods[0] = self.factory.create_function_from_code(code1, "method1")  # Complejidad 1
         cls.methods[1] = self.factory.create_function_from_code(code2, "method2")  # Complejidad 2
         cls.methods[2] = self.factory.create_function_from_code(code1, "method3")  # Complejidad 1
-        
+
         aggregated = self.metric.get_aggregated_value(cls)
-        
+
         # La implementación base suma todos los valores del diccionario
         # average=1.33, max=2.0, min=1.0, method_count=3.0, high_complexity_methods=0.0
         expected_sum = 1.33 + 2.0 + 1.0 + 3.0 + 0.0  # Aproximadamente 7.33
@@ -525,23 +529,23 @@ def method2(self, x):
 
 class TestCyclomaticComplexityIntegration:
     """Tests de integración para complejidad ciclomática."""
-    
+
     def setup_method(self):
         """Setup para cada test."""
         self.factory = TestEntityFactory()
         self.metric = CyclomaticComplexity()
-    
+
     def test_thresholds_configuration(self):
         """Test configuración de umbrales."""
         thresholds = self.metric.get_thresholds()
-        
+
         expected_keys = ["low", "medium", "high"]
         assert all(key in thresholds for key in expected_keys)
         assert thresholds["low"] < thresholds["medium"] < thresholds["high"]
         assert thresholds["low"] == 10.0
         assert thresholds["medium"] == 20.0
         assert thresholds["high"] == 50.0
-    
+
     def test_interpretation_with_known_values(self):
         """Test interpretación con valores conocidos."""
         # Test diferentes niveles de complejidad
@@ -583,26 +587,29 @@ def validate_input(data, rules):
 
 
 # Tests parametrizados
-@pytest.mark.parametrize("element_type,should_count", [
-    ("If", True),
-    ("While", True), 
-    ("For", True),
-    ("AsyncFor", True),
-    ("try_handler", True),
-    ("match_case", True),
-    ("match_root", True),
-    ("bool_op_sequence", True),
-    ("Assignment", False),
-    ("Return", False),
-    ("Expression", False),
-    ("Import", False),
-    ("FunctionDef", False),
-])
+@pytest.mark.parametrize(
+    "element_type,should_count",
+    [
+        ("If", True),
+        ("While", True),
+        ("For", True),
+        ("AsyncFor", True),
+        ("try_handler", True),
+        ("match_case", True),
+        ("match_root", True),
+        ("bool_op_sequence", True),
+        ("Assignment", False),
+        ("Return", False),
+        ("Expression", False),
+        ("Import", False),
+        ("FunctionDef", False),
+    ],
+)
 def test_control_flow_element_counting(element_type, should_count):
     """Test parametrizado para verificar qué elementos cuentan para complejidad."""
     factory = TestEntityFactory()
     metric = CyclomaticComplexity()
-    
+
     # Crear código que contenga el elemento específico
     if element_type == "If":
         code = """
@@ -670,15 +677,17 @@ def test_function():
     return x      # Return
 """
         expected_complexity = 1.0
-    
+
     func = factory.create_function_from_code(code, "test_function")
     complexity = metric.calculate_function(func)
-    
+
     if should_count:
-        assert complexity == expected_complexity, f"Elemento {element_type} debe incrementar complejidad"
+        assert complexity == expected_complexity, (
+            f"Elemento {element_type} debe incrementar complejidad"
+        )
     else:
         assert complexity == 1.0, f"Elemento {element_type} no debe incrementar complejidad"
 
 
 if __name__ == "__main__":
-    pytest.main([__file__]) 
+    pytest.main([__file__])

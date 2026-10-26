@@ -5,8 +5,6 @@ de verbosidad y opciones de configuración.
 """
 
 import sys
-from pathlib import Path
-from typing import Optional
 
 from pypex.core.analyzer import Analyzer
 from pypex.core.file_processor import FileProcessor
@@ -17,7 +15,7 @@ from pypex.reporters.console_reporter import ConsoleReporter
 def analyze_and_show_console_reports(
     project_path: str,
     verbosity: str = "normal",
-    use_colors: Optional[bool] = None,
+    use_colors: bool | None = None,
 ) -> None:
     """
     Ejemplo completo de análisis y generación de reportes de consola.
@@ -101,9 +99,7 @@ def demo_different_outputs() -> None:
     # 3. Reporte detallado
     print("\n3️⃣ Reporte VERBOSE (detallado):")
     print("-" * 40)
-    analyze_and_show_console_reports(
-        sample_project, "verbose", use_colors=True
-    )
+    analyze_and_show_console_reports(sample_project, "verbose", use_colors=True)
 
 
 def demo_colors_and_formatting() -> None:
@@ -131,9 +127,7 @@ def demo_colors_and_formatting() -> None:
     for score in scores:
         quality_color = reporter._get_quality_color(score)
         quality_level = reporter._get_quality_level(score)
-        print(
-            f"   Score {score}: {reporter.colorize(quality_level, quality_color)}"
-        )
+        print(f"   Score {score}: {reporter.colorize(quality_level, quality_color)}")
 
 
 def demo_without_colors() -> None:
@@ -144,9 +138,7 @@ def demo_without_colors() -> None:
     print("\n📄 Demo SIN colores (ideal para CI/CD o redirección):")
     print("-" * 60)
 
-    analyze_and_show_console_reports(
-        sample_project, "normal", use_colors=False
-    )
+    analyze_and_show_console_reports(sample_project, "normal", use_colors=False)
 
 
 def main():
@@ -159,9 +151,7 @@ def main():
         print(f"📁 Analizando: {project_path}")
         print(f"🔧 Verbosidad: {verbosity}")
 
-        analyze_and_show_console_reports(
-            project_path, verbosity, use_colors=True
-        )
+        analyze_and_show_console_reports(project_path, verbosity, use_colors=True)
     else:
         # Ejecutar demos
         print("🚀 Demos del ConsoleReporter")
@@ -179,12 +169,8 @@ def main():
 
             print("\n✅ Demos completadas!")
             print("\n💡 Para analizar un proyecto específico:")
-            print(
-                "   python example_console_usage.py <ruta_proyecto> [verbosity]"
-            )
-            print(
-                "   Donde verbosity puede ser: quiet, normal, verbose, debug"
-            )
+            print("   python example_console_usage.py <ruta_proyecto> [verbosity]")
+            print("   Donde verbosity puede ser: quiet, normal, verbose, debug")
 
         except Exception as e:
             print(f"❌ Error en demos: {e}")

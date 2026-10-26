@@ -14,10 +14,10 @@ from pypex.reporters.json_reporter import JSONReporter
 class ReporterRegistry:
     """Registro de reporteros disponibles en PyPex."""
 
-    _registry: Dict[str, Type] = {}
+    _registry: dict[str, type] = {}
 
     @classmethod
-    def register(cls, name: str, reporter_cls: Type):
+    def register(cls, name: str, reporter_cls: type):
         cls._registry[name] = reporter_cls
 
     @classmethod
@@ -62,8 +62,6 @@ def get_reporter(name: str, **kwargs):
     """
     if name not in REPORTERS:
         available = ", ".join(REPORTERS.keys())
-        raise ValueError(
-            f"Reporter '{name}' no encontrado. Disponibles: {available}"
-        )
+        raise ValueError(f"Reporter '{name}' no encontrado. Disponibles: {available}")
 
     return REPORTERS[name](**kwargs)
