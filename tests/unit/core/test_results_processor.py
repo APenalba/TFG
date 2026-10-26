@@ -54,6 +54,7 @@ def mock_registry():
 def mock_entity():
     """Crea una entidad mock para testing."""
     entity = Mock(spec=EntityAnalysisResult)
+    entity.source_info = {}
     entity.name = "test_function"
     entity.entity_type = "function"
     entity.children = []
@@ -170,6 +171,8 @@ class TestResultsProcessor:
         processor = ResultsProcessor()
 
         child_entity = Mock(spec=EntityAnalysisResult)
+
+        child_entity.source_info = {}
         child_entity.name = "method_1"
         child_entity.entity_type = "method"
         child_metrics = Mock(spec=MetricsResult)
@@ -231,6 +234,7 @@ class TestResultsProcessor:
         entities = []
         for value in [5, 10, 15, 20]:
             entity = Mock(spec=EntityAnalysisResult)
+            entity.source_info = {}
             entity.entity_type = "function"
             entity.children = []
             metrics = Mock(spec=MetricsResult)
@@ -319,6 +323,8 @@ class TestResultsProcessor:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = {"total": 25, "other": 5}
             entity.metrics = metrics
@@ -343,6 +349,8 @@ class TestResultsProcessor:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = {"sum": 25, "other": 5}
             entity.metrics = metrics
@@ -367,6 +375,8 @@ class TestResultsProcessor:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = {"val1": 15, "val2": 10, "string": "text"}
             entity.metrics = metrics
@@ -391,6 +401,8 @@ class TestResultsProcessor:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = None
             entity.metrics = metrics
@@ -719,6 +731,7 @@ class TestResultsProcessor:
         entities = []
         for i, value in enumerate([30, 10, 20]):
             entity = Mock(spec=EntityAnalysisResult)
+            entity.source_info = {}
             entity.name = f"function_{i}"
             entity.entity_type = "function"
             entity.children = []
@@ -737,7 +750,7 @@ class TestResultsProcessor:
         assert len(top_entities) == 2
         assert top_entities[0]["metric_value"] == 30  # Ordenado descendente
         assert top_entities[1]["metric_value"] == 20
-        assert top_entities[0]["name"] == "function_0"
+        assert top_entities[0]["entity_name"] == "function_0"
 
     @patch("pypex.core.results_processor.get_config")
     def test_get_top_entities_by_metric_with_children(
@@ -749,6 +762,7 @@ class TestResultsProcessor:
 
         # Crear entidad padre con método hijo
         parent_entity = Mock(spec=EntityAnalysisResult)
+        parent_entity.source_info = {}
         parent_entity.name = "TestClass"
         parent_entity.entity_type = "class"
         parent_metrics = Mock(spec=MetricsResult)
@@ -756,6 +770,8 @@ class TestResultsProcessor:
         parent_entity.metrics = parent_metrics
 
         child_entity = Mock(spec=EntityAnalysisResult)
+
+        child_entity.source_info = {}
         child_entity.name = "method_1"
         child_entity.entity_type = "method"
         child_metrics = Mock(spec=MetricsResult)
@@ -990,6 +1006,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Crear entidades de diferentes tipos
         class_entity = Mock(spec=EntityAnalysisResult)
+        class_entity.source_info = {}
         class_entity.entity_type = "class"
         class_entity.children = []
         class_metrics = Mock(spec=MetricsResult)
@@ -997,6 +1014,8 @@ class TestResultsProcessorAdditionalCoverage:
         class_entity.metrics = class_metrics
 
         function_entity = Mock(spec=EntityAnalysisResult)
+
+        function_entity.source_info = {}
         function_entity.entity_type = "function"
         function_entity.children = []
         function_metrics = Mock(spec=MetricsResult)
@@ -1040,6 +1059,8 @@ class TestResultsProcessorAdditionalCoverage:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = None
             entity.metrics = metrics
@@ -1062,6 +1083,8 @@ class TestResultsProcessorAdditionalCoverage:
             processor = ResultsProcessor()
 
             entity = Mock(spec=EntityAnalysisResult)
+
+            entity.source_info = {}
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = "not_a_number"
             entity.metrics = metrics
@@ -1109,6 +1132,7 @@ class TestResultsProcessorAdditionalCoverage:
         entities = []
         for _ in range(10):
             entity = Mock(spec=EntityAnalysisResult)
+            entity.source_info = {}
             entity.children = []
             entities.append(entity)
 
@@ -1160,6 +1184,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Entidad con valor None (debe ignorarse)
         entity_none = Mock(spec=EntityAnalysisResult)
+        entity_none.source_info = {}
         entity_none.entity_type = "function"
         entity_none.children = []
         metrics_none = Mock(spec=MetricsResult)
@@ -1168,6 +1193,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Entidad con valor válido
         entity_valid = Mock(spec=EntityAnalysisResult)
+        entity_valid.source_info = {}
         entity_valid.name = "valid_function"
         entity_valid.entity_type = "function"
         entity_valid.children = []
@@ -1184,7 +1210,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Solo debe incluir la entidad válida
         assert len(top_entities) == 1
-        assert top_entities[0]["name"] == "valid_function"
+        assert top_entities[0]["entity_name"] == "valid_function"
 
     @patch("pypex.core.results_processor.get_config")
     @patch("pypex.core.results_processor.get_threshold_config")
@@ -1205,6 +1231,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Crear entidad mock manualmente para este test
         test_entity = Mock(spec=EntityAnalysisResult)
+        test_entity.source_info = {}
         test_entity.children = []
         test_metrics = Mock(spec=MetricsResult)
         test_metrics.get_metric_value.return_value = 25
@@ -1331,6 +1358,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         for i, value in enumerate(values):
             entity = Mock(spec=EntityAnalysisResult)
+            entity.source_info = {}
             entity.name = f"entity_{i}"
             entity.entity_type = "function"
             entity.children = []
@@ -1373,6 +1401,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         for value in values:
             entity = Mock(spec=EntityAnalysisResult)
+            entity.source_info = {}
             entity.children = []
             metrics = Mock(spec=MetricsResult)
             metrics.get_metric_value.return_value = value
@@ -1391,3 +1420,68 @@ class TestResultsProcessorAdditionalCoverage:
         assert problematic_entities[0].metrics.get_metric_value.return_value == 35
         assert problematic_entities[1].metrics.get_metric_value.return_value == 30
         assert problematic_entities[2].metrics.get_metric_value.return_value == 25
+
+
+def _entity(name, entity_type, value, line_start=1, children=None):
+    """Crea una entidad real con un único valor de complejidad ciclomática."""
+    return EntityAnalysisResult(
+        name=name,
+        entity_type=entity_type,
+        metrics=MetricsResult(
+            entity_name=name,
+            entity_type=entity_type,
+            metrics={"cyclomatic_complexity": value},
+        ),
+        children=children or [],
+        source_info={"line_start": line_start, "line_end": line_start + 5},
+    )
+
+
+def _project_with_entities():
+    """Proyecto con un fichero vacío y una clase que no es la última entidad."""
+    empty = FileAnalysisResult(
+        file_path="pkg/__init__.py", module_name="pkg", file_size=0, line_count=0
+    )
+    module = FileAnalysisResult(
+        file_path="pkg/module.py",
+        module_name="pkg.module",
+        file_size=100,
+        line_count=40,
+        entities=[
+            _entity("Service", "class", 3, 1, [_entity("run", "method", 9, 3)]),
+            _entity("helper", "function", 4, 30),
+        ],
+    )
+    return ProjectAnalysisResult(
+        project_name="pkg",
+        root_path="pkg",
+        analysis_timestamp="2026-01-01T00:00:00",
+        files={"pkg/__init__.py": empty, "pkg/module.py": module},
+    )
+
+
+class TestGetTopEntitiesByMetricRegression:
+    """Regresión: entidades vacías y métodos de clases que no son la última entidad."""
+
+    def test_includes_methods_of_every_class_and_skips_empty_files(self):
+        top = ResultsProcessor().get_top_entities_by_metric(
+            _project_with_entities(), "cyclomatic_complexity"
+        )
+
+        assert [e["entity_name"] for e in top] == ["Service.run", "helper", "Service"]
+        assert top[0] == {
+            "entity_name": "Service.run",
+            "entity_type": "method",
+            "file_path": "pkg/module.py",
+            "line_start": 3,
+            "metric_value": 9,
+        }
+
+    def test_filters_by_entity_type(self):
+        top = ResultsProcessor().get_top_entities_by_metric(
+            _project_with_entities(),
+            "cyclomatic_complexity",
+            entity_types=["function", "method"],
+        )
+
+        assert [e["entity_name"] for e in top] == ["Service.run", "helper"]

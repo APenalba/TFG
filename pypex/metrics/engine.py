@@ -32,6 +32,11 @@ from pypex.services.logging_service import get_logger
 logger = get_logger(__name__)
 
 
+def _source_info(entity: CodeEntity) -> dict[str, int]:
+    """Ubicación de la entidad en el fichero fuente."""
+    return {"line_start": entity.line_start, "line_end": entity.line_end}
+
+
 class MetricsEngine:
     """Motor de cálculo de métricas para entidades de código Python.
 
@@ -169,14 +174,20 @@ class MetricsEngine:
 
         # Crear resultado de entidad
         class_result = EntityAnalysisResult(
-            name=cls.name, entity_type="class", metrics=class_metrics
+            name=cls.name,
+            entity_type="class",
+            metrics=class_metrics,
+            source_info=_source_info(cls),
         )
 
         # Calcular métricas para cada método
         for method in cls.methods:
             method_metrics = self.calculate_all(method)
             method_result = EntityAnalysisResult(
-                name=method.name, entity_type="method", metrics=method_metrics
+                name=method.name,
+                entity_type="method",
+                metrics=method_metrics,
+                source_info=_source_info(method),
             )
             class_result.children.append(method_result)
 
@@ -259,7 +270,10 @@ class MetricsEngine:
         for func in module.functions:
             func_metrics = self.calculate_all(func)
             func_result = EntityAnalysisResult(
-                name=func.name, entity_type="function", metrics=func_metrics
+                name=func.name,
+                entity_type="function",
+                metrics=func_metrics,
+                source_info=_source_info(func),
             )
             entities.append(func_result)
 

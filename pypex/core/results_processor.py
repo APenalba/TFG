@@ -458,36 +458,34 @@ class ResultsProcessor:
         entity_types = entity_types or ["function", "class", "method"]
         entities_with_values = []
 
+        def add_entity(
+            entity: EntityAnalysisResult, file_path: str, parent_name: str | None = None
+        ) -> None:
+            if entity.entity_type not in entity_types:
+                return
+            value = entity.metrics.get_metric_value(metric_name)
+            if value is None:
+                return
+            entities_with_values.append(
+                {
+                    "entity_name": f"{parent_name}.{entity.name}" if parent_name else entity.name,
+                    "entity_type": entity.entity_type,
+                    "file_path": str(file_path),
+                    "line_start": entity.source_info.get("line_start"),
+                    "metric_value": value,
+                }
+            )
+
         for file_path, file_result in results.files.items():
             if not file_result.was_successful:
                 continue
 
             for entity in file_result.entities:
-                if entity.entity_type in entity_types:
-                    value = entity.metrics.get_metric_value(metric_name)
-                    if value is not None:
-                        entities_with_values.append(
-                            {
-                                "name": entity.name,
-                                "type": entity.entity_type,
-                                "file": file_path,
-                                "metric_value": value,
-                            }
-                        )
+                add_entity(entity, file_path)
 
-            # Incluir métodos de clases
-            for child in entity.children:
-                if child.entity_type in entity_types:
-                    value = child.metrics.get_metric_value(metric_name)
-                    if value is not None:
-                        entities_with_values.append(
-                            {
-                                "name": f"{entity.name}.{child.name}",
-                                "type": child.entity_type,
-                                "file": file_path,
-                                "metric_value": value,
-                            }
-                        )
+                # Incluir métodos de clases
+                for child in entity.children:
+                    add_entity(child, file_path, parent_name=entity.name)
 
         # Ordenar por valor de métrica descendente
         entities_with_values.sort(key=lambda x: x["metric_value"], reverse=True)
