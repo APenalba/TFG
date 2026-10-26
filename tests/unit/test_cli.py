@@ -331,23 +331,27 @@ class TestMainCommand:
     @patch("pypex.cli.configure_presentation_service")
     @patch("pypex.cli.get_config")
     def test_main_command_log_file_option(
-        self, mock_get_config, mock_configure_presentation, mock_configure_logging
+        self,
+        mock_get_config,
+        mock_configure_presentation,
+        mock_configure_logging,
+        tmp_path,
+        monkeypatch,
     ):
         """Prueba la opción log-file del comando principal."""
         mock_config = Mock()
         mock_get_config.return_value = mock_config
+        monkeypatch.chdir(tmp_path)
 
         from click.testing import CliRunner
 
         runner = CliRunner()
+        runner.invoke(main, ["--log-file", "test.log", "thresholds", "--help"])
 
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["--log-file", "test.log", "thresholds", "--help"])
-
-            # Verificar que se configuró el archivo de log
-            mock_configure_logging.assert_called()
-            args, kwargs = mock_configure_logging.call_args
-            assert kwargs.get("log_file") == "test.log"
+        # Verificar que se configuró el archivo de log
+        mock_configure_logging.assert_called()
+        args, kwargs = mock_configure_logging.call_args
+        assert kwargs.get("log_file") == "test.log"
 
 
 class TestAnalyzeCommand:
