@@ -3,13 +3,16 @@
 import logging
 import sys
 import time
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from pathlib import Path
-from typing import Any, ContextManager, Dict, Optional, Protocol, Union
+from typing import Any, Protocol
 
 # Import RichHandler and Progress
 try:
+    from rich import print as rich_print
+    from rich.console import Console
     from rich.logging import RichHandler
+    from rich.panel import Panel
     from rich.progress import (
         BarColumn,
         Progress,
@@ -17,10 +20,7 @@ try:
         TimeElapsedColumn,
         TimeRemainingColumn,
     )
-    from rich.console import Console
-    from rich.panel import Panel
     from rich.table import Table
-    from rich import print as rich_print
 
     _RICH_AVAILABLE = True
 except ImportError:
@@ -40,17 +40,20 @@ except ImportError:
     _TQDM_AVAILABLE = False
 
 
-def _get_logging_config() -> Dict[str, Any]:
+def _get_logging_config() -> dict[str, Any]:
     """Obtiene configuración de logging desde ConfigService o valores por defecto."""
     try:
         # Importar aquí para evitar import circular
         from pypex.services.config_service import get_config
+
         config = get_config()
-        
+
         return {
             "console_level": config.get("logging.console_level", logging.INFO),
             "file_level": config.get("logging.file_level", logging.DEBUG),
-            "format": config.get("logging.format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
+            "format": config.get(
+                "logging.format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            ),
             "date_format": config.get("logging.date_format", "%Y-%m-%d %H:%M:%S"),
         }
     except ImportError:
@@ -64,15 +67,13 @@ def _get_logging_config() -> Dict[str, Any]:
 
 
 # Cacheo de loggers para reutilización
-_loggers: Dict[str, logging.Logger] = {}
+_loggers: dict[str, logging.Logger] = {}
 
 
 class IProgressBar(Protocol):
     """Interfaz para barras de progreso."""
 
-    def update(
-        self, advance: int = 1, description: Optional[str] = None
-    ) -> None:
+    def update(self, advance: int = 1, description: str | None = None) -> None:
         """Actualiza la barra de progreso."""
         ...
 
@@ -88,9 +89,7 @@ class RichProgressBar:
         self.progress = progress
         self.task_id = task_id
 
-    def update(
-        self, advance: int = 1, description: Optional[str] = None
-    ) -> None:
+    def update(self, advance: int = 1, description: str | None = None) -> None:
         """Actualiza la barra de progreso."""
         kwargs = {"advance": advance}
         if description:
@@ -108,9 +107,7 @@ class TqdmProgressBar:
     def __init__(self, tqdm_instance: Any):
         self.tqdm_instance = tqdm_instance
 
-    def update(
-        self, advance: int = 1, description: Optional[str] = None
-    ) -> None:
+    def update(self, advance: int = 1, description: str | None = None) -> None:
         """Actualiza la barra de progreso."""
         if description:
             self.tqdm_instance.set_description(description)
@@ -132,9 +129,7 @@ class SimpleProgressBar:
         self.last_print_time = 0
         self._print_progress()
 
-    def update(
-        self, advance: int = 1, description: Optional[str] = None
-    ) -> None:
+    def update(self, advance: int = 1, description: str | None = None) -> None:
         """Actualiza la barra de progreso."""
         self.current += advance
         if description:
@@ -142,10 +137,7 @@ class SimpleProgressBar:
 
         # Solo imprimir cada segundo o al completar
         current_time = time.time()
-        if (
-            current_time - self.last_print_time >= 1.0
-            or self.current >= self.total
-        ):
+        if current_time - self.last_print_time >= 1.0 or self.current >= self.total:
             self._print_progress()
             self.last_print_time = current_time
 
@@ -191,7 +183,7 @@ class ProgressBarManager:
     @contextmanager
     def create_progress_bar(
         self, total: int, description: str = "Progress", disable: bool = False
-    ) -> ContextManager[IProgressBar]:
+    ) -> AbstractContextManager[IProgressBar]:
         """Crea una barra de progreso usando la mejor implementación disponible.
 
         Args:
@@ -205,9 +197,7 @@ class ProgressBarManager:
         if disable:
             # Progress bar deshabilitada - usar implementación dummy
             class DummyProgressBar:
-                def update(
-                    self, advance: int = 1, description: Optional[str] = None
-                ) -> None:
+                def update(self, advance: int = 1, description: str | None = None) -> None:
                     pass
 
                 def close(self) -> None:
@@ -222,9 +212,7 @@ class ProgressBarManager:
                 progress = Progress(
                     TextColumn("[progress.description]{task.description}"),
                     BarColumn(),
-                    TextColumn(
-                        "[progress.percentage]{task.percentage:>3.0f}%"
-                    ),
+                    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
                     TimeRemainingColumn(),
                     TimeElapsedColumn(),
                     transient=True,
@@ -299,7 +287,7 @@ class IPresentationService(Protocol):
 class RichPresentationService:
     """Servicio de presentación usando Rich."""
 
-    def __init__(self, console: Optional[Console] = None):
+    def __init__(self, console: Console | None = None):
         self.console = console or Console()
 
     def print_success(self, message: str, **kwargs) -> None:
@@ -358,15 +346,15 @@ class FallbackPresentationService:
         """Imprime un mensaje de error."""
         print(f"❌ {message}")
 
-    def create_table(self, title: str = "", **kwargs) -> Dict:
+    def create_table(self, title: str = "", **kwargs) -> dict:
         """Crea una representación de tabla como diccionario."""
         return {"title": title, "columns": [], "rows": [], **kwargs}
 
-    def create_panel(self, content: str, title: str = "", **kwargs) -> Dict:
+    def create_panel(self, content: str, title: str = "", **kwargs) -> dict:
         """Crea una representación de panel como diccionario."""
         return {"content": content, "title": title, **kwargs}
 
-    def print_table(self, table: Dict) -> None:
+    def print_table(self, table: dict) -> None:
         """Imprime una tabla usando formato texto plano."""
         if table["title"]:
             print(f"\n{table['title']}")
@@ -383,7 +371,7 @@ class FallbackPresentationService:
             for row in table["rows"]:
                 print(" | ".join(str(cell) for cell in row))
 
-    def print_panel(self, panel: Dict) -> None:
+    def print_panel(self, panel: dict) -> None:
         """Imprime un panel usando formato texto plano."""
         title = panel.get("title", "")
         content = panel.get("content", "")
@@ -400,7 +388,7 @@ class FallbackPresentationService:
 
 
 # Instancia global del servicio de presentación
-_presentation_service: Optional[IPresentationService] = None
+_presentation_service: IPresentationService | None = None
 
 
 def configure_presentation_service(prefer_rich: bool = True) -> IPresentationService:
@@ -437,10 +425,10 @@ def get_presentation_service() -> IPresentationService:
 
 
 def configure_logging(
-    console_level: Optional[int] = None,
-    file_level: Optional[int] = None,
-    log_file: Optional[Union[str, Path]] = None,
-    log_format: Optional[str] = None,
+    console_level: int | None = None,
+    file_level: int | None = None,
+    log_file: str | Path | None = None,
+    log_format: str | None = None,
 ) -> None:
     """Configura el sistema de logging global con niveles y archivo.
 
@@ -451,10 +439,10 @@ def configure_logging(
         log_format: Formato de log opcional
     """
     global LOGGING_CONFIG
-    
+
     # Obtener configuración actual
     logging_config = _get_logging_config()
-    
+
     # Actualizar configuración con parámetros
     if console_level is not None:
         logging_config["console_level"] = console_level
@@ -475,9 +463,7 @@ def configure_logging(
         _configure_logger_handlers(logger, log_file)
 
 
-def configure_progress_bars(
-    prefer_rich: bool = True, prefer_tqdm: bool = True
-) -> None:
+def configure_progress_bars(prefer_rich: bool = True, prefer_tqdm: bool = True) -> None:
     """Configura las preferencias para las barras de progreso.
 
     Args:
@@ -485,9 +471,7 @@ def configure_progress_bars(
         prefer_tqdm: Si preferir tqdm como fallback
     """
     global _progress_manager
-    _progress_manager = ProgressBarManager(
-        prefer_rich=prefer_rich, prefer_tqdm=prefer_tqdm
-    )
+    _progress_manager = ProgressBarManager(prefer_rich=prefer_rich, prefer_tqdm=prefer_tqdm)
 
 
 def get_progress_manager() -> ProgressBarManager:
@@ -499,9 +483,7 @@ def get_progress_manager() -> ProgressBarManager:
     return _progress_manager
 
 
-def get_logger(
-    name: str, log_file: Optional[Union[str, Path]] = None
-) -> logging.Logger:
+def get_logger(name: str, log_file: str | Path | None = None) -> logging.Logger:
     """
     Obtiene un logger configurado con el nombre especificado.
 
@@ -522,16 +504,18 @@ def get_logger(
     return logger
 
 
-def _configure_logger_handlers(
-    logger: logging.Logger, log_file: Optional[Union[str, Path]] = None
-) -> None:
+def _configure_logger_handlers(logger: logging.Logger, log_file: str | Path | None = None) -> None:
     """Configura los handlers de un logger específico."""
     # Obtener configuración actual
     logging_config = _get_logging_config()
-    
+
     # Limpiar handlers existentes
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
+
+    # Los loggers de PyPex tienen sus propios handlers; sin esto el mensaje
+    # se emitiría también por el handler raíz que añade logging.basicConfig()
+    logger.propagate = False
 
     # Handler de consola
     if _RICH_AVAILABLE:
@@ -542,16 +526,15 @@ def _configure_logger_handlers(
         console_handler = logging.StreamHandler(sys.stderr)
 
     console_handler.setLevel(logging_config["console_level"])
-    
+
     # Usar formato simplificado para Rich, completo para StreamHandler
     if _RICH_AVAILABLE:
         console_formatter = logging.Formatter("%(message)s")
     else:
         console_formatter = logging.Formatter(
-            fmt=logging_config["format"], 
-            datefmt=logging_config["date_format"]
+            fmt=logging_config["format"], datefmt=logging_config["date_format"]
         )
-    
+
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
 
@@ -560,12 +543,9 @@ def _configure_logger_handlers(
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging_config["file_level"])
         file_formatter = logging.Formatter(
-            fmt=logging_config["format"], 
-            datefmt=logging_config["date_format"]
+            fmt=logging_config["format"], datefmt=logging_config["date_format"]
         )
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
 
-    logger.setLevel(
-        min(logging_config["console_level"], logging_config["file_level"])
-    )
+    logger.setLevel(min(logging_config["console_level"], logging_config["file_level"]))

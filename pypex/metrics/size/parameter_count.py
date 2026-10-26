@@ -1,7 +1,5 @@
 """Módulo para calcular métricas de conteo de parámetros."""
 
-from typing import Dict, Optional
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import (
     Class,
@@ -222,11 +220,11 @@ class ParameterCountMetric(BaseMetric):
             description="Mide la complejidad de interfaces contando parámetros de funciones y métodos.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para parameter_count.
-        
+
         Basado en principios de Clean Code de Robert Martin.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -236,8 +234,7 @@ class ParameterCountMetric(BaseMetric):
             "high": 7.0,
         }
 
-
-    def _analyze_parameters(self, parameters: list) -> Dict[str, int]:
+    def _analyze_parameters(self, parameters: list) -> dict[str, int]:
         """Analiza una lista de parámetros y devuelve estadísticas detalladas.
 
         Args:
@@ -296,12 +293,10 @@ class ParameterCountMetric(BaseMetric):
         Returns:
             float: Número total de parámetros de la función.
         """
-        logger.debug(
-            f"Calculando conteo de parámetros para función: {function.name}"
-        )
+        logger.debug(f"Calculando conteo de parámetros para función: {function.name}")
         return float(len(function.parameters))
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de conteo de parámetros para una clase.
 
         Analiza los parámetros de todos los métodos de la clase, con especial
@@ -340,15 +335,12 @@ class ParameterCountMetric(BaseMetric):
 
         # Solo estadísticas útiles, NO suma total
         result = {
-            "avg_parameters": sum(method_param_counts)
-            / len(method_param_counts),
+            "avg_parameters": sum(method_param_counts) / len(method_param_counts),
             "max_parameters": max(method_param_counts),
             "min_parameters": min(method_param_counts),
             "constructor_parameters": float(constructor_params),
             "method_count": float(len(cls.methods)),
-            "methods_with_many_params": len(
-                [c for c in method_param_counts if c > 5]
-            ),
+            "methods_with_many_params": len([c for c in method_param_counts if c > 5]),
         }
 
         return result
@@ -375,9 +367,7 @@ class ParameterCountMetric(BaseMetric):
         Returns:
             None: Siempre None porque no aplica a módulos.
         """
-        logger.debug(
-            f"Conteo de parámetros no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"Conteo de parámetros no aplica a módulo: {module.name} - devolviendo None")
         return None
 
     def calculate_project(self, project: Project) -> None:
@@ -414,19 +404,11 @@ class ParameterCountMetric(BaseMetric):
         elif isinstance(entity, Module):
             module_result = self.calculate_module(entity)
             # module_result is None for non-aggregatable metrics
-            return (
-                0.0
-                if module_result is None
-                else module_result.get("avg_parameters", 0.0)
-            )
+            return 0.0 if module_result is None else module_result.get("avg_parameters", 0.0)
         elif isinstance(entity, Project):
             project_result = self.calculate_project(entity)
             # project_result is None for non-aggregatable metrics
-            return (
-                0.0
-                if project_result is None
-                else project_result.get("avg_parameters", 0.0)
-            )
+            return 0.0 if project_result is None else project_result.get("avg_parameters", 0.0)
         else:
             logger.warning(f"Tipo de entidad no soportado: {type(entity)}")
             return 0.0

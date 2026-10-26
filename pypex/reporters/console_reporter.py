@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, TextIO
+from typing import TextIO
 
 from pypex.core.results import (
     FileAnalysisResult,
@@ -122,8 +122,8 @@ class ConsoleReporter:
 
     def __init__(
         self,
-        output_stream: Optional[TextIO] = None,
-        use_colors: Optional[bool] = None,
+        output_stream: TextIO | None = None,
+        use_colors: bool | None = None,
         width: int = 80,
     ):
         """
@@ -190,9 +190,7 @@ class ConsoleReporter:
             if verbosity == "quiet":
                 self._generate_quiet_report(analysis_results)
             elif verbosity == "verbose":
-                self._generate_verbose_report(
-                    analysis_results, show_files, show_entities
-                )
+                self._generate_verbose_report(analysis_results, show_files, show_entities)
             elif verbosity == "debug":
                 self._generate_debug_report(
                     analysis_results, show_files, show_entities, show_metrics
@@ -215,9 +213,7 @@ class ConsoleReporter:
             score = quality_report.get("overall_quality_score", 0.0)
 
         # Línea única con información esencial
-        status_icon = (
-            Icons.SUCCESS if stats["success_rate"] >= 90 else Icons.WARNING
-        )
+        status_icon = Icons.SUCCESS if stats["success_rate"] >= 90 else Icons.WARNING
         quality_color = self._get_quality_color(score)
 
         self.print(
@@ -227,9 +223,7 @@ class ConsoleReporter:
             f"Quality: {self.colorize(f'{score:.1f}/100', quality_color)}"
         )
 
-    def _generate_normal_report(
-        self, results: ProjectAnalysisResult, show_files: bool
-    ) -> None:
+    def _generate_normal_report(self, results: ProjectAnalysisResult, show_files: bool) -> None:
         """Genera un reporte normal con información balanceada."""
         self._print_header(results)
         self._print_summary_stats(results)
@@ -287,9 +281,7 @@ class ConsoleReporter:
         self._print_error_analysis(results, detailed=True)
 
         if show_files:
-            self._print_files_detailed_enhanced(
-                results, show_entities, debug=True
-            )
+            self._print_files_detailed_enhanced(results, show_entities, debug=True)
 
         self._print_recommendations(results)
         self._print_performance_info(results, detailed=True)
@@ -302,11 +294,7 @@ class ConsoleReporter:
         title = f"🔍 PyPex Analysis Report - {results.project_name}"
 
         self.print(self.colorize(separator, Colors.CYAN))
-        self.print(
-            self.colorize(
-                title.center(self.width), Colors.BRIGHT_CYAN + Colors.BOLD
-            )
-        )
+        self.print(self.colorize(title.center(self.width), Colors.BRIGHT_CYAN + Colors.BOLD))
         self.print(self.colorize(separator, Colors.CYAN))
         self.print()
 
@@ -314,13 +302,15 @@ class ConsoleReporter:
         """Imprime estadísticas de resumen."""
         stats = results.get_summary_stats()
 
-        self.print(self.colorize(f"📊 Summary:", Colors.BOLD))
+        self.print(self.colorize("📊 Summary:", Colors.BOLD))
 
         # Primera fila de estadísticas
         success_color = (
             Colors.GREEN
             if stats["success_rate"] >= 90
-            else Colors.YELLOW if stats["success_rate"] >= 70 else Colors.RED
+            else Colors.YELLOW
+            if stats["success_rate"] >= 70
+            else Colors.RED
         )
 
         self.print(
@@ -332,8 +322,8 @@ class ConsoleReporter:
 
         # Segunda fila
         self.print(
-            f"   Total LOC: {self.colorize(f'{stats['total_lines_of_code']:,}', Colors.CYAN)} "
-            f"| Analysis time: {self.colorize(f'{stats['analysis_time_seconds']:,.2f}s', Colors.YELLOW)}"
+            f"   Total LOC: {self.colorize(f'{stats["total_lines_of_code"]:,}', Colors.CYAN)} "
+            f"| Analysis time: {self.colorize(f'{stats["analysis_time_seconds"]:,.2f}s', Colors.YELLOW)}"
         )
 
         self.print()
@@ -343,18 +333,14 @@ class ConsoleReporter:
     ) -> None:
         """Imprime evaluación de calidad."""
         quality_report = self.processor.generate_quality_report(results)
-        advanced_quality_report = (
-            self.processor.generate_detailed_quality_report(results)
-        )
+        advanced_quality_report = self.processor.generate_detailed_quality_report(results)
 
         # Usar el reporte disponible
         report = quality_report or advanced_quality_report
         if not report:
             return
 
-        score = report.get("overall_quality_score", 0.0) or report.get(
-            "overall_score", 0.0
-        )
+        score = report.get("overall_quality_score", 0.0) or report.get("overall_score", 0.0)
         quality_level = self._get_quality_level(score)
         quality_color = self._get_quality_color(score)
 
@@ -377,18 +363,14 @@ class ConsoleReporter:
 
     def _print_project_overview(self, results: ProjectAnalysisResult) -> None:
         """Imprime una vista general del proyecto (para modo normal)."""
-        self.print(
-            self.colorize(f"{Icons.CHART} Project Overview:", Colors.BOLD)
-        )
+        self.print(self.colorize(f"{Icons.CHART} Project Overview:", Colors.BOLD))
 
         # Estadísticas básicas de distribución
         try:
             project_report = self.processor.create_project_report(results)
 
             # Distribución de archivos por tamaño
-            size_distribution = project_report.get(
-                "file_size_distribution", {}
-            )
+            size_distribution = project_report.get("file_size_distribution", {})
             if size_distribution:
                 small = size_distribution.get("small", 0)
                 medium = size_distribution.get("medium", 0)
@@ -417,20 +399,12 @@ class ConsoleReporter:
                             complexity_metrics[metric_name] = value
 
                 if complexity_metrics:
-                    cc_total = complexity_metrics.get(
-                        "cyclomatic_complexity", 0
-                    )
-                    cog_total = complexity_metrics.get(
-                        "cognitive_complexity", 0
-                    )
+                    cc_total = complexity_metrics.get("cyclomatic_complexity", 0)
+                    cog_total = complexity_metrics.get("cognitive_complexity", 0)
                     loc_total = complexity_metrics.get("lines_of_code", 0)
 
-                    cc_color = self._get_complexity_color(
-                        cc_total / max(len(results.files), 1)
-                    )
-                    cog_color = self._get_complexity_color(
-                        cog_total / max(len(results.files), 1)
-                    )
+                    cc_color = self._get_complexity_color(cc_total / max(len(results.files), 1))
+                    cog_color = self._get_complexity_color(cog_total / max(len(results.files), 1))
 
                     self.print(
                         f"   🔄 Total Complexity: CC {self.colorize(f'{cc_total:.0f}', cc_color)}, "
@@ -445,13 +419,9 @@ class ConsoleReporter:
 
         self.print()
 
-    def _print_project_statistics(
-        self, results: ProjectAnalysisResult
-    ) -> None:
+    def _print_project_statistics(self, results: ProjectAnalysisResult) -> None:
         """Imprime estadísticas detalladas del proyecto (para modo verbose)."""
-        self.print(
-            self.colorize(f"{Icons.STATS} Project Statistics:", Colors.BOLD)
-        )
+        self.print(self.colorize(f"{Icons.STATS} Project Statistics:", Colors.BOLD))
 
         try:
             project_report = self.processor.create_project_report(results)
@@ -480,9 +450,7 @@ class ConsoleReporter:
                         "medium": Colors.YELLOW,
                         "high": Colors.RED,
                     }.get(level, Colors.GRAY)
-                    self.print(
-                        f"      {level.title()}: {self.colorize(str(count), color)}"
-                    )
+                    self.print(f"      {level.title()}: {self.colorize(str(count), color)}")
 
             # Top métricas
             if results.project_metrics:
@@ -538,14 +506,10 @@ class ConsoleReporter:
                 if isinstance(value, dict):
                     if "total" in value:
                         display_value = f"{value['total']:.1f}"
-                        status = self._get_metric_status(
-                            metric_name, value["total"]
-                        )
+                        status = self._get_metric_status(metric_name, value["total"])
                     elif "sum" in value:
                         display_value = f"{value['sum']:.1f}"
-                        status = self._get_metric_status(
-                            metric_name, value["sum"]
-                        )
+                        status = self._get_metric_status(metric_name, value["sum"])
                     else:
                         display_value = "Complex"
                         status = "unknown"
@@ -564,9 +528,7 @@ class ConsoleReporter:
 
         self.print()
 
-    def _print_hot_spots(
-        self, results: ProjectAnalysisResult, limit: int = 5
-    ) -> None:
+    def _print_hot_spots(self, results: ProjectAnalysisResult, limit: int = 5) -> None:
         """Imprime los hot spots del código."""
         try:
             hot_spots = []
@@ -620,19 +582,15 @@ class ConsoleReporter:
                     "lines_of_code": "LOC",
                 }.get(spot["metric"], spot["metric"])
 
-                file_display = (
-                    Path(spot["file_path"]).name
-                    if spot["file_path"]
-                    else "unknown"
-                )
-                line_info = (
-                    f":{spot['line_start']}" if spot.get("line_start") else ""
-                )
+                file_display = Path(spot["file_path"]).name if spot["file_path"] else "unknown"
+                line_info = f":{spot['line_start']}" if spot.get("line_start") else ""
 
                 value_color = (
                     Colors.BRIGHT_RED
                     if spot["value"] > 20
-                    else Colors.RED if spot["value"] > 10 else Colors.YELLOW
+                    else Colors.RED
+                    if spot["value"] > 10
+                    else Colors.YELLOW
                 )
                 spot_value = f"{spot['value']:.0f}"
                 location_info = f"📍 {file_display}{line_info}"
@@ -648,9 +606,7 @@ class ConsoleReporter:
         except Exception as e:
             logger.warning(f"Error al generar hot spots: {e}")
 
-    def _print_files_summary_enhanced(
-        self, results: ProjectAnalysisResult
-    ) -> None:
+    def _print_files_summary_enhanced(self, results: ProjectAnalysisResult) -> None:
         """Imprime resumen de archivos mejorado con indicadores de problema."""
         if not results.files:
             return
@@ -658,12 +614,8 @@ class ConsoleReporter:
         self.print(self.colorize("📁 Files Summary:", Colors.BOLD))
 
         # Categorizar archivos por estado
-        successful_files = [
-            f for f in results.files.values() if f.was_successful
-        ]
-        failed_files = [
-            f for f in results.files.values() if not f.was_successful
-        ]
+        successful_files = [f for f in results.files.values() if f.was_successful]
+        failed_files = [f for f in results.files.values() if not f.was_successful]
 
         # Clasificar archivos exitosos por complejidad
         files_with_issues = []
@@ -679,27 +631,21 @@ class ConsoleReporter:
         # Mostrar archivos problemáticos primero
         if files_with_issues:
             self.print(f"   ⚠️ Files with issues ({len(files_with_issues)}):")
-            for file_result, issues in files_with_issues[
-                :3
-            ]:  # Mostrar solo los primeros 3
+            for file_result, issues in files_with_issues[:3]:  # Mostrar solo los primeros 3
                 issue_text = ", ".join(issues)
                 self.print(
                     f"     • {self.colorize(file_result.module_name, Colors.YELLOW)} - {issue_text}"
                 )
 
             if len(files_with_issues) > 3:
-                self.print(
-                    f"     ... and {len(files_with_issues) - 3} more with issues"
-                )
+                self.print(f"     ... and {len(files_with_issues) - 3} more with issues")
 
         # Mostrar algunos archivos buenos
         if good_files:
             self.print(f"   ✅ Good files ({len(good_files)}):")
             for file_result in good_files[:3]:  # Mostrar solo los primeros 3
                 entities_count = len(file_result.entities)
-                complexity_info = self._get_file_complexity_summary(
-                    file_result
-                )
+                complexity_info = self._get_file_complexity_summary(file_result)
 
                 self.print(
                     f"     • {file_result.module_name} "
@@ -707,19 +653,13 @@ class ConsoleReporter:
                 )
 
             if len(good_files) > 3:
-                self.print(
-                    f"     ... and {len(good_files) - 3} more good files"
-                )
+                self.print(f"     ... and {len(good_files) - 3} more good files")
 
         # Mostrar archivos fallidos
         if failed_files:
             self.print(f"   ❌ Failed files ({len(failed_files)}):")
             for file_result in failed_files:
-                error_info = (
-                    f" ({len(file_result.errors)} errors)"
-                    if file_result.errors
-                    else ""
-                )
+                error_info = f" ({len(file_result.errors)} errors)" if file_result.errors else ""
                 self.print(
                     f"     • {self.colorize(file_result.module_name + error_info, Colors.RED)}"
                 )
@@ -754,12 +694,8 @@ class ConsoleReporter:
 
             file_name = Path(file_path).name
 
-            self.print(
-                f"   {status_icon} {self.colorize(file_name, status_color)}"
-            )
-            self.print(
-                f"      Path: {self.colorize(str(file_result.file_path), Colors.GRAY)}"
-            )
+            self.print(f"   {status_icon} {self.colorize(file_name, status_color)}")
+            self.print(f"      Path: {self.colorize(str(file_result.file_path), Colors.GRAY)}")
             self.print(
                 f"      Size: {file_result.file_size:,} bytes | Lines: {file_result.line_count}"
             )
@@ -768,82 +704,52 @@ class ConsoleReporter:
                 # Mostrar problemas específicos si los hay
                 issues = self._analyze_file_issues(file_result)
                 if issues:
-                    self.print(
-                        f"      Issues: {self.colorize(', '.join(issues), Colors.YELLOW)}"
-                    )
+                    self.print(f"      Issues: {self.colorize(', '.join(issues), Colors.YELLOW)}")
 
                 # Mostrar métricas principales del archivo
                 if file_result.module_metrics:
-                    complexity_summary = self._get_file_metrics_summary(
-                        file_result
-                    )
+                    complexity_summary = self._get_file_metrics_summary(file_result)
                     if complexity_summary:
                         self.print(f"      Metrics: {complexity_summary}")
 
                 if file_result.entities and show_entities:
-                    self.print(
-                        f"      Entities ({len(file_result.entities)}):"
-                    )
-                    for entity in file_result.entities[
-                        :3
-                    ]:  # Mostrar solo las primeras 3
+                    self.print(f"      Entities ({len(file_result.entities)}):")
+                    for entity in file_result.entities[:3]:  # Mostrar solo las primeras 3
                         entity_icon = (
-                            Icons.CLASS
-                            if entity.entity_type == "class"
-                            else Icons.FUNCTION
+                            Icons.CLASS if entity.entity_type == "class" else Icons.FUNCTION
                         )
-                        complexity = entity.metrics.get_metric_value(
-                            "cyclomatic_complexity"
-                        )
-                        complexity_str = (
-                            f" (CC: {complexity:.0f})" if complexity else ""
-                        )
+                        complexity = entity.metrics.get_metric_value("cyclomatic_complexity")
+                        complexity_str = f" (CC: {complexity:.0f})" if complexity else ""
 
                         # Color basado en complejidad
                         if complexity:
-                            complexity_color = self._get_complexity_color(
-                                complexity
-                            )
-                            colored_complexity = self.colorize(
-                                complexity_str, complexity_color
-                            )
+                            complexity_color = self._get_complexity_color(complexity)
+                            colored_complexity = self.colorize(complexity_str, complexity_color)
                         else:
                             colored_complexity = complexity_str
 
-                        self.print(
-                            f"        {entity_icon} {entity.name}{colored_complexity}"
-                        )
+                        self.print(f"        {entity_icon} {entity.name}{colored_complexity}")
 
                     if len(file_result.entities) > 3:
-                        self.print(
-                            f"        ... and {len(file_result.entities) - 3} more"
-                        )
+                        self.print(f"        ... and {len(file_result.entities) - 3} more")
             else:
                 if file_result.errors:
-                    self.print(f"      Errors:")
+                    self.print("      Errors:")
                     for error in file_result.errors:
                         self.print(f"        {Icons.ERROR} {error.message}")
 
             if debug:
-                self.print(
-                    f"      Analysis time: {file_result.analysis_time_ms:.1f}ms"
-                )
+                self.print(f"      Analysis time: {file_result.analysis_time_ms:.1f}ms")
 
             self.print()
 
-    def _print_error_analysis(
-        self, results: ProjectAnalysisResult, detailed: bool = False
-    ) -> None:
+    def _print_error_analysis(self, results: ProjectAnalysisResult, detailed: bool = False) -> None:
         """Imprime análisis de errores."""
         all_errors = results.get_all_errors()
         if not all_errors:
             return
 
-        self.print(
-            self.colorize(
-                f"⚠️ Error Analysis ({len(all_errors)} total):", Colors.BOLD
-            )
-        )
+        self.print(self.colorize(f"⚠️ Error Analysis ({len(all_errors)} total):", Colors.BOLD))
 
         # Agrupar por severidad
         by_severity = {}
@@ -872,11 +778,7 @@ class ConsoleReporter:
 
             if detailed:
                 for error in errors[:3]:  # Mostrar solo los primeros 3
-                    file_info = (
-                        f" in {Path(error.file_path).name}"
-                        if error.file_path
-                        else ""
-                    )
+                    file_info = f" in {Path(error.file_path).name}" if error.file_path else ""
                     self.print(f"      • {error.message}{file_info}")
 
                 if len(errors) > 3:
@@ -884,22 +786,15 @@ class ConsoleReporter:
 
         self.print()
 
-    def _print_recommendations_summary(
-        self, results: ProjectAnalysisResult
-    ) -> None:
+    def _print_recommendations_summary(self, results: ProjectAnalysisResult) -> None:
         """Imprime un resumen de recomendaciones (para modo normal)."""
         quality_report = self.processor.generate_quality_report(results)
-        advanced_quality_report = (
-            self.processor.generate_detailed_quality_report(results)
-        )
+        advanced_quality_report = self.processor.generate_detailed_quality_report(results)
 
         recommendations = []
         if quality_report and "recommendations" in quality_report:
             recommendations.extend(quality_report["recommendations"])
-        if (
-            advanced_quality_report
-            and "recommendations" in advanced_quality_report
-        ):
+        if advanced_quality_report and "recommendations" in advanced_quality_report:
             recommendations.extend(advanced_quality_report["recommendations"])
 
         # Eliminar duplicados
@@ -931,17 +826,12 @@ class ConsoleReporter:
     def _print_recommendations(self, results: ProjectAnalysisResult) -> None:
         """Imprime recomendaciones completas."""
         quality_report = self.processor.generate_quality_report(results)
-        advanced_quality_report = (
-            self.processor.generate_detailed_quality_report(results)
-        )
+        advanced_quality_report = self.processor.generate_detailed_quality_report(results)
 
         recommendations = []
         if quality_report and "recommendations" in quality_report:
             recommendations.extend(quality_report["recommendations"])
-        if (
-            advanced_quality_report
-            and "recommendations" in advanced_quality_report
-        ):
+        if advanced_quality_report and "recommendations" in advanced_quality_report:
             recommendations.extend(advanced_quality_report["recommendations"])
 
         # Eliminar duplicados
@@ -959,9 +849,7 @@ class ConsoleReporter:
 
         self.print(self.colorize("💡 Recommendations:", Colors.BOLD))
 
-        for i, rec in enumerate(
-            unique_recommendations[:5], 1
-        ):  # Mostrar solo las primeras 5
+        for i, rec in enumerate(unique_recommendations[:5], 1):  # Mostrar solo las primeras 5
             self.print(f"   {i}. {rec}")
 
         if len(unique_recommendations) > 5:
@@ -974,13 +862,9 @@ class ConsoleReporter:
     ) -> None:
         """Imprime información de rendimiento."""
         try:
-            performance_report = self.processor.create_performance_report(
-                results
-            )
+            performance_report = self.processor.create_performance_report(results)
 
-            self.print(
-                self.colorize(f"{Icons.ROCKET} Performance:", Colors.BOLD)
-            )
+            self.print(self.colorize(f"{Icons.ROCKET} Performance:", Colors.BOLD))
 
             analysis_time = results.analysis_time_ms / 1000
             files_per_second = performance_report.get("files_per_second", 0)
@@ -993,17 +877,11 @@ class ConsoleReporter:
             )
 
             if detailed:
-                memory_usage = performance_report.get(
-                    "estimated_memory_usage", "N/A"
-                )
-                self.print(
-                    f"   💾 Memory usage: {self.colorize(str(memory_usage), Colors.CYAN)}"
-                )
+                memory_usage = performance_report.get("estimated_memory_usage", "N/A")
+                self.print(f"   💾 Memory usage: {self.colorize(str(memory_usage), Colors.CYAN)}")
 
                 avg_file_time = (
-                    (analysis_time / results.total_files * 1000)
-                    if results.total_files > 0
-                    else 0
+                    (analysis_time / results.total_files * 1000) if results.total_files > 0 else 0
                 )
                 self.print(
                     f"   ⚡ Avg. file time: {self.colorize(f'{avg_file_time:.1f}ms', Colors.CYAN)}"
@@ -1014,13 +892,9 @@ class ConsoleReporter:
         except Exception as e:
             logger.warning(f"Error al generar información de rendimiento: {e}")
 
-    def _print_project_metrics_detailed(
-        self, project_metrics: MetricsResult
-    ) -> None:
+    def _print_project_metrics_detailed(self, project_metrics: MetricsResult) -> None:
         """Imprime métricas de proyecto detalladas."""
-        self.print(
-            self.colorize("🔬 Project Metrics (Detailed):", Colors.BOLD)
-        )
+        self.print(self.colorize("🔬 Project Metrics (Detailed):", Colors.BOLD))
 
         for metric_name, value in project_metrics.metrics.items():
             if isinstance(value, dict):
@@ -1030,20 +904,14 @@ class ConsoleReporter:
                         f"     • {component}: {self.colorize(f'{component_value:.2f}', Colors.CYAN)}"
                     )
             else:
-                self.print(
-                    f"   {metric_name}: {self.colorize(f'{value:.2f}', Colors.CYAN)}"
-                )
+                self.print(f"   {metric_name}: {self.colorize(f'{value:.2f}', Colors.CYAN)}")
 
         self.print()
 
-    def _print_configuration_info(
-        self, results: ProjectAnalysisResult
-    ) -> None:
+    def _print_configuration_info(self, results: ProjectAnalysisResult) -> None:
         """Imprime información de configuración (solo en modo debug)."""
         self.print(self.colorize("⚙️ Configuration:", Colors.BOLD))
-        self.print(
-            f"   Project root: {self.colorize(str(results.root_path), Colors.GRAY)}"
-        )
+        self.print(f"   Project root: {self.colorize(str(results.root_path), Colors.GRAY)}")
         self.print(
             f"   Analysis timestamp: {self.colorize(results.analysis_timestamp, Colors.GRAY)}"
         )
@@ -1054,9 +922,7 @@ class ConsoleReporter:
 
             threshold_config = get_threshold_config()
             profile = getattr(threshold_config, "_active_profile", "unknown")
-            self.print(
-                f"   Threshold profile: {self.colorize(profile, Colors.GRAY)}"
-            )
+            self.print(f"   Threshold profile: {self.colorize(profile, Colors.GRAY)}")
         except Exception:
             pass
 
@@ -1066,9 +932,7 @@ class ConsoleReporter:
         """Imprime el pie del reporte."""
         separator = "═" * self.width
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        footer_text = (
-            f"Generated by PyPex © {datetime.now().year} | {timestamp}"
-        )
+        footer_text = f"Generated by PyPex © {datetime.now().year} | {timestamp}"
 
         self.print(self.colorize(separator, Colors.CYAN))
         self.print(self.colorize(footer_text.center(self.width), Colors.GRAY))
@@ -1076,9 +940,7 @@ class ConsoleReporter:
 
     # Métodos de utilidad y análisis
 
-    def _analyze_file_issues(
-        self, file_result: FileAnalysisResult
-    ) -> List[str]:
+    def _analyze_file_issues(self, file_result: FileAnalysisResult) -> list[str]:
         """Analiza los problemas específicos de un archivo."""
         issues = []
 
@@ -1086,23 +948,17 @@ class ConsoleReporter:
             # Verificar métricas del módulo
             if file_result.module_metrics:
                 # Líneas de código
-                loc = file_result.module_metrics.get_metric_value(
-                    "lines_of_code"
-                )
+                loc = file_result.module_metrics.get_metric_value("lines_of_code")
                 if loc and loc > 500:
                     issues.append("large file")
 
                 # Complejidad ciclomática total
-                cc = file_result.module_metrics.get_metric_value(
-                    "cyclomatic_complexity"
-                )
+                cc = file_result.module_metrics.get_metric_value("cyclomatic_complexity")
                 if cc and cc > 50:
                     issues.append("high complexity")
 
                 # Acoplamiento
-                coupling = file_result.module_metrics.get_metric_value(
-                    "fan_in_out"
-                )
+                coupling = file_result.module_metrics.get_metric_value("fan_in_out")
                 if isinstance(coupling, dict):
                     fan_out = coupling.get("fan_out", 0)
                     if fan_out > 20:
@@ -1118,9 +974,7 @@ class ConsoleReporter:
             # Verificar entidades problemáticas
             high_complexity_entities = 0
             for entity in file_result.entities:
-                entity_cc = entity.metrics.get_metric_value(
-                    "cyclomatic_complexity"
-                )
+                entity_cc = entity.metrics.get_metric_value("cyclomatic_complexity")
                 if entity_cc and entity_cc > 10:
                     high_complexity_entities += 1
 
@@ -1133,15 +987,11 @@ class ConsoleReporter:
                 )
 
         except Exception as e:
-            logger.debug(
-                f"Error analizando problemas del archivo {file_result.file_path}: {e}"
-            )
+            logger.debug(f"Error analizando problemas del archivo {file_result.file_path}: {e}")
 
         return issues
 
-    def _get_file_metrics_summary(
-        self, file_result: FileAnalysisResult
-    ) -> str:
+    def _get_file_metrics_summary(self, file_result: FileAnalysisResult) -> str:
         """Obtiene un resumen de métricas del archivo."""
         if not file_result.module_metrics:
             return ""
@@ -1150,39 +1000,25 @@ class ConsoleReporter:
 
         try:
             # Complejidad ciclomática
-            cc = file_result.module_metrics.get_metric_value(
-                "cyclomatic_complexity"
-            )
+            cc = file_result.module_metrics.get_metric_value("cyclomatic_complexity")
             if cc:
                 cc_color = self._get_complexity_color(cc)
-                summary_parts.append(
-                    f"CC: {self.colorize(f'{cc:.0f}', cc_color)}"
-                )
+                summary_parts.append(f"CC: {self.colorize(f'{cc:.0f}', cc_color)}")
 
             # Complejidad cognitiva
-            cog = file_result.module_metrics.get_metric_value(
-                "cognitive_complexity"
-            )
+            cog = file_result.module_metrics.get_metric_value("cognitive_complexity")
             if cog:
                 cog_color = self._get_complexity_color(cog)
-                summary_parts.append(
-                    f"Cog: {self.colorize(f'{cog:.0f}', cog_color)}"
-                )
+                summary_parts.append(f"Cog: {self.colorize(f'{cog:.0f}', cog_color)}")
 
             # Acoplamiento
-            coupling = file_result.module_metrics.get_metric_value(
-                "fan_in_out"
-            )
+            coupling = file_result.module_metrics.get_metric_value("fan_in_out")
             if isinstance(coupling, dict):
                 fan_out = coupling.get("fan_out", 0)
                 coupling_color = (
-                    Colors.RED
-                    if fan_out > 20
-                    else Colors.YELLOW if fan_out > 10 else Colors.GREEN
+                    Colors.RED if fan_out > 20 else Colors.YELLOW if fan_out > 10 else Colors.GREEN
                 )
-                summary_parts.append(
-                    f"Coupling: {self.colorize(f'{fan_out:.0f}', coupling_color)}"
-                )
+                summary_parts.append(f"Coupling: {self.colorize(f'{fan_out:.0f}', coupling_color)}")
 
         except Exception as e:
             logger.debug(f"Error obteniendo resumen de métricas: {e}")
@@ -1257,35 +1093,27 @@ class ConsoleReporter:
         else:
             return Colors.BRIGHT_RED
 
-    def _get_file_complexity_summary(
-        self, file_result: FileAnalysisResult
-    ) -> str:
+    def _get_file_complexity_summary(self, file_result: FileAnalysisResult) -> str:
         """Obtiene un resumen de la complejidad del archivo."""
         if not file_result.entities:
             return ""
 
         complexities = []
         for entity in file_result.entities:
-            complexity = entity.metrics.get_metric_value(
-                "cyclomatic_complexity"
-            )
+            complexity = entity.metrics.get_metric_value("cyclomatic_complexity")
             if complexity:
                 complexities.append(complexity)
 
             # Incluir métodos
             for child in entity.children:
-                child_complexity = child.metrics.get_metric_value(
-                    "cyclomatic_complexity"
-                )
+                child_complexity = child.metrics.get_metric_value("cyclomatic_complexity")
                 if child_complexity:
                     complexities.append(child_complexity)
 
         if complexities:
             avg_complexity = sum(complexities) / len(complexities)
             max_complexity = max(complexities)
-            return (
-                f", avg CC: {avg_complexity:.1f}, max CC: {max_complexity:.0f}"
-            )
+            return f", avg CC: {avg_complexity:.1f}, max CC: {max_complexity:.0f}"
 
         return ""
 
@@ -1317,20 +1145,14 @@ class ConsoleReporter:
         """Genera un resumen rápido en una línea."""
         stats = results.get_summary_stats()
         quality_report = self.processor.generate_quality_report(results)
-        score = (
-            quality_report.get("overall_quality_score", 0.0)
-            if quality_report
-            else 0.0
-        )
+        score = quality_report.get("overall_quality_score", 0.0) if quality_report else 0.0
 
         return (
             f"{results.project_name}: {stats['successful_files']}/{stats['total_files']} files, "
             f"{stats['total_lines_of_code']} LOC, Quality: {score:.1f}/100"
         )
 
-    def print_separator(
-        self, char: str = "─", color: str = Colors.GRAY
-    ) -> None:
+    def print_separator(self, char: str = "─", color: str = Colors.GRAY) -> None:
         """Imprime una línea separadora."""
         self.print(self.colorize(char * self.width, color))
 

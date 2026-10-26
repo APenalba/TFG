@@ -13,7 +13,7 @@ Note:
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pypex.core.results import (
     EntityAnalysisResult,
@@ -25,6 +25,7 @@ from pypex.services.config_service import get_config
 from pypex.services.logging_service import get_logger
 
 logger = get_logger(__name__)
+
 
 class ResultsProcessor:
     """Procesador avanzado para agregación y análisis de resultados de análisis.
@@ -59,26 +60,28 @@ class ResultsProcessor:
             "count": lambda values: len(values),
         }
         self.config = get_config()
-        
-        logger.debug(f"ResultsProcessor inicializado con {len(self.aggregation_functions)} funciones de agregación")
-        logger.debug(f"Configuración cargada: threshold_profile={self.config.get('thresholds_profile', 'normal')}")
+
+        logger.debug(
+            f"ResultsProcessor inicializado con {len(self.aggregation_functions)} funciones de agregación"
+        )
+        logger.debug(
+            f"Configuración cargada: threshold_profile={self.config.get('thresholds_profile', 'normal')}"
+        )
 
     def aggregate_metrics(
         self,
         results: ProjectAnalysisResult,
         metric_name: str,
         aggregation_type: str = "sum",
-        entity_types: Optional[List[str]] = None,
-    ) -> Dict[str, float]:
+        entity_types: list[str] | None = None,
+    ) -> dict[str, float]:
         """Agrega métricas a través de entidades del proyecto."""
 
         logger.debug(f"Agregando métricas '{metric_name}' usando tipo '{aggregation_type}'")
 
         if aggregation_type not in self.aggregation_functions:
             logger.error(f"Tipo de agregación no soportado: {aggregation_type}")
-            raise ValueError(
-                f"Tipo de agregación no soportado: {aggregation_type}"
-            )
+            raise ValueError(f"Tipo de agregación no soportado: {aggregation_type}")
 
         entity_types = entity_types or ["function", "class", "method"]
         aggregation_func = self.aggregation_functions[aggregation_type]
@@ -114,27 +117,22 @@ class ResultsProcessor:
                 file_aggregations[file_path] = aggregation_func(file_values)
                 files_with_data += 1
 
-        logger.debug(f"Agregación completada: {files_processed} archivos procesados, {files_with_data} con datos, {len(collected_values)} valores recolectados")
+        logger.debug(
+            f"Agregación completada: {files_processed} archivos procesados, {files_with_data} con datos, {len(collected_values)} valores recolectados"
+        )
 
         return {
-            "project_total": (
-                aggregation_func(collected_values) if collected_values else 0
-            ),
+            "project_total": (aggregation_func(collected_values) if collected_values else 0),
             "files_count": len(file_aggregations),
             "average_per_file": (
-                sum(file_aggregations.values()) / len(file_aggregations)
-                if file_aggregations
-                else 0
+                sum(file_aggregations.values()) / len(file_aggregations) if file_aggregations else 0
             ),
-            **{
-                f"file_{Path(fp).stem}": val
-                for fp, val in file_aggregations.items()
-            },
+            **{f"file_{Path(fp).stem}": val for fp, val in file_aggregations.items()},
         }
 
     def find_problematic_entities(
-        self, results: ProjectAnalysisResult, thresholds: Dict[str, float]
-    ) -> Dict[str, List[EntityAnalysisResult]]:
+        self, results: ProjectAnalysisResult, thresholds: dict[str, float]
+    ) -> dict[str, list[EntityAnalysisResult]]:
         """Encuentra entidades que superan umbrales específicos."""
 
         problematic = {metric: [] for metric in thresholds.keys()}
@@ -147,17 +145,15 @@ class ResultsProcessor:
                 self._check_entity_thresholds(entity, thresholds, problematic)
 
                 for child in entity.children:
-                    self._check_entity_thresholds(
-                        child, thresholds, problematic
-                    )
+                    self._check_entity_thresholds(child, thresholds, problematic)
 
         return problematic
 
     def _check_entity_thresholds(
         self,
         entity: EntityAnalysisResult,
-        thresholds: Dict[str, float],
-        problematic: Dict[str, List[EntityAnalysisResult]],
+        thresholds: dict[str, float],
+        problematic: dict[str, list[EntityAnalysisResult]],
     ) -> None:
         """Verifica si una entidad supera los umbrales."""
         from pypex.metrics import get_registry
@@ -171,7 +167,8 @@ class ResultsProcessor:
             # Si el valor es un diccionario complejo, usar valor agregado
             if value is None or isinstance(value, dict):
                 try:
-                    metric_instance = registry.get_metric(metric_name)
+                    # Lanza una excepción si la métrica no existe
+                    registry.get_metric(metric_name)
                     # Necesitaríamos la entidad original para calcular valor agregado
                     # Por ahora, extraer valor total si existe
                     if isinstance(value, dict):
@@ -185,26 +182,18 @@ class ResultsProcessor:
                         if aggregated_value is None:
                             # Sumar valores numéricos
                             numeric_values = [
-                                v
-                                for v in value.values()
-                                if isinstance(v, (int, float))
+                                v for v in value.values() if isinstance(v, (int, float))
                             ]
-                            aggregated_value = (
-                                sum(numeric_values) if numeric_values else 0
-                            )
+                            aggregated_value = sum(numeric_values) if numeric_values else 0
 
                         value = aggregated_value
                 except Exception:
                     continue  # Skip si no se puede obtener la métrica
 
-            if (
-                value is not None
-                and isinstance(value, (int, float))
-                and value > threshold
-            ):
+            if value is not None and isinstance(value, (int, float)) and value > threshold:
                 problematic[metric_name].append(entity)
 
-    def _get_all_registered_metrics(self) -> List[str]:
+    def _get_all_registered_metrics(self) -> list[str]:
         """Obtiene dinámicamente todas las métricas registradas."""
         from pypex.metrics import get_registry
 
@@ -221,9 +210,7 @@ class ResultsProcessor:
                 "nesting_depth",
             ]
 
-    def _get_quality_metrics_config(
-        self, threshold_level: str = "medium"
-    ) -> Dict[str, float]:
+    def _get_quality_metrics_config(self, threshold_level: str = "medium") -> dict[str, float]:
         """Obtiene configuración de métricas para evaluación de calidad.
 
         Args:
@@ -235,24 +222,16 @@ class ResultsProcessor:
         thresholds = {}
         for metric_name in metrics:
             try:
-                metric_thresholds = threshold_config.get_thresholds(
-                    metric_name
-                )
-                thresholds[metric_name] = metric_thresholds.get(
-                    threshold_level, 10
-                )
+                metric_thresholds = threshold_config.get_thresholds(metric_name)
+                thresholds[metric_name] = metric_thresholds.get(threshold_level, 10)
             except Exception:
                 # Si no hay thresholds configurados, usar valores por defecto según el nivel
                 default_values = {"low": 5, "medium": 10, "high": 20}
-                thresholds[metric_name] = default_values.get(
-                    threshold_level, 10
-                )
+                thresholds[metric_name] = default_values.get(threshold_level, 10)
 
         return thresholds
 
-    def generate_quality_report(
-        self, results: ProjectAnalysisResult
-    ) -> Optional[Dict[str, Any]]:
+    def generate_quality_report(self, results: ProjectAnalysisResult) -> dict[str, Any] | None:
         """Genera un reporte de calidad basado en el threshold profile configurado.
 
         Returns:
@@ -289,21 +268,15 @@ class ResultsProcessor:
             "threshold_level": threshold_level,
             "overall_quality_score": quality_score,
             "total_entities": sum(
-                len(file.entities)
-                + sum(len(entity.children) for entity in file.entities)
+                len(file.entities) + sum(len(entity.children) for entity in file.entities)
                 for file in results.files.values()
                 if file.was_successful
             ),
             "problematic_entities": {
-                metric: len(entities)
-                for metric, entities in problematic.items()
+                metric: len(entities) for metric, entities in problematic.items()
             },
             "files_with_issues": len(
-                [
-                    file
-                    for file in results.files.values()
-                    if not file.was_successful or file.errors
-                ]
+                [file for file in results.files.values() if not file.was_successful or file.errors]
             ),
             "critical_errors": len(
                 [
@@ -312,15 +285,13 @@ class ResultsProcessor:
                     if error.severity == ErrorSeverity.CRITICAL
                 ]
             ),
-            "recommendations": self._generate_dynamic_recommendations(
-                problematic
-            ),
+            "recommendations": self._generate_dynamic_recommendations(problematic),
         }
 
     def _calculate_quality_score(
         self,
         results: ProjectAnalysisResult,
-        problematic: Dict[str, List[EntityAnalysisResult]],
+        problematic: dict[str, list[EntityAnalysisResult]],
     ) -> float:
         """Calcula un score de calidad simple (0-100).
 
@@ -328,17 +299,14 @@ class ResultsProcessor:
         """
 
         total_entities = sum(
-            len(file.entities)
-            + sum(len(entity.children) for entity in file.entities)
+            len(file.entities) + sum(len(entity.children) for entity in file.entities)
             for file in results.files.values()
             if file.was_successful
         )
         if total_entities == 0:
             return 100.0
 
-        total_problematic = sum(
-            len(entities) for entities in problematic.values()
-        )
+        total_problematic = sum(len(entities) for entities in problematic.values())
 
         # Score base
         base_score = max(0, 100 - (total_problematic / total_entities * 100))
@@ -351,18 +319,14 @@ class ResultsProcessor:
                 if error.severity == ErrorSeverity.CRITICAL
             ]
         )
-        error_penalty = min(
-            critical_errors * 10, 50
-        )  # Max 50 puntos de penalización
+        error_penalty = min(critical_errors * 10, 50)  # Max 50 puntos de penalización
 
         return max(0, base_score - error_penalty)
 
     def _generate_dynamic_recommendations(
         self,
-        problematic: Union[
-            Dict[str, List[EntityAnalysisResult]], Dict[str, int]
-        ],
-    ) -> List[str]:
+        problematic: dict[str, list[EntityAnalysisResult]] | dict[str, int],
+    ) -> list[str]:
         """Genera recomendaciones dinámicas basadas en métricas problemáticas.
 
         Args:
@@ -448,9 +412,7 @@ class ResultsProcessor:
 
         return recommendations
 
-    def create_performance_report(
-        self, results: ProjectAnalysisResult
-    ) -> Dict[str, Any]:
+    def create_performance_report(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera un reporte de rendimiento del análisis."""
 
         total_files = len(results.files)
@@ -458,9 +420,7 @@ class ResultsProcessor:
         failed_files = results.failed_files
 
         # Calcular tiempo promedio por archivo (si está disponible)
-        avg_time_per_file = (
-            results.analysis_time_ms / total_files if total_files > 0 else 0
-        )
+        avg_time_per_file = results.analysis_time_ms / total_files if total_files > 0 else 0
 
         return {
             "analysis_performance": {
@@ -469,9 +429,7 @@ class ResultsProcessor:
                 "successful_files": successful_files,
                 "failed_files": failed_files,
                 "success_rate_percent": (
-                    (successful_files / total_files * 100)
-                    if total_files > 0
-                    else 0
+                    (successful_files / total_files * 100) if total_files > 0 else 0
                 ),
                 "average_time_per_file_ms": avg_time_per_file,
                 "total_lines_processed": results.total_lines_of_code,
@@ -482,13 +440,9 @@ class ResultsProcessor:
                     default=0,
                 ),
                 "average_file_size_lines": (
-                    results.total_lines_of_code / total_files
-                    if total_files > 0
-                    else 0
+                    results.total_lines_of_code / total_files if total_files > 0 else 0
                 ),
-                "files_with_errors": len(
-                    [file for file in results.files.values() if file.errors]
-                ),
+                "files_with_errors": len([file for file in results.files.values() if file.errors]),
             },
         }
 
@@ -497,48 +451,44 @@ class ResultsProcessor:
         results: ProjectAnalysisResult,
         metric_name: str,
         limit: int = 10,
-        entity_types: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        entity_types: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Obtiene las entidades con los valores más altos para una métrica específica."""
 
         entity_types = entity_types or ["function", "class", "method"]
         entities_with_values = []
+
+        def add_entity(
+            entity: EntityAnalysisResult, file_path: str, parent_name: str | None = None
+        ) -> None:
+            if entity.entity_type not in entity_types:
+                return
+            value = entity.metrics.get_metric_value(metric_name)
+            if value is None:
+                return
+            entities_with_values.append(
+                {
+                    "entity_name": f"{parent_name}.{entity.name}" if parent_name else entity.name,
+                    "entity_type": entity.entity_type,
+                    "file_path": str(file_path),
+                    "line_start": entity.source_info.get("line_start"),
+                    "metric_value": value,
+                }
+            )
 
         for file_path, file_result in results.files.items():
             if not file_result.was_successful:
                 continue
 
             for entity in file_result.entities:
-                if entity.entity_type in entity_types:
-                    value = entity.metrics.get_metric_value(metric_name)
-                    if value is not None:
-                        entities_with_values.append(
-                            {
-                                "name": entity.name,
-                                "type": entity.entity_type,
-                                "file": file_path,
-                                "metric_value": value,
-                            }
-                        )
+                add_entity(entity, file_path)
 
-            # Incluir métodos de clases
-            for child in entity.children:
-                if child.entity_type in entity_types:
-                    value = child.metrics.get_metric_value(metric_name)
-                    if value is not None:
-                        entities_with_values.append(
-                            {
-                                "name": f"{entity.name}.{child.name}",
-                                "type": child.entity_type,
-                                "file": file_path,
-                                "metric_value": value,
-                            }
-                        )
+                # Incluir métodos de clases
+                for child in entity.children:
+                    add_entity(child, file_path, parent_name=entity.name)
 
         # Ordenar por valor de métrica descendente
-        entities_with_values.sort(
-            key=lambda x: x["metric_value"], reverse=True
-        )
+        entities_with_values.sort(key=lambda x: x["metric_value"], reverse=True)
 
         return entities_with_values[:limit]
 
@@ -547,7 +497,7 @@ class ResultsProcessor:
         results: ProjectAnalysisResult,
         metric_name: str,
         level: str = "high",  # "low", "medium", "high", "very_high"
-    ) -> List[EntityAnalysisResult]:
+    ) -> list[EntityAnalysisResult]:
         """Obtiene entidades que superan un nivel específico de threshold para una métrica.
 
         NOTA: Este método usa thresholds fijos independientes del threshold profile del CLI.
@@ -559,9 +509,7 @@ class ResultsProcessor:
 
         try:
             # Obtener thresholds usando el perfil por defecto (no el activo)
-            thresholds = threshold_config.get_thresholds(
-                metric_name, profile="normal"
-            )
+            thresholds = threshold_config.get_thresholds(metric_name, profile="normal")
 
             # Determinar threshold según el nivel solicitado
             if level == "low":
@@ -591,10 +539,7 @@ class ResultsProcessor:
                 # Incluir métodos de clases
                 for child in entity.children:
                     child_value = child.metrics.get_metric_value(metric_name)
-                    if (
-                        child_value is not None
-                        and child_value > threshold_value
-                    ):
+                    if child_value is not None and child_value > threshold_value:
                         problematic_entities.append(child)
 
         # Ordenar por valor de métrica descendente
@@ -610,7 +555,7 @@ class ResultsProcessor:
         results: ProjectAnalysisResult,
         metric_name: str,
         level: str = "high",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Obtiene entidades problemáticas junto con la información del archivo donde se encuentran.
 
         Args:
@@ -625,9 +570,7 @@ class ResultsProcessor:
 
         try:
             # Obtener thresholds usando el perfil por defecto
-            thresholds = threshold_config.get_thresholds(
-                metric_name, profile="normal"
-            )
+            thresholds = threshold_config.get_thresholds(metric_name, profile="normal")
 
             # Determinar threshold según el nivel solicitado
             if level == "low":
@@ -679,7 +622,7 @@ class ResultsProcessor:
 
     def generate_detailed_quality_report(
         self, results: ProjectAnalysisResult
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Genera un reporte de calidad detallado basado en el threshold profile configurado.
 
         Returns:
@@ -697,7 +640,6 @@ class ResultsProcessor:
         from pypex.metrics import get_registry
 
         registry = get_registry()
-        threshold_config = get_threshold_config()
 
         # Obtener todas las métricas registradas dinámicamente
         metrics_to_analyze = self._get_all_registered_metrics()
@@ -719,9 +661,7 @@ class ResultsProcessor:
 
                 # Construir análisis detallado para esta métrica
                 top_problematic = []
-                for entity_info in high_entities_with_file[
-                    :5
-                ]:  # Top 5 más problemáticas
+                for entity_info in high_entities_with_file[:5]:  # Top 5 más problemáticas
                     entity = entity_info["entity"]
                     file_path = entity_info["file_path"]
                     metric_value = entity.metrics.get_metric_value(metric_name)
@@ -729,9 +669,7 @@ class ResultsProcessor:
                     if metric_value is not None:
                         interpretation = "N/A"
                         try:
-                            interpretation = metric_instance.interpret(
-                                float(metric_value)
-                            )
+                            interpretation = metric_instance.interpret(float(metric_value))
                         except Exception:
                             pass
 
@@ -747,23 +685,18 @@ class ResultsProcessor:
 
                 detailed_analysis[metric_name] = {
                     "high_complexity_entities": len(high_entities_with_file),
-                    "medium_complexity_entities": len(
-                        medium_entities_with_file
-                    ),
+                    "medium_complexity_entities": len(medium_entities_with_file),
                     "top_problematic": top_problematic,
                 }
 
-                overall_issues.extend(
-                    [info["entity"] for info in high_entities_with_file]
-                )
+                overall_issues.extend([info["entity"] for info in high_entities_with_file])
 
             except Exception as e:
                 detailed_analysis[metric_name] = {"error": str(e)}
 
         # Calcular score de calidad más sofisticado
         total_entities = sum(
-            len(file.entities)
-            + sum(len(entity.children) for entity in file.entities)
+            len(file.entities) + sum(len(entity.children) for entity in file.entities)
             for file in results.files.values()
             if file.was_successful
         )
@@ -785,9 +718,7 @@ class ResultsProcessor:
             "total_problems": len(overall_issues),
             "recommendations": self._generate_dynamic_recommendations(
                 {
-                    metric: detailed_analysis[metric].get(
-                        "high_complexity_entities", 0
-                    )
+                    metric: detailed_analysis[metric].get("high_complexity_entities", 0)
                     for metric in detailed_analysis
                     if isinstance(detailed_analysis[metric], dict)
                     and "high_complexity_entities" in detailed_analysis[metric]
@@ -795,9 +726,7 @@ class ResultsProcessor:
             ),
         }
 
-    def _generate_advanced_recommendations(
-        self, detailed_analysis: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_advanced_recommendations(self, detailed_analysis: dict[str, Any]) -> list[str]:
         """Genera recomendaciones avanzadas basadas en análisis detallado."""
 
         recommendations = []
@@ -806,18 +735,13 @@ class ResultsProcessor:
         problematic_counts = {}
 
         for metric_name, analysis in detailed_analysis.items():
-            if (
-                isinstance(analysis, dict)
-                and "high_complexity_entities" in analysis
-            ):
+            if isinstance(analysis, dict) and "high_complexity_entities" in analysis:
                 count = analysis.get("high_complexity_entities", 0)
                 if count > 0:
                     problematic_counts[metric_name] = count
 
         # Generar recomendaciones usando el método dinámico
-        dynamic_recommendations = self._generate_dynamic_recommendations(
-            problematic_counts
-        )
+        dynamic_recommendations = self._generate_dynamic_recommendations(problematic_counts)
 
         recommendations.extend(dynamic_recommendations)
 

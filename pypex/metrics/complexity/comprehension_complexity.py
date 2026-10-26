@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad de comprensión."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -81,11 +79,11 @@ class ComprehensionComplexityMetric(BaseMetric):
             description="Mide la complejidad de expresiones de comprensión basada en condiciones.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para comprehension_complexity.
-        
+
         Basado en dificultad de comprensión de sintaxis Python.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -95,22 +93,19 @@ class ComprehensionComplexityMetric(BaseMetric):
             "high": 8.0,
         }
 
-
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad de comprensión de una función.
-        
+
         Analiza directamente el nodo AST para encontrar comprensiones
         y contar sus condiciones if.
-        
+
         Args:
             function: Función a analizar.
-            
+
         Returns:
             float: Complejidad total de comprensiones.
         """
-        logger.debug(
-            f"Calculando complejidad de comprensión para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad de comprensión para función: {function.name}")
 
         # Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
@@ -155,7 +150,7 @@ class ComprehensionComplexityMetric(BaseMetric):
                 for generator in node.generators:
                     # Cada generador puede tener múltiples ifs
                     condition_count += len(generator.ifs)
-                
+
                 total_complexity += condition_count
 
             # Recursión sobre hijos
@@ -163,7 +158,7 @@ class ComprehensionComplexityMetric(BaseMetric):
                 count_comprehension_conditions(child)
 
         # Analizar el cuerpo de la función
-        if hasattr(func_node, 'body'):
+        if hasattr(func_node, "body"):
             for stmt in func_node.body:
                 count_comprehension_conditions(stmt)
         elif isinstance(func_node, astroid_nodes.Lambda):
@@ -171,11 +166,9 @@ class ComprehensionComplexityMetric(BaseMetric):
 
         return total_complexity
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad de comprensión para una clase."""
-        logger.debug(
-            f"Calculando complejidad de comprensión para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando complejidad de comprensión para clase: {cls.name}")
 
         if not cls.methods:
             return {
@@ -195,9 +188,7 @@ class ComprehensionComplexityMetric(BaseMetric):
             "average": sum(method_comprehensions) / len(method_comprehensions),
             "max": max(method_comprehensions),
             "method_count": float(len(cls.methods)),
-            "methods_with_comprehensions": len(
-                [c for c in method_comprehensions if c > 0]
-            ),
+            "methods_with_comprehensions": len([c for c in method_comprehensions if c > 0]),
         }
 
         return result

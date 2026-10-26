@@ -17,7 +17,7 @@ from __future__ import annotations
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from pypex.core.interfaces import (
     FileAnalysisResult,
@@ -25,7 +25,6 @@ from pypex.core.interfaces import (
     IASTParser,
     IFileProcessor,
     InvalidProjectError,
-    IProject,
     ProjectAnalysisResult,
 )
 from pypex.core.project import Project
@@ -46,15 +45,15 @@ logger = get_logger(__name__)
 
 class Analyzer(IAnalyzer):
     """Analizador principal para código Python con cálculo de métricas de complejidad.
-    
+
     Esta clase coordina todo el proceso de análisis de código Python, desde la carga
     de archivos hasta el cálculo de métricas. Implementa la interfaz IAnalyzer y
     proporciona funcionalidades robustas para análisis tanto de archivos individuales
     como de proyectos completos.
-    
+
     El analizador utiliza una estrategia de fallback que intenta primero usar Astroid
     para análisis avanzado y, si falla, utiliza el módulo AST estándar de Python.
-    
+
     Attributes:
         config: Configuración del analizador obtenida del ConfigService
         file_processor: Procesador de archivos utilizado
@@ -63,11 +62,11 @@ class Analyzer(IAnalyzer):
         reporters: Lista de reporteros configurados
         metrics: Lista de métricas a calcular
         metrics_engine: Motor de métricas inicializado
-        
+
     Example:
         >>> from pypex.core import Analyzer, FileProcessor
         >>> from pypex.parser.ast_parser import ASTParser
-        >>> 
+        >>>
         >>> analyzer = Analyzer(
         ...     file_processor=FileProcessor(),
         ...     parser=ASTParser()
@@ -80,7 +79,7 @@ class Analyzer(IAnalyzer):
         self,
         parser: IASTParser,
         file_processor: IFileProcessor,
-        specific_metrics: Optional[List[IMetric]] = None,
+        specific_metrics: list[IMetric] | None = None,
     ):
         """Inicializa el analizador con sus dependencias.
 
@@ -96,17 +95,17 @@ class Analyzer(IAnalyzer):
         self.parser = parser
         self.file_processor = file_processor
         self.config = get_config()  # Configuración centralizada
-        
+
         # Configurar clase de proyecto desde configuración o usar por defecto
         self.project_class = Project
-        
+
         # Importar en tiempo de ejecución para evitar imports circulares
         from pypex.metrics.engine import MetricsEngine
-        
+
         self.metrics_engine = MetricsEngine(specific_metrics)
         logger.debug("Analizador inicializado correctamente")
 
-    def set_reporters(self, reporters: List[Any]) -> None:
+    def set_reporters(self, reporters: list[Any]) -> None:
         """Configura los generadores de informes a utilizar.
 
         Args:
@@ -114,34 +113,31 @@ class Analyzer(IAnalyzer):
         """
         self.reporters = reporters
 
-    def set_metrics(self, metrics: List[IMetric]) -> None:
+    def set_metrics(self, metrics: list[IMetric]) -> None:
         """Configura las métricas a calcular durante el análisis.
 
         Args:
             metrics: Lista de métricas a utilizar
         """
         from pypex.metrics.engine import MetricsEngine
-        
+
         self.metrics = metrics
         self.metrics_engine = MetricsEngine(specific_metrics=metrics)
-        logger.debug(
-            f"Motor de métricas configurado con {len(metrics)} métricas específicas"
-        )
+        logger.debug(f"Motor de métricas configurado con {len(metrics)} métricas específicas")
 
     def _ensure_metrics_engine(self) -> MetricsEngine:
         """Asegura que el motor de métricas esté inicializado y lo devuelve."""
         if self.metrics_engine is None:
-            logger.debug(
-                "Motor de métricas no inicializado, creando instancia por defecto."
-            )
+            logger.debug("Motor de métricas no inicializado, creando instancia por defecto.")
             from pypex.metrics.engine import MetricsEngine
-            self.metrics_engine = MetricsEngine(specific_metrics=getattr(self, 'metrics', None))
+
+            self.metrics_engine = MetricsEngine(specific_metrics=getattr(self, "metrics", None))
         return self.metrics_engine
 
     def analyze_file(
         self,
-        file_path: Union[str, Path],
-        config: Optional[Dict[str, Any]] = None,
+        file_path: str | Path,
+        config: dict[str, Any] | None = None,
     ) -> FileAnalysisResult:
         """Analiza un archivo Python y calcula sus métricas.
 
@@ -165,7 +161,7 @@ class Analyzer(IAnalyzer):
         try:
             if path.exists():
                 file_size = path.stat().st_size
-                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(path, encoding="utf-8", errors="ignore") as f:
                     line_count = sum(1 for _ in f)
         except Exception:
             pass
@@ -206,29 +202,21 @@ class Analyzer(IAnalyzer):
 
         try:
             # Intentar análisis con Astroid
-            detailed_module_entity: Optional[ModuleEntity] = None
+            detailed_module_entity: ModuleEntity | None = None
             try:
                 logger.debug(f"Intentando análisis con astroid para {path}")
-                astroid_tree_root = self.parser.parse_with_astroid(
-                    str(path)
-                )
-                astroid_visitor = AstroidNodeVisitor(
-                    astroid_tree_root, str(path)
-                )
+                astroid_tree_root = self.parser.parse_with_astroid(str(path))
+                astroid_visitor = AstroidNodeVisitor(astroid_tree_root, str(path))
                 detailed_module_entity = astroid_visitor.analyze()
 
                 if detailed_module_entity:
                     engine = self._ensure_metrics_engine()
 
                     # Métricas del módulo
-                    result.module_metrics = engine.calculate_all_for_module(
-                        detailed_module_entity
-                    )
+                    result.module_metrics = engine.calculate_all_for_module(detailed_module_entity)
 
                     # Entidades (funciones y clases)
-                    result.entities = engine.get_entities_from_module(
-                        detailed_module_entity
-                    )
+                    result.entities = engine.get_entities_from_module(detailed_module_entity)
 
                 logger.debug(f"Análisis con astroid completado para {path}")
 
@@ -253,9 +241,7 @@ class Analyzer(IAnalyzer):
                     basic_metrics = ast_visitor.get_metrics()
                     result.basic_ast_data = basic_metrics
                 except Exception as e_ast:
-                    logger.error(
-                        f"Fallback a AST estándar también falló para {path}: {str(e_ast)}"
-                    )
+                    logger.error(f"Fallback a AST estándar también falló para {path}: {str(e_ast)}")
                     result.errors.append(
                         AnalysisError(
                             message=f"AST fallback failed: {str(e_ast)}",
@@ -266,9 +252,7 @@ class Analyzer(IAnalyzer):
                     )
 
         except Exception as e_critical:
-            logger.error(
-                f"Error crítico al analizar {file_path}: {str(e_critical)}"
-            )
+            logger.error(f"Error crítico al analizar {file_path}: {str(e_critical)}")
             result.errors.append(
                 AnalysisError(
                     message=f"Critical error: {str(e_critical)}",
@@ -283,8 +267,8 @@ class Analyzer(IAnalyzer):
 
     def analyze_project(
         self,
-        path: Union[str, Path],
-        config: Optional[Dict[str, Any]] = None,
+        path: str | Path,
+        config: dict[str, Any] | None = None,
     ) -> ProjectAnalysisResult:
         """Analiza un proyecto completo en la ruta especificada.
 
@@ -350,9 +334,7 @@ class Analyzer(IAnalyzer):
             result.analysis_time_ms = (time.time() - start_time) * 1000
             return result
         except Exception as e_proj_init:
-            error_msg = (
-                f"Error al inicializar el gestor de proyecto: {e_proj_init}"
-            )
+            error_msg = f"Error al inicializar el gestor de proyecto: {e_proj_init}"
             logger.error(error_msg)
             result.global_errors.append(
                 AnalysisError(
@@ -365,7 +347,7 @@ class Analyzer(IAnalyzer):
             return result
 
         # Procesar archivos
-        processed_module_entities: List[ModuleEntity] = []
+        processed_module_entities: list[ModuleEntity] = []
         file_iter = project_manager.python_files
         total_files = len(project_manager.python_files)
         result.total_files = total_files
@@ -382,24 +364,14 @@ class Analyzer(IAnalyzer):
                 file_path_str = str(file_path_obj)
 
                 # Actualizar descripción de la barra de progreso
-                progress_bar.update(
-                    0, description=f"Analizando: {file_path_obj.name}"
-                )
+                progress_bar.update(0, description=f"Analizando: {file_path_obj.name}")
 
                 # Si no hay barra de progreso visual, logear el progreso periodicamente
                 if not use_progress_bar:
-                    if (
-                        (idx + 1) % 10 == 0
-                        or idx == total_files - 1
-                        or total_files < 10
-                    ):
-                        logger.info(
-                            f"Procesando archivo {idx+1}/{total_files}: {file_path_str}"
-                        )
+                    if (idx + 1) % 10 == 0 or idx == total_files - 1 or total_files < 10:
+                        logger.info(f"Procesando archivo {idx + 1}/{total_files}: {file_path_str}")
 
-                file_analysis_result = self.analyze_file(
-                    file_path_obj, project_config
-                )
+                file_analysis_result = self.analyze_file(file_path_obj, project_config)
                 result.files[file_path_str] = file_analysis_result
 
                 if file_analysis_result.was_successful:
@@ -426,13 +398,9 @@ class Analyzer(IAnalyzer):
                     modules=processed_module_entities,
                 )
                 engine = self._ensure_metrics_engine()
-                result.project_metrics = engine.calculate_all_for_project(
-                    project_entity
-                )
+                result.project_metrics = engine.calculate_all_for_project(project_entity)
             except Exception as e_proj_metrics:
-                logger.error(
-                    f"Error al calcular métricas a nivel de proyecto: {e_proj_metrics}"
-                )
+                logger.error(f"Error al calcular métricas a nivel de proyecto: {e_proj_metrics}")
                 result.global_errors.append(
                     AnalysisError(
                         message=f"Error calculando métricas de proyecto: {e_proj_metrics}",
@@ -448,28 +416,22 @@ class Analyzer(IAnalyzer):
         self,
         file_path: Path,
         file_result: FileAnalysisResult,
-        module_entities: List[ModuleEntity],
+        module_entities: list[ModuleEntity],
     ) -> None:
         """Recopila entidades de módulo para el análisis de proyecto."""
         try:
             # Intentar recrear la entidad del módulo usando Astroid
-            astroid_tree_root = self.parser.parse_with_astroid(
-                str(file_path)
-            )
-            astroid_visitor = AstroidNodeVisitor(
-                astroid_tree_root, str(file_path)
-            )
+            astroid_tree_root = self.parser.parse_with_astroid(str(file_path))
+            astroid_visitor = AstroidNodeVisitor(astroid_tree_root, str(file_path))
             module_entity = astroid_visitor.analyze()
 
             if module_entity:
                 module_entities.append(module_entity)
         except Exception as e:
-            logger.warning(
-                f"No se pudo recopilar entidad de módulo para {file_path}: {e}"
-            )
+            logger.warning(f"No se pudo recopilar entidad de módulo para {file_path}: {e}")
 
     def analyze(
-        self, path: Union[str, Path], config: Optional[Dict[str, Any]] = None
+        self, path: str | Path, config: dict[str, Any] | None = None
     ) -> ProjectAnalysisResult:
         """Analiza la ruta especificada, que puede ser un archivo o directorio.
 
@@ -535,9 +497,7 @@ class Analyzer(IAnalyzer):
                 root_path=path_obj,
                 analysis_timestamp=datetime.now().isoformat(),
             )
-            error_msg = (
-                f"La ruta {path_obj} no es un archivo o directorio analizable."
-            )
+            error_msg = f"La ruta {path_obj} no es un archivo o directorio analizable."
             logger.error(error_msg)
             result.global_errors.append(
                 AnalysisError(

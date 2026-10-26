@@ -5,4 +5,4 @@ del analizador de complejidad de código Python.
 
 Autor: Alejandro Penalba Tarrida
 Licencia: MIT
-""" 
+"""

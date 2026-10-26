@@ -1,10 +1,5 @@
 """Módulo para calcular la complejidad ciclomática."""
 
-import ast
-from typing import Dict, Optional, Union
-
-import astroid
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -120,21 +115,21 @@ class CyclomaticComplexity(BaseMetric):
             description="Medida de la complejidad estructural de un programa basada en el número de caminos de ejecución.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para complejidad ciclomática.
-        
+
         Basado en las recomendaciones de McCabe y mejores prácticas de la industria:
         - 1-10: Código simple y fácil de testear
         - 11-20: Complejidad moderada, revisar si es necesario
         - 21+: Alta complejidad, refactoring recomendado
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
         return {
-            "low": 10.0,     # Hasta 10: baja complejidad
-            "medium": 20.0,  # 11-20: complejidad moderada  
-            "high": 50.0,    # 21-50: alta complejidad, 50+: muy alta
+            "low": 10.0,  # Hasta 10: baja complejidad
+            "medium": 20.0,  # 11-20: complejidad moderada
+            "high": 50.0,  # 21-50: alta complejidad, 50+: muy alta
         }
 
     def calculate_function(self, function: Function) -> float:
@@ -150,10 +145,8 @@ class CyclomaticComplexity(BaseMetric):
         Returns:
             float: Complejidad ciclomática de la función.
         """
-        logger.debug(
-            f"Calculando complejidad ciclomática para función: {function.name}"
-        )
-        
+        logger.debug(f"Calculando complejidad ciclomática para función: {function.name}")
+
         # Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
             decision_points = self._calculate_decision_points_from_ast(function.astroid_node)
@@ -187,27 +180,27 @@ class CyclomaticComplexity(BaseMetric):
             if isinstance(node, astroid_nodes.If):
                 decision_count += 1
                 # elif también cuenta como decisión adicional
-                if hasattr(node, 'orelse') and node.orelse:
+                if hasattr(node, "orelse") and node.orelse:
                     for elif_node in node.orelse:
                         if isinstance(elif_node, astroid_nodes.If):
                             decision_count += 1
-                            
+
             elif isinstance(node, (astroid_nodes.For, astroid_nodes.While)):
                 decision_count += 1
-                
+
             elif isinstance(node, astroid_nodes.Try):
                 # Cada except handler es un punto de decisión
-                if hasattr(node, 'handlers'):
+                if hasattr(node, "handlers"):
                     decision_count += len(node.handlers)
-                    
+
             elif isinstance(node, astroid_nodes.Match):
                 # Cada case es un punto de decisión
-                if hasattr(node, 'cases'):
+                if hasattr(node, "cases"):
                     decision_count += len(node.cases)
-                    
+
             elif isinstance(node, astroid_nodes.BoolOp):
                 # Operadores lógicos and/or crean caminos adicionales
-                if hasattr(node, 'values') and len(node.values) > 1:
+                if hasattr(node, "values") and len(node.values) > 1:
                     decision_count += len(node.values) - 1
 
             # Recursión sobre hijos
@@ -215,7 +208,7 @@ class CyclomaticComplexity(BaseMetric):
                 count_decision_points(child)
 
         # Analizar el cuerpo de la función
-        if hasattr(func_node, 'body'):
+        if hasattr(func_node, "body"):
             for stmt in func_node.body:
                 count_decision_points(stmt)
         elif isinstance(func_node, astroid_nodes.Lambda):
@@ -223,7 +216,7 @@ class CyclomaticComplexity(BaseMetric):
 
         return decision_count
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad ciclomática para una clase.
 
         Analiza cada método de la clase individualmente para calcular estadísticas
@@ -235,9 +228,7 @@ class CyclomaticComplexity(BaseMetric):
         Returns:
             Dict[str, float]: Diccionario con estadísticas de complejidad de la clase.
         """
-        logger.debug(
-            f"Calculando complejidad ciclomática para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando complejidad ciclomática para clase: {cls.name}")
 
         if not cls.methods:
             return {
@@ -261,9 +252,7 @@ class CyclomaticComplexity(BaseMetric):
             "max": max(method_complexities),
             "min": min(method_complexities),
             "method_count": float(len(cls.methods)),
-            "high_complexity_methods": len(
-                [c for c in method_complexities if c > 10]
-            ),
+            "high_complexity_methods": len([c for c in method_complexities if c > 10]),
         }
 
         return result

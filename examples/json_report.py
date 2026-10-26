@@ -4,8 +4,9 @@ Este archivo demuestra cómo utilizar el JSONReporter con diferentes niveles
 de detalle y configuraciones.
 """
 
+import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from pypex.core.analyzer import Analyzer
 from pypex.core.file_processor import FileProcessor
@@ -23,7 +24,7 @@ def analyze_and_generate_json_reports(project_path: str) -> None:
     # Configurar componentes del analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar el proyecto
     print(f"Analizando proyecto: {project_path}")
@@ -53,25 +54,23 @@ def analyze_and_generate_json_reports(project_path: str) -> None:
 
     # 4. Reporte solo de métricas
     print("🔢 Generando reporte de métricas...")
-    metrics_reporter = JSONReporter("pypex_metrics.json")
-    metrics_data = metrics_reporter.generate_metrics_only(results)
+    metrics_data = JSONReporter().generate_metrics_only(results)
+    Path("pypex_metrics.json").write_text(
+        json.dumps(metrics_data, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
     # Mostrar estadísticas básicas
-    print(f"\n✅ Análisis completado:")
+    print("\n✅ Análisis completado:")
     print(f"   - Archivos analizados: {results.total_files}")
     print(f"   - Archivos exitosos: {results.successful_files}")
     print(f"   - Líneas de código: {results.total_lines_of_code}")
-    print(f"   - Tiempo de análisis: {results.analysis_time_ms/1000:.2f}s")
+    print(f"   - Tiempo de análisis: {results.analysis_time_ms / 1000:.2f}s")
 
     if results.project_metrics:
-        print(
-            f"   - Métricas de proyecto calculadas: {len(results.project_metrics.metrics)}"
-        )
+        print(f"   - Métricas de proyecto calculadas: {len(results.project_metrics.metrics)}")
 
 
-def generate_custom_json_report(
-    project_path: str, output_config: Dict[str, Any]
-) -> None:
+def generate_custom_json_report(project_path: str, output_config: dict[str, Any]) -> None:
     """
     Ejemplo de generación de reporte JSON personalizado.
 
@@ -82,15 +81,13 @@ def generate_custom_json_report(
     # Configurar analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar
     results = analyzer.analyze_project(project_path)
 
     # Crear reporter personalizado
-    reporter = JSONReporter(
-        output_config.get("output_path", "custom_report.json")
-    )
+    reporter = JSONReporter(output_config.get("output_path", "custom_report.json"))
 
     # Generar reporte con configuración personalizada
     reporter.generate_report(
@@ -101,12 +98,10 @@ def generate_custom_json_report(
         pretty_print=output_config.get("pretty_print", True),
     )
 
-    print(
-        f"✅ Reporte personalizado generado: {output_config.get('output_path')}"
-    )
+    print(f"✅ Reporte personalizado generado: {output_config.get('output_path')}")
 
 
-def analyze_single_file_to_json(file_path: str) -> Dict[str, Any]:
+def analyze_single_file_to_json(file_path: str) -> dict[str, Any]:
     """
     Ejemplo de análisis de un solo archivo y generación de JSON.
 
@@ -119,7 +114,7 @@ def analyze_single_file_to_json(file_path: str) -> Dict[str, Any]:
     # Configurar analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar archivo único
     results = analyzer.analyze(file_path)
@@ -145,14 +140,14 @@ def main():
 
     if not project_path:
         # Usar el propio proyecto PyPex como ejemplo
-        project_path = str(Path(__file__).parent.parent)
+        project_path = str(Path(__file__).resolve().parent.parent / "pypex")
         print(f"Usando proyecto PyPex como ejemplo: {project_path}")
 
     try:
         analyze_and_generate_json_reports(project_path)
 
         # Ejemplo 2: Reporte personalizado
-        print(f"\n🔧 Generando reporte personalizado...")
+        print("\n🔧 Generando reporte personalizado...")
         custom_config = {
             "output_path": "pypex_custom.json",
             "detail_level": "detailed",
@@ -165,19 +160,17 @@ def main():
         # Ejemplo 3: Análisis de un solo archivo
         example_file = Path(project_path) / "core" / "analyzer.py"
         if example_file.exists():
-            print(f"\n📄 Analizando archivo individual...")
+            print("\n📄 Analizando archivo individual...")
             file_summary = analyze_single_file_to_json(str(example_file))
-            print(
-                f"   - Score de calidad: {file_summary['quality_assessment']['overall_score']}"
-            )
+            print(f"   - Score de calidad: {file_summary['quality_assessment']['overall_score']}")
 
-        print(f"\n🎉 ¡Todos los reportes JSON generados exitosamente!")
-        print(f"Archivos generados:")
-        print(f"   - pypex_summary.json (resumen)")
-        print(f"   - pypex_detailed.json (detallado)")
-        print(f"   - pypex_full.json (completo)")
-        print(f"   - pypex_metrics.json (solo métricas)")
-        print(f"   - pypex_custom.json (personalizado)")
+        print("\n🎉 ¡Todos los reportes JSON generados exitosamente!")
+        print("Archivos generados:")
+        print("   - pypex_summary.json (resumen)")
+        print("   - pypex_detailed.json (detallado)")
+        print("   - pypex_full.json (completo)")
+        print("   - pypex_metrics.json (solo métricas)")
+        print("   - pypex_custom.json (personalizado)")
 
     except Exception as e:
         print(f"❌ Error durante el análisis: {e}")

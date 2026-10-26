@@ -14,13 +14,12 @@ Functions:
 Note:
     El sistema soporta perfiles de calidad (strict, normal, permissive) que ajustan
     automáticamente los umbrales según el nivel de rigor deseado.
-    
+
     Cada métrica define sus propios umbrales por defecto. El ConfigService
     puede sobreescribir estos valores por configuración.
 """
 
 from enum import Enum
-from typing import Dict, Optional
 
 from pypex.services.logging_service import get_logger
 
@@ -69,7 +68,7 @@ class ThresholdConfig:
         # Lazy import para evitar ciclos de dependencia
         self._config_service = None
         self._metric_registry = None
-        
+
         # Perfiles predefinidos (modificadores para los umbrales base)
         self._profiles = {
             "strict": {
@@ -90,6 +89,7 @@ class ThresholdConfig:
         if self._config_service is None:
             try:
                 from pypex.services.config_service import get_config
+
                 self._config_service = get_config()
             except ImportError:
                 logger.warning("ConfigService no disponible")
@@ -102,18 +102,19 @@ class ThresholdConfig:
             try:
                 # Lazy import para evitar ciclos de dependencia
                 from pypex.metrics.registry import get_registry
+
                 self._metric_registry = get_registry()
             except ImportError:
                 logger.warning("MetricsRegistry no disponible")
                 self._metric_registry = None
         return self._metric_registry
 
-    def get_default_thresholds(self, metric_name: str) -> Dict[str, float]:
+    def get_default_thresholds(self, metric_name: str) -> dict[str, float]:
         """Obtiene los umbrales por defecto de una métrica específica.
-        
+
         Args:
             metric_name: Nombre de la métrica.
-            
+
         Returns:
             Dict[str, float]: Umbrales por defecto de la métrica.
         """
@@ -124,25 +125,23 @@ class ThresholdConfig:
                 return metric.get_default_thresholds()
             except Exception as e:
                 logger.warning(f"No se pudo obtener umbrales por defecto para {metric_name}: {e}")
-        
+
         # Fallback a umbrales genéricos
         return self._get_generic_thresholds(metric_name)
 
-    def _get_generic_thresholds(self, metric_name: str) -> Dict[str, float]:
+    def _get_generic_thresholds(self, metric_name: str) -> dict[str, float]:
         """Obtiene umbrales genéricos como fallback final.
-        
+
         Args:
             metric_name: Nombre de la métrica.
-            
+
         Returns:
             Dict[str, float]: Umbrales genéricos.
         """
         logger.warning(f"Usando umbrales genéricos para métrica desconocida: {metric_name}")
         return {"low": 5.0, "medium": 10.0, "high": 15.0}
 
-    def get_thresholds(
-        self, metric_name: str, profile: str = None
-    ) -> Dict[str, float]:
+    def get_thresholds(self, metric_name: str, profile: str = None) -> dict[str, float]:
         """Obtiene los umbrales para una métrica específica.
 
         Args:
@@ -172,20 +171,13 @@ class ThresholdConfig:
                 profile_config = self._profiles[profile_to_use]
                 multiplier = profile_config["multiplier"]
 
-                return {
-                    level: value * multiplier
-                    for level, value in base_thresholds.items()
-                }
+                return {level: value * multiplier for level, value in base_thresholds.items()}
             else:
-                logger.warning(
-                    f"Perfil '{profile_to_use}' no válido. Usando perfil normal."
-                )
+                logger.warning(f"Perfil '{profile_to_use}' no válido. Usando perfil normal.")
 
         return base_thresholds
 
-    def set_thresholds(
-        self, metric_name: str, thresholds: Dict[str, float]
-    ) -> None:
+    def set_thresholds(self, metric_name: str, thresholds: dict[str, float]) -> None:
         """Establece umbrales personalizados para una métrica en ConfigService.
 
         Args:
@@ -205,7 +197,9 @@ class ThresholdConfig:
             config_service.set(f"thresholds.{metric_name}", thresholds)
             logger.debug(f"Umbrales actualizados en ConfigService para la métrica '{metric_name}'")
         else:
-            logger.warning(f"ConfigService no disponible. No se pudieron guardar umbrales para '{metric_name}'")
+            logger.warning(
+                f"ConfigService no disponible. No se pudieron guardar umbrales para '{metric_name}'"
+            )
 
     def set_active_profile(self, profile_name: str) -> None:
         """Establece el perfil activo para los umbrales.
@@ -224,9 +218,7 @@ class ThresholdConfig:
         self._active_profile = profile_name
         logger.debug(f"Perfil de umbrales cambiado a '{profile_name}'")
 
-    def interpret_value(
-        self, metric_name: str, value: float
-    ) -> ComplexityLevel:
+    def interpret_value(self, metric_name: str, value: float) -> ComplexityLevel:
         """Interpreta un valor según los umbrales de una métrica.
 
         Args:

@@ -1,7 +1,5 @@
 """Módulo para calcular métricas de acoplamiento Fan-In y Fan-Out."""
 
-from typing import Dict, Optional, Set, Union
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import (
     Class,
@@ -161,11 +159,11 @@ class FanInOutMetric(BaseMetric):
             description="Mide el acoplamiento aferente (Fan-In) y eferente (Fan-Out) de entidades de código.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para fan_in_out.
-        
+
         Basado en métricas de acoplamiento CK.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -177,7 +175,7 @@ class FanInOutMetric(BaseMetric):
 
         self._call_graph = {}  # Caché de grafo de llamadas
 
-    def _build_call_graph(self, project: Project) -> Dict[str, Set[str]]:
+    def _build_call_graph(self, project: Project) -> dict[str, set[str]]:
         """Construye un grafo de llamadas para el proyecto completo.
 
         Args:
@@ -216,9 +214,9 @@ class FanInOutMetric(BaseMetric):
                     for called in func.calls:
                         # Buscar entidad llamada en el grafo
                         for entity_key in call_graph:
-                            if entity_key.endswith(
-                                f"::{called}"
-                            ) or entity_key.endswith(f".{called}"):
+                            if entity_key.endswith(f"::{called}") or entity_key.endswith(
+                                f".{called}"
+                            ):
                                 # Registrar la llamada
                                 call_graph[entity_key].add(func_key)
 
@@ -229,9 +227,9 @@ class FanInOutMetric(BaseMetric):
                         for called in method.calls:
                             # Buscar entidad llamada en el grafo
                             for entity_key in call_graph:
-                                if entity_key.endswith(
-                                    f"::{called}"
-                                ) or entity_key.endswith(f".{called}"):
+                                if entity_key.endswith(f"::{called}") or entity_key.endswith(
+                                    f".{called}"
+                                ):
                                     # Registrar la llamada
                                     call_graph[entity_key].add(method_key)
 
@@ -239,9 +237,7 @@ class FanInOutMetric(BaseMetric):
 
         return self._call_graph
 
-    def _get_fan_in(
-        self, entity_key: str, call_graph: Dict[str, Set[str]]
-    ) -> int:
+    def _get_fan_in(self, entity_key: str, call_graph: dict[str, set[str]]) -> int:
         """Obtiene el Fan-In de una entidad.
 
         Args:
@@ -259,8 +255,8 @@ class FanInOutMetric(BaseMetric):
     def _get_fan_out(
         self,
         entity_key: str,
-        entity_calls: Set[str],
-        call_graph: Dict[str, Set[str]],
+        entity_calls: set[str],
+        call_graph: dict[str, set[str]],
     ) -> int:
         """Obtiene el Fan-Out de una entidad.
 
@@ -276,9 +272,7 @@ class FanInOutMetric(BaseMetric):
         count = 0
         for called in entity_calls:
             for entity in call_graph:
-                if entity.endswith(f"::{called}") or entity.endswith(
-                    f".{called}"
-                ):
+                if entity.endswith(f"::{called}") or entity.endswith(f".{called}"):
                     count += 1
                     break
         return count
@@ -301,7 +295,7 @@ class FanInOutMetric(BaseMetric):
         logger.debug(f"Calculando Fan-Out para función: {function.name}")
         return len(function.calls)
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de acoplamiento Fan-In/Fan-Out para una clase.
 
         Analiza el acoplamiento de la clase tanto a nivel de métodos como de
@@ -339,14 +333,12 @@ class FanInOutMetric(BaseMetric):
             "max_calls": max(method_couplings),
             "inheritance_coupling": inheritance_coupling,
             "method_count": float(len(cls.methods)),
-            "highly_coupled_methods": len(
-                [c for c in method_couplings if c >= 6]
-            ),
+            "highly_coupled_methods": len([c for c in method_couplings if c >= 6]),
         }
 
         return result
 
-    def calculate_module(self, module: Module) -> Dict[str, float]:
+    def calculate_module(self, module: Module) -> dict[str, float]:
         """Calcula métricas de acoplamiento Fan-In/Fan-Out para un módulo.
 
         Esta es una aplicación importante de estas métricas.
@@ -386,21 +378,17 @@ class FanInOutMetric(BaseMetric):
         all_couplings = function_couplings + method_couplings
 
         result = {
-            "avg_coupling": sum(all_couplings) / len(all_couplings)
-            if all_couplings
-            else 0.0,
+            "avg_coupling": sum(all_couplings) / len(all_couplings) if all_couplings else 0.0,
             "max_coupling": max(all_couplings) if all_couplings else 0.0,
             "import_coupling": import_coupling,
             "inheritance_coupling": total_inheritance_coupling,
             "entity_count": len(all_couplings),
-            "highly_coupled_entities": len(
-                [c for c in all_couplings if c >= 6]
-            ),
+            "highly_coupled_entities": len([c for c in all_couplings if c >= 6]),
         }
 
         return result
 
-    def calculate_project(self, project: Project) -> Dict[str, float]:
+    def calculate_project(self, project: Project) -> dict[str, float]:
         """Calcula estadísticas de acoplamiento Fan-In/Fan-Out a nivel de proyecto.
 
         Proporciona métricas agregadas de acoplamiento para evaluar
@@ -442,17 +430,13 @@ class FanInOutMetric(BaseMetric):
             total_import_coupling += import_coupling
 
         result = {
-            "avg_coupling": sum(all_couplings) / len(all_couplings)
-            if all_couplings
-            else 0.0,
+            "avg_coupling": sum(all_couplings) / len(all_couplings) if all_couplings else 0.0,
             "max_coupling": max(all_couplings) if all_couplings else 0.0,
             "total_import_coupling": total_import_coupling,
             "total_inheritance_coupling": total_inheritance_coupling,
             "module_count": module_count,
             "entity_count": len(all_couplings),
-            "highly_coupled_entities": len(
-                [c for c in all_couplings if c >= 6]
-            ),
+            "highly_coupled_entities": len([c for c in all_couplings if c >= 6]),
         }
 
         return result

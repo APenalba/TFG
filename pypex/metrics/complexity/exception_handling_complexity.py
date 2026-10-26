@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad de manejo de excepciones."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -110,11 +108,11 @@ class ExceptionHandlingComplexityMetric(BaseMetric):
             description="Mide la complejidad del manejo de excepciones en el código.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para exception_handling_complexity.
-        
+
         Basado en manejo de excepciones y flujo de error.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -124,25 +122,18 @@ class ExceptionHandlingComplexityMetric(BaseMetric):
             "high": 6.0,
         }
 
-
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad de manejo de excepciones de una función."""
-        logger.debug(
-            f"Calculando complejidad de excepciones para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad de excepciones para función: {function.name}")
 
         # Combinar bloques try y manejadores de excepciones
-        exception_complexity = (
-            function.exception_handlers_count + function.try_blocks_count
-        )
+        exception_complexity = function.exception_handlers_count + function.try_blocks_count
 
         return float(exception_complexity)
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad de manejo de excepciones para una clase."""
-        logger.debug(
-            f"Calculando complejidad de excepciones para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando complejidad de excepciones para clase: {cls.name}")
 
         if not cls.methods:
             return {
@@ -162,9 +153,7 @@ class ExceptionHandlingComplexityMetric(BaseMetric):
             "average": sum(method_exceptions) / len(method_exceptions),
             "max": max(method_exceptions),
             "method_count": float(len(cls.methods)),
-            "methods_with_exceptions": len(
-                [e for e in method_exceptions if e > 0]
-            ),
+            "methods_with_exceptions": len([e for e in method_exceptions if e > 0]),
         }
 
         return result

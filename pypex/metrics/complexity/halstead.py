@@ -1,7 +1,6 @@
 """Módulo para calcular métricas de Halstead de Software."""
 
 import math
-from typing import Dict, Optional, Set, Union
 
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import (
@@ -194,11 +193,11 @@ class HalsteadMetric(BaseMetric):
             description="Calcula métricas de Halstead basadas en operadores y operandos: longitud, vocabulario, volumen, dificultad, esfuerzo, tiempo y errores estimados.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para halstead.
-        
+
         Basado en volumen de Halstead y vocabulario.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -208,10 +207,9 @@ class HalsteadMetric(BaseMetric):
             "high": 8000.0,
         }
 
-
     def _calculate_halstead_metrics(
-        self, operators_count: Dict[str, int], operands_count: Dict[str, int]
-    ) -> Dict[str, float]:
+        self, operators_count: dict[str, int], operands_count: dict[str, int]
+    ) -> dict[str, float]:
         """Calcula todas las métricas de Halstead a partir de conteos de operadores y operandos.
 
         Args:
@@ -282,7 +280,7 @@ class HalsteadMetric(BaseMetric):
 
     def _extract_operators_and_operands_from_ast(
         self, func_node
-    ) -> tuple[Dict[str, int], Dict[str, int]]:
+    ) -> tuple[dict[str, int], dict[str, int]]:
         """Extrae operadores y operandos de un nodo AST de Astroid.
 
         Args:
@@ -298,8 +296,8 @@ class HalsteadMetric(BaseMetric):
             logger.warning("Astroid no disponible para análisis de Halstead")
             return {}, {}
 
-        operators: Dict[str, int] = {}
-        operands: Dict[str, int] = {}
+        operators: dict[str, int] = {}
+        operands: dict[str, int] = {}
 
         def visit(node):
             if isinstance(
@@ -314,11 +312,7 @@ class HalsteadMetric(BaseMetric):
             ):
                 op_name = type(node).__name__
                 if hasattr(node, "op"):
-                    op_name = (
-                        node.op
-                        if isinstance(node.op, str)
-                        else type(node.op).__name__
-                    )
+                    op_name = node.op if isinstance(node.op, str) else type(node.op).__name__
                 elif isinstance(node, astroid_nodes.Compare):
                     op_name = node.ops[0][0]
 
@@ -327,21 +321,15 @@ class HalsteadMetric(BaseMetric):
             elif isinstance(node, astroid_nodes.Call):
                 operators["Call"] = operators.get("Call", 0) + 1
                 if hasattr(node.func, "as_string"):
-                    operands[node.func.as_string()] = (
-                        operands.get(node.func.as_string(), 0) + 1
-                    )
+                    operands[node.func.as_string()] = operands.get(node.func.as_string(), 0) + 1
 
             elif isinstance(node, astroid_nodes.Name):
                 operands[node.name] = operands.get(node.name, 0) + 1
             elif isinstance(node, astroid_nodes.Const):
-                operands[str(node.value)] = (
-                    operands.get(str(node.value), 0) + 1
-                )
+                operands[str(node.value)] = operands.get(str(node.value), 0) + 1
             elif isinstance(node, astroid_nodes.Attribute):
                 if hasattr(node.expr, "as_string"):
-                    operands[node.expr.as_string()] = (
-                        operands.get(node.expr.as_string(), 0) + 1
-                    )
+                    operands[node.expr.as_string()] = operands.get(node.expr.as_string(), 0) + 1
                 operators["."] = operators.get(".", 0) + 1
 
             for child in node.get_children():
@@ -355,9 +343,7 @@ class HalsteadMetric(BaseMetric):
 
         return operators, operands
 
-    def calculate_function(
-        self, function: Function
-    ) -> Optional[Dict[str, float]]:
+    def calculate_function(self, function: Function) -> dict[str, float] | None:
         """Calcula métricas de Halstead para una función.
 
         Analiza directamente el nodo AST para identificar operadores y operandos.
@@ -370,32 +356,31 @@ class HalsteadMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Métricas de Halstead de la función.
         """
-        logger.debug(
-            f"Calculando métricas de Halstead para función: {function.name}"
-        )
+        logger.debug(f"Calculando métricas de Halstead para función: {function.name}")
 
         # Prioridad 1: Calcular operadores y operandos directamente desde el nodo AST
         if function.astroid_node is not None:
             operators_count, operands_count = self._extract_operators_and_operands_from_ast(
                 function.astroid_node
             )
-            
+
             # Si el análisis AST produjo resultados, usarlos
             if operators_count or operands_count:
                 return self._calculate_halstead_metrics(operators_count, operands_count)
 
         # Prioridad 2: Fallback usando operators_count y operands_count (para testing y compatibilidad)
-        if (hasattr(function, 'operators_count') and hasattr(function, 'operands_count') and
-            function.operators_count is not None and function.operands_count is not None):
-            
+        if (
+            hasattr(function, "operators_count")
+            and hasattr(function, "operands_count")
+            and function.operators_count is not None
+            and function.operands_count is not None
+        ):
             return self._calculate_halstead_metrics(
                 function.operators_count, function.operands_count
             )
 
         # Fallback final: función sin AST ni conteos disponibles
-        logger.debug(
-            f"No hay nodo AST ni conteos disponibles para {function.name}"
-        )
+        logger.debug(f"No hay nodo AST ni conteos disponibles para {function.name}")
         return {
             "eta1": 0.0,
             "eta2": 0.0,
@@ -410,7 +395,7 @@ class HalsteadMetric(BaseMetric):
             "bugs": 0.0,
         }
 
-    def calculate_class(self, cls: Class) -> Optional[Dict[str, float]]:
+    def calculate_class(self, cls: Class) -> dict[str, float] | None:
         """Calcula estadísticas de métricas de Halstead para una clase.
 
         En lugar de agregar conteos (que no serían comparables con umbrales),
@@ -422,9 +407,7 @@ class HalsteadMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Estadísticas de Halstead de la clase.
         """
-        logger.debug(
-            f"Calculando estadísticas de Halstead para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando estadísticas de Halstead para clase: {cls.name}")
 
         if not cls.methods:
             return {
@@ -446,9 +429,7 @@ class HalsteadMetric(BaseMetric):
             method_halstead = self.calculate_function(method)
             if method_halstead:
                 method_volumes.append(method_halstead.get("volume", 0.0))
-                method_difficulties.append(
-                    method_halstead.get("difficulty", 0.0)
-                )
+                method_difficulties.append(method_halstead.get("difficulty", 0.0))
 
         if not method_volumes:
             return {
@@ -467,21 +448,16 @@ class HalsteadMetric(BaseMetric):
             "avg_volume": sum(method_volumes) / len(method_volumes),
             "max_volume": max(method_volumes),
             "min_volume": min(method_volumes),
-            "avg_difficulty": sum(method_difficulties)
-            / len(method_difficulties),
+            "avg_difficulty": sum(method_difficulties) / len(method_difficulties),
             "max_difficulty": max(method_difficulties),
             "method_count": float(len(cls.methods)),
-            "high_volume_methods": len(
-                [v for v in method_volumes if v > 2000]
-            ),
-            "high_difficulty_methods": len(
-                [d for d in method_difficulties if d > 20]
-            ),
+            "high_volume_methods": len([v for v in method_volumes if v > 2000]),
+            "high_difficulty_methods": len([d for d in method_difficulties if d > 20]),
         }
 
         return result
 
-    def calculate_module(self, module: Module) -> Optional[Dict[str, float]]:
+    def calculate_module(self, module: Module) -> dict[str, float] | None:
         """Calcula estadísticas de métricas de Halstead para un módulo.
 
         En lugar de agregar conteos, proporciona estadísticas útiles e interpretables
@@ -493,9 +469,7 @@ class HalsteadMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Estadísticas de Halstead del módulo.
         """
-        logger.debug(
-            f"Calculando estadísticas de Halstead para módulo: {module.name}"
-        )
+        logger.debug(f"Calculando estadísticas de Halstead para módulo: {module.name}")
 
         all_volumes = []
         all_difficulties = []
@@ -506,9 +480,7 @@ class HalsteadMetric(BaseMetric):
             function_halstead = self.calculate_function(function)
             if function_halstead:
                 all_volumes.append(function_halstead.get("volume", 0.0))
-                all_difficulties.append(
-                    function_halstead.get("difficulty", 0.0)
-                )
+                all_difficulties.append(function_halstead.get("difficulty", 0.0))
                 entity_count += 1
 
         # Recopilar métricas de métodos de clases del módulo
@@ -517,9 +489,7 @@ class HalsteadMetric(BaseMetric):
                 method_halstead = self.calculate_function(method)
                 if method_halstead:
                     all_volumes.append(method_halstead.get("volume", 0.0))
-                    all_difficulties.append(
-                        method_halstead.get("difficulty", 0.0)
-                    )
+                    all_difficulties.append(method_halstead.get("difficulty", 0.0))
                     entity_count += 1
 
         if not all_volumes:
@@ -537,9 +507,7 @@ class HalsteadMetric(BaseMetric):
 
         # Calcular desviación estándar del volumen para medir distribución
         avg_volume = sum(all_volumes) / len(all_volumes)
-        volume_variance = sum(
-            (v - avg_volume) ** 2 for v in all_volumes
-        ) / len(all_volumes)
+        volume_variance = sum((v - avg_volume) ** 2 for v in all_volumes) / len(all_volumes)
         volume_std = volume_variance**0.5
 
         result = {
@@ -550,17 +518,13 @@ class HalsteadMetric(BaseMetric):
             "max_difficulty": max(all_difficulties),
             "entity_count": float(entity_count),
             "high_volume_entities": len([v for v in all_volumes if v > 2000]),
-            "high_difficulty_entities": len(
-                [d for d in all_difficulties if d > 20]
-            ),
+            "high_difficulty_entities": len([d for d in all_difficulties if d > 20]),
             "volume_distribution": volume_std,
         }
 
         return result
 
-    def calculate_project(
-        self, project: Project
-    ) -> Optional[Dict[str, float]]:
+    def calculate_project(self, project: Project) -> dict[str, float] | None:
         """Calcula estadísticas de métricas de Halstead para un proyecto.
 
         Proporciona métricas agregadas e interpretables para evaluar
@@ -572,9 +536,7 @@ class HalsteadMetric(BaseMetric):
         Returns:
             Optional[Dict[str, float]]: Estadísticas de Halstead del proyecto.
         """
-        logger.debug(
-            f"Calculando estadísticas de Halstead para proyecto: {project.name}"
-        )
+        logger.debug(f"Calculando estadísticas de Halstead para proyecto: {project.name}")
 
         all_volumes = []
         all_difficulties = []
@@ -610,9 +572,7 @@ class HalsteadMetric(BaseMetric):
 
             # Promedio del módulo para análisis de distribución
             if module_volumes:
-                module_avg_volumes.append(
-                    sum(module_volumes) / len(module_volumes)
-                )
+                module_avg_volumes.append(sum(module_volumes) / len(module_volumes))
 
         if not all_volumes:
             return {
@@ -634,20 +594,16 @@ class HalsteadMetric(BaseMetric):
         avg_difficulty = sum(all_difficulties) / len(all_difficulties)
 
         # Distribución del volumen a nivel de entidades
-        project_volume_variance = sum(
-            (v - avg_volume) ** 2 for v in all_volumes
-        ) / len(all_volumes)
+        project_volume_variance = sum((v - avg_volume) ** 2 for v in all_volumes) / len(all_volumes)
         project_volume_std = project_volume_variance**0.5
 
         # Distribución del volumen a nivel de módulos
         module_volume_std = 0.0
         if len(module_avg_volumes) > 1:
-            avg_module_volume = sum(module_avg_volumes) / len(
+            avg_module_volume = sum(module_avg_volumes) / len(module_avg_volumes)
+            module_variance = sum((v - avg_module_volume) ** 2 for v in module_avg_volumes) / len(
                 module_avg_volumes
             )
-            module_variance = sum(
-                (v - avg_module_volume) ** 2 for v in module_avg_volumes
-            ) / len(module_avg_volumes)
             module_volume_std = module_variance**0.5
 
         result = {
@@ -659,16 +615,14 @@ class HalsteadMetric(BaseMetric):
             "total_entities": float(total_entities),
             "module_count": float(len(project.modules)),
             "high_volume_entities": len([v for v in all_volumes if v > 2000]),
-            "high_difficulty_entities": len(
-                [d for d in all_difficulties if d > 20]
-            ),
+            "high_difficulty_entities": len([d for d in all_difficulties if d > 20]),
             "project_volume_distribution": project_volume_std,
             "module_volume_distribution": module_volume_std,
         }
 
         return result
 
-    def calculate(self, entity: CodeEntity) -> Union[Dict[str, float], None]:
+    def calculate(self, entity: CodeEntity) -> dict[str, float] | None:
         """Calcula las métricas de Halstead para una entidad específica.
 
         Args:

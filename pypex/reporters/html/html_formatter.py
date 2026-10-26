@@ -14,9 +14,7 @@ class HTMLFormatter:
 
     def safe_id(self, text: str) -> str:
         """Convierte texto a un ID HTML seguro."""
-        return "".join(
-            c if c.isalnum() or c in ["-", "_"] else "_" for c in str(text)
-        ).strip("_")
+        return "".join(c if c.isalnum() or c in ["-", "_"] else "_" for c in str(text)).strip("_")
 
     def get_quality_class(self, score: float) -> str:
         """Obtiene la clase CSS para el score de calidad."""
@@ -68,13 +66,9 @@ class HTMLFormatter:
             return description
         except MetricNotFoundError:
             # Crear tooltip predeterminado para métrica no encontrada
-            safe_metric_name = html.escape(
-                metric_name.replace("_", " ").title(), quote=True
-            )
+            safe_metric_name = html.escape(metric_name.replace("_", " ").title(), quote=True)
             return f"Métrica: {safe_metric_name}"
         except Exception:
             # Fallback seguro para cualquier error inesperado
-            safe_metric_name = html.escape(
-                str(metric_name).replace("_", " ").title(), quote=True
-            )
+            safe_metric_name = html.escape(str(metric_name).replace("_", " ").title(), quote=True)
             return f"Métrica: {safe_metric_name} (descripción no disponible)"

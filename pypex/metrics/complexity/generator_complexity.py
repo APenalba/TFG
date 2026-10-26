@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de complejidad de generadores."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -116,11 +114,11 @@ class GeneratorComplexityMetric(BaseMetric):
             description="Mide la complejidad de generadores basada en expresiones yield.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para generator_complexity.
-        
+
         Basado en complejidad de generadores y yield.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -130,20 +128,15 @@ class GeneratorComplexityMetric(BaseMetric):
             "high": 6.0,
         }
 
-
     def calculate_function(self, function: Function) -> float:
         """Calcula la complejidad de generador de una función."""
-        logger.debug(
-            f"Calculando complejidad de generador para función: {function.name}"
-        )
+        logger.debug(f"Calculando complejidad de generador para función: {function.name}")
 
         return float(function.yield_expressions_count)
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de complejidad de generador para una clase."""
-        logger.debug(
-            f"Calculando complejidad de generador para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando complejidad de generador para clase: {cls.name}")
 
         if not cls.methods:
             return {

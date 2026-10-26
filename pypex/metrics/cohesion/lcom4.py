@@ -1,7 +1,6 @@
 """Módulo para calcular la métrica LCOM4 (Lack of Cohesion of Methods 4)."""
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Union
 
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
@@ -100,25 +99,25 @@ class LCOM4(BaseMetric):
             description="Mide la cohesión de clases contando componentes conectados entre métodos.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para LCOM4.
-        
+
         Basado en investigación de Hitz & Montazeri y mejores prácticas:
         - LCOM4 = 1: Excelente cohesión (todos los métodos están interconectados)
         - LCOM4 = 2: Buena cohesión (dos grupos de métodos relacionados)
         - LCOM4 = 3: Cohesión moderada (considerar refactoring)
         - LCOM4 > 3: Pobre cohesión (refactoring necesario)
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
         return {
-            "low": 1.0,    # LCOM4 = 1: excelente cohesión
-            "medium": 2.0, # LCOM4 = 2: buena cohesión
-            "high": 4.0,   # LCOM4 = 3-4: cohesión moderada/pobre
+            "low": 1.0,  # LCOM4 = 1: excelente cohesión
+            "medium": 2.0,  # LCOM4 = 2: buena cohesión
+            "high": 4.0,  # LCOM4 = 3-4: cohesión moderada/pobre
         }
 
-    def calculate_function(self, function: Function) -> Optional[float]:
+    def calculate_function(self, function: Function) -> float | None:
         """LCOM4 no aplica a funciones individuales.
 
         LCOM4 está diseñada específicamente para medir la cohesión entre métodos
@@ -131,12 +130,10 @@ class LCOM4(BaseMetric):
         Returns:
             None: Siempre None porque LCOM4 no aplica a funciones.
         """
-        logger.debug(
-            f"LCOM4 no aplica a función: {function.name} - devolviendo None"
-        )
+        logger.debug(f"LCOM4 no aplica a función: {function.name} - devolviendo None")
         return None
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula LCOM4 para una clase.
 
         Esta es la aplicación principal de LCOM4. Analiza las relaciones entre
@@ -194,9 +191,7 @@ class LCOM4(BaseMetric):
             "total": lcom4_value,  # Para compatibilidad con umbrales
         }
 
-    def calculate_module(
-        self, module: Module
-    ) -> Optional[Dict[str, Union[float, Dict[str, float]]]]:
+    def calculate_module(self, module: Module) -> dict[str, float | dict[str, float]] | None:
         """LCOM4 no aplica a módulos.
 
         LCOM4 es una métrica específica para la cohesión interna de clases,
@@ -215,14 +210,10 @@ class LCOM4(BaseMetric):
         Returns:
             None: Siempre None porque LCOM4 no aplica a módulos.
         """
-        logger.debug(
-            f"LCOM4 no aplica a módulo: {module.name} - devolviendo None"
-        )
+        logger.debug(f"LCOM4 no aplica a módulo: {module.name} - devolviendo None")
         return None
 
-    def calculate_project(
-        self, project: Project
-    ) -> Optional[Dict[str, float]]:
+    def calculate_project(self, project: Project) -> dict[str, float] | None:
         """LCOM4 no aplica a proyectos.
 
         LCOM4 es una métrica a nivel de clase que mide la cohesión entre métodos.
@@ -241,14 +232,10 @@ class LCOM4(BaseMetric):
         Returns:
             None: Siempre None porque LCOM4 no aplica a proyectos.
         """
-        logger.debug(
-            f"LCOM4 no aplica a proyecto: {project.name} - devolviendo None"
-        )
+        logger.debug(f"LCOM4 no aplica a proyecto: {project.name} - devolviendo None")
         return None
 
-    def _build_method_connection_graph(
-        self, cls: Class
-    ) -> Dict[str, Set[str]]:
+    def _build_method_connection_graph(self, cls: Class) -> dict[str, set[str]]:
         """Construye un grafo de conexiones entre métodos de una clase.
 
         Args:
@@ -272,9 +259,7 @@ class LCOM4(BaseMetric):
 
         return dict(graph)
 
-    def _add_attribute_connections(
-        self, cls: Class, graph: Dict[str, Set[str]]
-    ):
+    def _add_attribute_connections(self, cls: Class, graph: dict[str, set[str]]):
         """Añade conexiones basadas en atributos de instancia compartidos.
 
         Args:
@@ -290,7 +275,7 @@ class LCOM4(BaseMetric):
                 attribute_to_methods[attr].add(method.name)
 
         # Conectar métodos que acceden al mismo atributo
-        for attr, methods in attribute_to_methods.items():
+        for methods in attribute_to_methods.values():
             if len(methods) > 1:
                 method_list = list(methods)
                 for i, method1 in enumerate(method_list):
@@ -299,9 +284,7 @@ class LCOM4(BaseMetric):
                             graph[method1].add(method2)
                             graph[method2].add(method1)
 
-    def _extract_accessed_attributes_from_ast(
-        self, method: Function
-    ) -> Set[str]:
+    def _extract_accessed_attributes_from_ast(self, method: Function) -> set[str]:
         """Extrae atributos de instancia accedidos desde el método.
 
         Primero intenta usar el atributo accessed_instance_attributes si está disponible
@@ -315,9 +298,12 @@ class LCOM4(BaseMetric):
         """
         # Primero verificar si ya tenemos los atributos accedidos
         # (usado para testing y cuando ya se han calculado)
-        if hasattr(method, 'accessed_instance_attributes') and method.accessed_instance_attributes is not None:
+        if (
+            hasattr(method, "accessed_instance_attributes")
+            and method.accessed_instance_attributes is not None
+        ):
             return set(method.accessed_instance_attributes)
-        
+
         # Si no hay nodo AST, no podemos extraer atributos
         if method.astroid_node is None:
             return set()
@@ -347,10 +333,7 @@ class LCOM4(BaseMetric):
 
             if isinstance(node, astroid_nodes.Attribute):
                 # Verificar si es acceso a self.atributo
-                if (
-                    isinstance(node.expr, astroid_nodes.Name)
-                    and node.expr.name == first_param_name
-                ):
+                if isinstance(node.expr, astroid_nodes.Name) and node.expr.name == first_param_name:
                     accessed_attrs.add(node.attrname)
 
             # Recursión sobre hijos
@@ -365,7 +348,7 @@ class LCOM4(BaseMetric):
         return accessed_attrs
 
     def _add_method_call_connections(
-        self, cls: Class, graph: Dict[str, Set[str]], method_names: Set[str]
+        self, cls: Class, graph: dict[str, set[str]], method_names: set[str]
     ):
         """Añade conexiones basadas en llamadas entre métodos.
 
@@ -380,10 +363,7 @@ class LCOM4(BaseMetric):
                 called_method = self._extract_method_name(called)
 
                 # Solo conectar si es un método de la misma clase
-                if (
-                    called_method in method_names
-                    and called_method != method.name
-                ):
+                if called_method in method_names and called_method != method.name:
                     graph[method.name].add(called_method)
                     graph[called_method].add(method.name)
 
@@ -406,7 +386,7 @@ class LCOM4(BaseMetric):
 
         return call
 
-    def _count_connected_components(self, graph: Dict[str, Set[str]]) -> int:
+    def _count_connected_components(self, graph: dict[str, set[str]]) -> int:
         """Cuenta el número de componentes conectados en el grafo.
 
         Args:
@@ -425,7 +405,7 @@ class LCOM4(BaseMetric):
 
         return components
 
-    def _dfs(self, graph: Dict[str, Set[str]], node: str, visited: Set[str]):
+    def _dfs(self, graph: dict[str, set[str]], node: str, visited: set[str]):
         """Búsqueda en profundidad para encontrar componentes conectados.
 
         Args:
@@ -453,10 +433,7 @@ class LCOM4(BaseMetric):
         for method in cls.methods:
             for called in method.calls:
                 called_method = self._extract_method_name(called)
-                if (
-                    called_method in method_names
-                    and called_method != method.name
-                ):
+                if called_method in method_names and called_method != method.name:
                     connections += 1
 
         return float(connections)
@@ -531,9 +508,7 @@ class LCOM4(BaseMetric):
         else:
             return "Pobre"
 
-    def get_cohesion_analysis(
-        self, cls: Class
-    ) -> Dict[str, Union[str, int, float]]:
+    def get_cohesion_analysis(self, cls: Class) -> dict[str, str | int | float]:
         """Obtiene un análisis detallado de cohesión para una clase.
 
         Args:
@@ -554,8 +529,6 @@ class LCOM4(BaseMetric):
             "shared_attributes": int(metrics["attribute_connections"]),
             "needs_refactoring": lcom4_value > 3,
             "refactoring_priority": (
-                "High"
-                if lcom4_value > 3
-                else "Medium" if lcom4_value > 1 else "Low"
+                "High" if lcom4_value > 3 else "Medium" if lcom4_value > 1 else "Low"
             ),
         }

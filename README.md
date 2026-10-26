@@ -2,10 +2,10 @@
 
 <div align="center">
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/APenalba/TFG)
-[![Code Quality](https://img.shields.io/badge/code%20quality-A-green.svg)](https://github.com/APenalba/TFG)
+[![CI](https://github.com/APenalba/TFG/actions/workflows/ci.yml/badge.svg)](https://github.com/APenalba/TFG/actions/workflows/ci.yml)
 
 **Analizador profesional de métricas de calidad, complejidad, cohesión y mantenibilidad para proyectos Python**
 
@@ -90,8 +90,8 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 
 ### Requisitos Previos
 
-- **Python 3.8+** (recomendado 3.9+)
-- **Poetry** (gestor de dependencias)
+- **Python 3.12+**
+- **[uv](https://docs.astral.sh/uv/)** (gestor de dependencias y entornos)
 
 ### Instalación desde Código Fuente
 
@@ -100,27 +100,24 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 git clone https://github.com/APenalba/TFG.git
 cd TFG
 
-# Instalar dependencias con Poetry
-poetry install
-
-# Activar el entorno virtual
-poetry shell
+# Crear el entorno e instalar dependencias
+uv sync
 
 # Verificar instalación
-pypex --help
+uv run pypex --help
 ```
 
 ### Instalación en Modo Desarrollo
 
 ```bash
-# Para desarrollo con herramientas adicionales
-poetry install --with dev
+# uv sync instala también el grupo de desarrollo (pytest, ruff, mypy...)
+uv sync
 
 # Instalar pre-commit hooks
-pre-commit install
+uv run pre-commit install
 
 # Ejecutar tests
-pytest
+uv run pytest
 ```
 
 ### Uso con Python directo
@@ -128,9 +125,6 @@ pytest
 ```bash
 # Si no se puede usar como comando
 python -m pypex --help
-
-# O usar el script ejecutable
-python pypex.py --help
 ```
 
 ---
@@ -374,16 +368,16 @@ ignore_patterns:
   - ".mypy_cache"
   - "venv"
   - "env"
-  
+
   # Archivos de prueba
   - "test_*.py"
   - "*_test.py"
   - "tests.py"
-  
+
   # Configuración
   - "setup.py"
   - "conftest.py"
-  
+
   # Temporales
   - "*.tmp"
   - "*.bak"
@@ -710,13 +704,8 @@ pypex/
 
 PyPex incluye una **suite completa de tests** para garantizar calidad y robustez:
 
-### Estadísticas Actuales del Proyecto
-
-- **📊 Tests**: 861 tests totales (799 pasados, 62 en desarrollo)
-- **📈 Coverage**: 49% de cobertura de código
-- **📁 Archivos**: 59 archivos de código fuente
-- **📝 Líneas de código**: +21,000 líneas de código fuente
-- **🔢 Total proyecto**: +37,000 líneas (código + tests)
+La CI ejecuta los tests en Python 3.12, 3.13 y 3.14 en cada push y pull request.
+`uv run pytest` muestra la cobertura al terminar.
 
 ### Estructura de Tests
 
@@ -731,12 +720,10 @@ tests/
 │   │   ├── design/          # Tests de diseño
 │   │   └── size/            # Tests de tamaño
 │   ├── parser/              # Tests del parser
+│   ├── reporters/           # Tests de reporters
 │   ├── services/            # Tests de servicios
 │   ├── test_cli.py          # Tests de CLI
 │   └── test_main.py         # Tests principales
-│
-└── integration/             # Tests de integración
-    └── test_full_analysis.py # Tests end-to-end
 ```
 
 ### Ejecutar Tests
@@ -761,30 +748,23 @@ pytest -s
 ### Herramientas de Calidad
 
 ```bash
-# Linting con flake8
-flake8 pypex/
+# Linting (incluye orden de imports)
+uv run ruff check .
 
-# Formateo con black
-black pypex/
-
-# Ordenar imports con isort
-isort pypex/
+# Formateo
+uv run ruff format .
 
 # Type checking con mypy
-mypy pypex/
+uv run mypy pypex/
 
 # Ejecutar todas las validaciones
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Métricas de Calidad del Código
 
-- **Cobertura de código**: 49% (en crecimiento constante)
-- **Tests totales**: 861 tests implementados
-- **Linting**: Cumple estándares flake8
-- **Type hints**: Mypy compliant
-- **Formateo**: Black standard
-- **Import organization**: isort compliant
+- **Linting y formateo**: Ruff
+- **Type hints**: Mypy
 - **Líneas de código**: +37,000 líneas totales (código + tests)
 
 ---
@@ -813,15 +793,16 @@ pre-commit run --all-files
 from pypex.metrics.base import IMetric
 from pypex.parser.code_entities import CodeEntity
 
+
 class MiMetrica(IMetric):
     @property
     def name(self) -> str:
         return "mi_metrica"
-    
+
     @property
     def description(self) -> str:
         return "Descripción de mi métrica"
-    
+
     def calculate(self, entity: CodeEntity) -> float:
         # Implementar cálculo
         return 0.0
@@ -839,7 +820,7 @@ refactor: mejorar estructura del registry
 
 #### Code Style
 
-- **Python**: PEP 8 + Black formatter
+- **Python**: PEP 8 + Ruff formatter
 - **Docstrings**: Google style
 - **Type hints**: Obligatorios
 - **Tests**: Para toda nueva funcionalidad

@@ -1,7 +1,5 @@
 """Módulo para calcular la métrica de profundidad de comprensión anidada."""
 
-from typing import Dict
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import Class, Function, Module, Project
 from pypex.services.logging_service import get_logger
@@ -89,11 +87,11 @@ class NestedComprehensionDepthMetric(BaseMetric):
             description="Mide la profundidad máxima de anidamiento en expresiones de comprensión.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para nested_comprehension_depth.
-        
+
         Basado en legibilidad de comprehensions anidadas.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -103,22 +101,19 @@ class NestedComprehensionDepthMetric(BaseMetric):
             "high": 3.0,
         }
 
-
     def calculate_function(self, function: Function) -> float:
         """Calcula la profundidad máxima de comprensión anidada de una función.
-        
+
         Analiza directamente el nodo AST para encontrar comprensiones anidadas
         y determinar la máxima profundidad de anidamiento.
-        
+
         Args:
             function: Función a analizar.
-            
+
         Returns:
             float: Profundidad máxima de anidamiento en comprensiones.
         """
-        logger.debug(
-            f"Calculando profundidad de comprensión anidada para función: {function.name}"
-        )
+        logger.debug(f"Calculando profundidad de comprensión anidada para función: {function.name}")
 
         # Calcular directamente desde el nodo AST si está disponible
         if function.astroid_node is not None:
@@ -166,7 +161,7 @@ class NestedComprehensionDepthMetric(BaseMetric):
                 calculate_comprehension_depth(child, current_depth)
 
         # Analizar el cuerpo de la función
-        if hasattr(func_node, 'body'):
+        if hasattr(func_node, "body"):
             for stmt in func_node.body:
                 calculate_comprehension_depth(stmt)
         elif isinstance(func_node, astroid_nodes.Lambda):
@@ -174,11 +169,9 @@ class NestedComprehensionDepthMetric(BaseMetric):
 
         return max_depth
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula estadísticas de profundidad de comprensión anidada para una clase."""
-        logger.debug(
-            f"Calculando profundidad de comprensión anidada para clase: {cls.name}"
-        )
+        logger.debug(f"Calculando profundidad de comprensión anidada para clase: {cls.name}")
 
         if not cls.methods:
             return {

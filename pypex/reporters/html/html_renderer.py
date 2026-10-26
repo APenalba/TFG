@@ -1,7 +1,7 @@
 """Renderizador de secciones HTML para el reporte PyPex."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from pypex.core.results import (
     AnalysisError,
@@ -13,8 +13,8 @@ from pypex.core.results import (
 from pypex.metrics import MetricNotFoundError, get_registry
 
 from .html_formatter import HTMLFormatter
-from .package_organizer import PackageNode, PackageOrganizer
 from .metrics_documentation import MetricsDocumentationGenerator
+from .package_organizer import PackageNode, PackageOrganizer
 
 
 class HTMLRenderer:
@@ -30,9 +30,7 @@ class HTMLRenderer:
         """Establece la raíz del proyecto para las rutas relativas."""
         self.organizer = PackageOrganizer(project_root)
 
-    def render_hierarchical_module_index(
-        self, results: ProjectAnalysisResult
-    ) -> str:
+    def render_hierarchical_module_index(self, results: ProjectAnalysisResult) -> str:
         """Renderiza el índice de módulos con estructura jerárquica."""
         if not results.files:
             return "<ul><li>No hay módulos</li></ul>"
@@ -43,9 +41,7 @@ class HTMLRenderer:
         root = self.organizer.organize_files_hierarchically(results.files)
         return self._render_package_tree(root, is_root=True)
 
-    def _render_package_tree(
-        self, node: PackageNode, is_root: bool = False, depth: int = 0
-    ) -> str:
+    def _render_package_tree(self, node: PackageNode, is_root: bool = False, depth: int = 0) -> str:
         """Renderiza un árbol de packages de forma recursiva."""
         html_parts = []
 
@@ -53,11 +49,9 @@ class HTMLRenderer:
             html_parts.append('<div class="package-tree">')
 
         # Renderizar sub-packages primero (directorios)
-        for child_name, child_node in sorted(node.children.items()):
+        for _, child_node in sorted(node.children.items()):
             # Aplicar padding basado en la profundidad usando CSS classes o inline styles
-            indent_style = (
-                f"padding-left: {(depth + 1) * 16}px" if depth > 0 else ""
-            )
+            indent_style = f"padding-left: {(depth + 1) * 16}px" if depth > 0 else ""
 
             html_parts.append(
                 f"""
@@ -68,9 +62,7 @@ class HTMLRenderer:
                 <div class="package-contents">
             """
             )
-            html_parts.append(
-                self._render_package_tree(child_node, False, depth + 1)
-            )
+            html_parts.append(self._render_package_tree(child_node, False, depth + 1))
             html_parts.append("</div></details>")
 
         # Renderizar archivos en este nivel
@@ -80,9 +72,7 @@ class HTMLRenderer:
                 html_parts.append('<ul class="module-list">')
             elif not is_root:
                 # Si hay subcarpetas, separar archivos
-                html_parts.append(
-                    '<div class="files-in-directory"><ul class="module-list">'
-                )
+                html_parts.append('<div class="files-in-directory"><ul class="module-list">')
             else:
                 html_parts.append('<ul class="module-list">')
 
@@ -90,9 +80,7 @@ class HTMLRenderer:
             sorted_files = sorted(
                 node.files,
                 key=lambda x: (
-                    0
-                    if x[0].endswith("__init__.py")
-                    else 1,  # __init__.py primero
+                    0 if x[0].endswith("__init__.py") else 1,  # __init__.py primero
                     1 if x[0].startswith("test_") else 0,  # tests al final
                     x[0].lower(),  # alfabético
                 ),
@@ -101,18 +89,10 @@ class HTMLRenderer:
             for rel_path, file_result in sorted_files:
                 module_name = file_result.module_name
                 file_id = self.formatter.safe_id(rel_path)
-                file_icon = (
-                    self.organizer._get_file_icon(file_result)
-                    if self.organizer
-                    else "🐍"
-                )
+                file_icon = self.organizer._get_file_icon(file_result) if self.organizer else "🐍"
 
                 # Aplicar indentación basada en la profundidad para archivos
-                file_indent_style = (
-                    f"padding-left: {(depth + 1) * 16 + 32}px"
-                    if depth > 0
-                    else ""
-                )
+                file_indent_style = f"padding-left: {(depth + 1) * 16 + 32}px" if depth > 0 else ""
 
                 html_parts.append(
                     f'<li><a href="#file_{file_id}" title="{rel_path}" style="{file_indent_style}">{file_icon} {module_name}</a></li>'
@@ -128,7 +108,7 @@ class HTMLRenderer:
 
         return "".join(html_parts)
 
-    def render_global_errors(self, errors: List[AnalysisError]) -> str:
+    def render_global_errors(self, errors: list[AnalysisError]) -> str:
         """Renderiza errores globales del proyecto."""
         error_items = []
         for error in errors:
@@ -139,13 +119,13 @@ class HTMLRenderer:
         <div class='card error-card'>
             <h2>⚠️ Errores del Análisis</h2>
             <ul class='error-list'>
-                {''.join(error_items)}
+                {"".join(error_items)}
             </ul>
         </div>
         """
 
     def render_project_summary(
-        self, results: ProjectAnalysisResult, quality_report: Dict[str, Any]
+        self, results: ProjectAnalysisResult, quality_report: dict[str, Any]
     ) -> str:
         """Renderiza el resumen del proyecto."""
         summary_stats = results.get_summary_stats()
@@ -204,22 +184,18 @@ class HTMLRenderer:
         </div>
         """
 
-    def render_quality_section(self, quality_report: Dict[str, Any]) -> str:
+    def render_quality_section(self, quality_report: dict[str, Any]) -> str:
         """Renderiza la sección de calidad."""
         recommendations_html = ""
         if quality_report["recommendations"]:
-            rec_items = [
-                f"<li>{rec}</li>" for rec in quality_report["recommendations"]
-            ]
-            recommendations_html = (
-                f"<ul class='recommendations-list'>{''.join(rec_items)}</ul>"
-            )
+            rec_items = [f"<li>{rec}</li>" for rec in quality_report["recommendations"]]
+            recommendations_html = f"<ul class='recommendations-list'>{''.join(rec_items)}</ul>"
         else:
-            recommendations_html = "<p class='no-recommendations'>¡Excelente! No hay recomendaciones.</p>"
+            recommendations_html = (
+                "<p class='no-recommendations'>¡Excelente! No hay recomendaciones.</p>"
+            )
 
-        quality_class = self.formatter.get_quality_class(
-            quality_report["overall_quality_score"]
-        )
+        quality_class = self.formatter.get_quality_class(quality_report["overall_quality_score"])
 
         # Obtener información del threshold profile
         threshold_profile = quality_report.get("threshold_profile", "normal")
@@ -228,14 +204,12 @@ class HTMLRenderer:
         # Determinar título y descripción según el profile
         if threshold_profile == "permissive":
             title = "🎯 Análisis de Calidad - Detección Inclusiva"
-            profile_description = f"Thresholds {threshold_level.upper()} (detección inclusiva de problemas)"
-            algorithm_description = "Algoritmo inclusivo que detecta problemas leves, moderados y serios para ayudar en la mejora continua del código."
+            profile_description = (
+                f"Thresholds {threshold_level.upper()} (detección inclusiva de problemas)"
+            )
         else:  # normal
             title = "🎯 Análisis de Calidad - Detección Balanceada"
-            profile_description = (
-                f"Thresholds {threshold_level.upper()} (detección balanceada)"
-            )
-            algorithm_description = "Algoritmo balanceado que detecta problemas moderados y serios, ideal para desarrollo activo."
+            profile_description = f"Thresholds {threshold_level.upper()} (detección balanceada)"
 
         return f"""
         <div class='card quality-card' id='quality'>
@@ -275,9 +249,7 @@ class HTMLRenderer:
         </div>
         """
 
-    def render_performance_section(
-        self, performance_report: Dict[str, Any]
-    ) -> str:
+    def render_performance_section(self, performance_report: dict[str, Any]) -> str:
         """Renderiza la sección de rendimiento."""
         perf_data = performance_report["analysis_performance"]
         file_stats = performance_report["file_statistics"]
@@ -344,18 +316,10 @@ class HTMLRenderer:
                 components_html += "</ul>"
                 value_cell = components_html
             else:
-                color_class = self.formatter.get_metric_color_class(
-                    metric_name, metric_value
-                )
-                value_cell = (
-                    f"<span class='{color_class}'>{metric_value}</span>"
-                )
+                color_class = self.formatter.get_metric_color_class(metric_name, metric_value)
+                value_cell = f"<span class='{color_class}'>{metric_value}</span>"
 
-            display_name = (
-                metric_name.replace("_summary", " (Resumen)")
-                .replace("_", " ")
-                .title()
-            )
+            display_name = metric_name.replace("_summary", " (Resumen)").replace("_", " ").title()
             metrics_rows.append(
                 f"""
             <tr>
@@ -376,15 +340,13 @@ class HTMLRenderer:
                     </tr>
                 </thead>
                 <tbody>
-                    {''.join(metrics_rows)}
+                    {"".join(metrics_rows)}
                 </tbody>
             </table>
         </div>
         """
 
-    def _filter_project_metrics(
-        self, metrics: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _filter_project_metrics(self, metrics: dict[str, Any]) -> dict[str, Any]:
         """Filtra métricas de proyecto para mostrar solo las relevantes."""
         filtered = {}
 
@@ -401,20 +363,15 @@ class HTMLRenderer:
             metric_lower = metric_name.lower()
             if any(keyword in metric_lower for keyword in include_keywords):
                 # Excluir métricas muy específicas o de debugging
-                if not any(
-                    exclude in metric_lower
-                    for exclude in ["debug", "raw", "temp"]
-                ):
+                if not any(exclude in metric_lower for exclude in ["debug", "raw", "temp"]):
                     filtered[metric_name] = metric_value
 
         return filtered
 
-    def render_hierarchical_modules_section(
-        self, results: ProjectAnalysisResult
-    ) -> str:
+    def render_hierarchical_modules_section(self, results: ProjectAnalysisResult) -> str:
         """Renderiza la sección de módulos con estructura jerárquica mejorada."""
         if not results.files:
-            return f"""
+            return """
             <div class='card modules-card' id='modules'>
                 <h2>📁 Análisis por Módulo</h2>
                 <p>No hay módulos para mostrar.</p>
@@ -443,7 +400,7 @@ class HTMLRenderer:
         html_parts = []
 
         # Renderizar sub-packages primero
-        for child_name, child_node in sorted(node.children.items()):
+        for _, child_node in sorted(node.children.items()):
             html_parts.append(
                 f"""
             <div class='package-section' style='margin-left: {depth * 20}px'>
@@ -451,35 +408,23 @@ class HTMLRenderer:
                 <div class='package-modules'>
             """
             )
-            html_parts.append(
-                self._render_package_modules(child_node, False, depth + 1)
-            )
+            html_parts.append(self._render_package_modules(child_node, False, depth + 1))
             html_parts.append("</div></div>")
 
         # Renderizar archivos en este nivel
         if node.files:
-            for rel_path, file_result in sorted(
-                node.files, key=lambda x: x[0]
-            ):
-                html_parts.append(
-                    self.render_file_analysis(rel_path, file_result)
-                )
+            for rel_path, file_result in sorted(node.files, key=lambda x: x[0]):
+                html_parts.append(self.render_file_analysis(rel_path, file_result))
 
         return "".join(html_parts)
 
-    def render_file_analysis(
-        self, file_path: str, file_result: FileAnalysisResult
-    ) -> str:
+    def render_file_analysis(self, file_path: str, file_result: FileAnalysisResult) -> str:
         """Renderiza el análisis de un archivo individual."""
         file_id = self.formatter.safe_id(file_path)
 
         # Indicadores de estado
         status_class = "success" if file_result.was_successful else "error"
-        file_icon = (
-            self.organizer._get_file_icon(file_result)
-            if self.organizer
-            else "🐍"
-        )
+        file_icon = self.organizer._get_file_icon(file_result) if self.organizer else "🐍"
         error_indicator = "❌" if not file_result.was_successful else ""
 
         content = f"""
@@ -494,7 +439,7 @@ class HTMLRenderer:
                     <div class='file-stats'>
                         <span class='stat'>{file_result.line_count} líneas</span>
                         <span class='stat'>{file_result.file_size} bytes</span>
-                        {f'<span class="stat error-stat">Con Errores</span>' if not file_result.was_successful else ''}
+                        {'<span class="stat error-stat">Con Errores</span>' if not file_result.was_successful else ""}
                     </div>
                 </div>
             </summary>
@@ -508,16 +453,14 @@ class HTMLRenderer:
             <div class='file-errors'>
                 <h5>❌ Errores</h5>
                 <ul class='error-list'>
-                    {''.join(error_items)}
+                    {"".join(error_items)}
                 </ul>
             </div>
             """
 
         # Métricas del módulo
         if file_result.module_metrics:
-            content += self.render_entity_metrics(
-                "Módulo", file_result.module_metrics
-            )
+            content += self.render_entity_metrics("Módulo", file_result.module_metrics)
 
         # Entidades (funciones y clases)
         if file_result.entities:
@@ -534,7 +477,7 @@ class HTMLRenderer:
 
         return content
 
-    def render_entities(self, entities: List[EntityAnalysisResult]) -> str:
+    def render_entities(self, entities: list[EntityAnalysisResult]) -> str:
         """Renderiza las entidades de código."""
         entities_html = []
 
@@ -559,13 +502,11 @@ class HTMLRenderer:
         return f"""
         <div class='entities-section'>
             <h5>Entidades de Código</h5>
-            {''.join(entities_html)}
+            {"".join(entities_html)}
         </div>
         """
 
-    def _get_metric_class_from_entity(
-        self, entity: EntityAnalysisResult
-    ) -> str:
+    def _get_metric_class_from_entity(self, entity: EntityAnalysisResult) -> str:
         """Determina la clase de métrica basada en los resultados de la entidad."""
         if not entity.metrics or not entity.metrics.metrics:
             return "metric-unknown"
@@ -585,13 +526,11 @@ class HTMLRenderer:
             if metric_name in metrics:
                 value = metrics[metric_name]
                 if isinstance(value, (int, float)):
-                    return self.formatter.get_metric_color_class(
-                        metric_name, value
-                    )
+                    return self.formatter.get_metric_color_class(metric_name, value)
 
         return "metric-unknown"
 
-    def render_children(self, children: List[EntityAnalysisResult]) -> str:
+    def render_children(self, children: list[EntityAnalysisResult]) -> str:
         """Renderiza entidades hijas (métodos de clase)."""
         if not children:
             return ""
@@ -610,7 +549,7 @@ class HTMLRenderer:
         return f"""
         <div class='children-section'>
             <h6>Métodos</h6>
-            {''.join(children_html)}
+            {"".join(children_html)}
         </div>
         """
 
@@ -624,20 +563,14 @@ class HTMLRenderer:
         metrics_rows = []
         for metric_name, metric_value in metrics.metrics.items():
             tooltip = self.formatter.get_metric_tooltip(metric_name)
-            color_class = self.formatter.get_metric_color_class(
-                metric_name, metric_value
-            )
+            color_class = self.formatter.get_metric_color_class(metric_name, metric_value)
 
             # Obtener interpretación basada en thresholds
-            interpretation = self._get_metric_interpretation(
-                metric_name, metric_value
-            )
+            interpretation = self._get_metric_interpretation(metric_name, metric_value)
 
             # Mejorar tooltip con información adicional si está disponible
             if interpretation:
-                enhanced_tooltip = (
-                    f"{tooltip} | Nivel actual: {interpretation}"
-                )
+                enhanced_tooltip = f"{tooltip} | Nivel actual: {interpretation}"
             else:
                 enhanced_tooltip = tooltip
 
@@ -666,7 +599,9 @@ class HTMLRenderer:
                     if interpretation
                     else ""
                 )
-                value_cell = f"<span class='{color_class}'>{metric_value}</span> {interpretation_badge}"
+                value_cell = (
+                    f"<span class='{color_class}'>{metric_value}</span> {interpretation_badge}"
+                )
 
             # Formatear nombre de métrica de forma más legible
             display_name = metric_name.replace("_", " ").title()
@@ -680,14 +615,12 @@ class HTMLRenderer:
             """
             )
 
-        table_class = (
-            "child-metrics-table" if is_child else "entity-metrics-table"
-        )
+        table_class = "child-metrics-table" if is_child else "entity-metrics-table"
 
         return f"""
         <table class='metrics-table {table_class}'>
             <tbody>
-                {''.join(metrics_rows)}
+                {"".join(metrics_rows)}
             </tbody>
         </table>
         """
@@ -704,7 +637,7 @@ class HTMLRenderer:
         except (MetricNotFoundError, Exception):
             return ""
 
-    def render_basic_ast_data(self, ast_data: Dict[str, Any]) -> str:
+    def render_basic_ast_data(self, ast_data: dict[str, Any]) -> str:
         """Renderiza datos AST básicos como fallback."""
         if not ast_data:
             return ""
@@ -725,15 +658,13 @@ class HTMLRenderer:
             <h5>Métricas AST Básicas</h5>
             <table class='basic-ast-table'>
                 <tbody>
-                    {''.join(data_rows)}
+                    {"".join(data_rows)}
                 </tbody>
             </table>
         </div>
         """
 
-    def render_advanced_quality_section(
-        self, advanced_report: Dict[str, Any]
-    ) -> str:
+    def render_advanced_quality_section(self, advanced_report: dict[str, Any]) -> str:
         """Renderiza la sección de análisis avanzado de calidad."""
         overall_score = advanced_report.get("overall_score", 0)
         quality_class = self.formatter.get_quality_class(overall_score)
@@ -760,9 +691,7 @@ class HTMLRenderer:
 
                 if high_count > 0 or medium_count > 0:
                     metrics_with_problems += 1
-                    analysis_items.append(
-                        self._render_metric_analysis(metric_name, analysis)
-                    )
+                    analysis_items.append(self._render_metric_analysis(metric_name, analysis))
                 elif isinstance(analysis, dict) and not analysis.get("error"):
                     # También mostrar métricas sin problemas pero que se analizaron correctamente
                     # Solo si no hay muchas métricas con problemas
@@ -777,26 +706,22 @@ class HTMLRenderer:
                         )
                         < 5
                     ):
-                        analysis_items.append(
-                            self._render_metric_analysis(metric_name, analysis)
-                        )
+                        analysis_items.append(self._render_metric_analysis(metric_name, analysis))
 
             if analysis_items:
                 metrics_analysis_html = f"""
                 <div class='metrics-analysis-grid'>
-                    {''.join(analysis_items)}
+                    {"".join(analysis_items)}
                 </div>
                 """
 
         recommendations_html = ""
         if advanced_report.get("recommendations"):
-            rec_items = [
-                f"<li>{rec}</li>" for rec in advanced_report["recommendations"]
-            ]
+            rec_items = [f"<li>{rec}</li>" for rec in advanced_report["recommendations"]]
             recommendations_html = f"""
             <div class='advanced-recommendations-list'>
                 <h4>💡 Recomendaciones Críticas</h4>
-                <ul>{''.join(rec_items)}</ul>
+                <ul>{"".join(rec_items)}</ul>
             </div>
             """
 
@@ -849,9 +774,7 @@ class HTMLRenderer:
         </div>
         """
 
-    def _render_metric_analysis(
-        self, metric_name: str, analysis: Dict[str, Any]
-    ) -> str:
+    def _render_metric_analysis(self, metric_name: str, analysis: dict[str, Any]) -> str:
         """Renderiza el análisis de una métrica específica."""
         metric_display_name = metric_name.replace("_", " ").title()
 
@@ -865,9 +788,7 @@ class HTMLRenderer:
                     # Si es una ruta completa, obtener solo el nombre del archivo
                     file_name = Path(file_path).name
                     # Mostrar tanto el nombre como un tooltip con la ruta completa
-                    file_display = (
-                        f'<span title="{file_path}">{file_name}</span>'
-                    )
+                    file_display = f'<span title="{file_path}">{file_name}</span>'
                 else:
                     file_display = "N/A"
 
@@ -890,7 +811,7 @@ class HTMLRenderer:
                         <tr><th>Entidad</th><th>Tipo</th><th>Archivo</th><th>Valor</th></tr>
                     </thead>
                     <tbody>
-                        {''.join(rows)}
+                        {"".join(rows)}
                     </tbody>
                 </table>
             </div>

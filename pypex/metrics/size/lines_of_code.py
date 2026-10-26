@@ -1,7 +1,5 @@
 """Módulo para calcular métricas de líneas de código."""
 
-from typing import Dict, Optional
-
 from pypex.metrics.base import BaseMetric
 from pypex.parser.code_entities import (
     Class,
@@ -176,11 +174,11 @@ class LinesOfCodeMetric(BaseMetric):
             description="Mide el tamaño del software contando diferentes tipos de líneas de código.",
         )
 
-    def get_default_thresholds(self) -> Dict[str, float]:
+    def get_default_thresholds(self) -> dict[str, float]:
         """Obtiene los umbrales por defecto para lines_of_code.
-        
+
         Basado en estudios de mantenibilidad de código.
-        
+
         Returns:
             Dict[str, float]: Umbrales por defecto {low, medium, high}.
         """
@@ -189,7 +187,6 @@ class LinesOfCodeMetric(BaseMetric):
             "medium": 75.0,
             "high": 150.0,
         }
-
 
     def calculate_function(self, function: Function) -> float:
         """Calcula las líneas de código fuente efectivas para una función.
@@ -206,7 +203,7 @@ class LinesOfCodeMetric(BaseMetric):
         logger.debug(f"Calculando LOC para función: {function.name}")
         return float(function.source_lines_of_code)
 
-    def calculate_class(self, cls: Class) -> Dict[str, float]:
+    def calculate_class(self, cls: Class) -> dict[str, float]:
         """Calcula métricas de líneas de código para una clase.
 
         Analiza el tamaño de la clase tanto a nivel de definición como agregando
@@ -239,9 +236,7 @@ class LinesOfCodeMetric(BaseMetric):
 
         # Cálculos agregados
         total_sloc = class_sloc + total_methods_sloc
-        avg_method_sloc = (
-            total_methods_sloc / len(cls.methods) if cls.methods else 0.0
-        )
+        avg_method_sloc = total_methods_sloc / len(cls.methods) if cls.methods else 0.0
         max_method_sloc = max(method_slocs) if method_slocs else 0.0
 
         # Ratios de calidad
@@ -264,7 +259,7 @@ class LinesOfCodeMetric(BaseMetric):
 
         return result
 
-    def calculate_module(self, module: Module) -> Dict[str, float]:
+    def calculate_module(self, module: Module) -> dict[str, float]:
         """Calcula métricas de líneas de código para un módulo.
 
         Analiza el tamaño total del módulo incluyendo funciones, clases e imports.
@@ -286,9 +281,7 @@ class LinesOfCodeMetric(BaseMetric):
         module_blank = module.blank_lines_count
 
         # Agregación de funciones a nivel módulo
-        functions_sloc = sum(
-            func.source_lines_of_code for func in module.functions
-        )
+        functions_sloc = sum(func.source_lines_of_code for func in module.functions)
 
         # Agregación de clases y sus métodos
         classes_sloc = 0
@@ -300,14 +293,10 @@ class LinesOfCodeMetric(BaseMetric):
         # Métricas derivadas
         total_entities = len(module.functions) + len(module.classes)
         total_code_sloc = functions_sloc + classes_sloc
-        avg_entity_sloc = (
-            total_code_sloc / total_entities if total_entities > 0 else 0.0
-        )
+        avg_entity_sloc = total_code_sloc / total_entities if total_entities > 0 else 0.0
 
         # Densidad de imports
-        import_density = (
-            len(module.imports) / total_loc if total_loc > 0 else 0.0
-        )
+        import_density = len(module.imports) / total_loc if total_loc > 0 else 0.0
 
         # Ratios de calidad
         doc_ratio = module_dloc / module_sloc if module_sloc > 0 else 0.0
@@ -332,7 +321,7 @@ class LinesOfCodeMetric(BaseMetric):
 
         return result
 
-    def calculate_project(self, project: Project) -> Dict[str, float]:
+    def calculate_project(self, project: Project) -> dict[str, float]:
         """Calcula estadísticas de líneas de código a nivel de proyecto.
 
         Proporciona métricas agregadas de tamaño para todo el proyecto.
@@ -390,9 +379,7 @@ class LinesOfCodeMetric(BaseMetric):
             if total_entities > 0
             else 0.0
         )
-        avg_module_sloc = (
-            total_sloc / len(project.modules) if project.modules else 0.0
-        )
+        avg_module_sloc = total_sloc / len(project.modules) if project.modules else 0.0
 
         # Ratios de calidad del proyecto
         doc_ratio = total_dloc / total_sloc if total_sloc > 0 else 0.0
@@ -410,9 +397,7 @@ class LinesOfCodeMetric(BaseMetric):
             "total_entities": float(total_entities),
             "avg_module_sloc": avg_module_sloc,
             "avg_entity_sloc": avg_entity_sloc,
-            "max_module_sloc": float(max(module_slocs))
-            if module_slocs
-            else 0.0,
+            "max_module_sloc": float(max(module_slocs)) if module_slocs else 0.0,
             "documentation_ratio": doc_ratio,
             "comment_ratio": comment_ratio,
             "import_density": import_density,
