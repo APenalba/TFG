@@ -135,7 +135,9 @@ class ResultsProcessor:
     ) -> dict[str, list[EntityAnalysisResult]]:
         """Encuentra entidades que superan umbrales específicos."""
 
-        problematic = {metric: [] for metric in thresholds.keys()}
+        problematic: dict[str, list[EntityAnalysisResult]] = {
+            metric: [] for metric in thresholds.keys()
+        }
 
         for file_result in results.files.values():
             if not file_result.was_successful:
@@ -506,7 +508,7 @@ class ResultsProcessor:
         """Obtiene las entidades con los valores más altos para una métrica específica."""
 
         entity_types = entity_types or ["function", "class", "method"]
-        entities_with_values = []
+        entities_with_values: list[dict[str, Any]] = []
 
         def add_entity(
             entity: EntityAnalysisResult, file_path: str, parent_name: str | None = None
@@ -636,7 +638,7 @@ class ResultsProcessor:
             default_values = {"low": 5, "medium": 10, "high": 20}
             threshold_value = default_values.get(level, 20)
 
-        entities_with_file = []
+        entities_with_file: list[dict[str, Any]] = []
 
         for file_path, file_result in results.files.items():
             if not file_result.was_successful:
@@ -694,7 +696,7 @@ class ResultsProcessor:
         # Obtener todas las métricas registradas dinámicamente
         metrics_to_analyze = self._get_all_registered_metrics()
 
-        detailed_analysis = {}
+        detailed_analysis: dict[str, dict[str, Any]] = {}
         overall_issues = []
 
         for metric_name in metrics_to_analyze:

@@ -167,12 +167,13 @@ class IFileProcessor(ABC):
         """
 
     @abstractmethod
-    def should_ignore(self, path: FilePath) -> bool:
+    def should_ignore(self, path: FilePath, scan_root_abs: Path) -> bool:
         """
         Verifica si un archivo debe ser ignorado según los patrones configurados.
 
         Args:
             path: Ruta al archivo
+            scan_root_abs: Raíz absoluta del escaneo, para los patrones relativos
 
         Returns:
             True si el archivo debe ser ignorado, False en caso contrario
