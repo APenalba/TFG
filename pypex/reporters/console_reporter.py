@@ -381,38 +381,20 @@ class ConsoleReporter:
                     f"{self.colorize(str(large), Colors.RED)} large"
                 )
 
-            # Métricas principales del proyecto
-            if results.project_metrics:
-                complexity_metrics = {}
-                for metric_name in [
-                    "cyclomatic_complexity",
-                    "cognitive_complexity",
-                    "lines_of_code",
-                ]:
-                    if metric_name in results.project_metrics.metrics:
-                        value = results.project_metrics.metrics[metric_name]
-                        if isinstance(value, dict):
-                            complexity_metrics[metric_name] = value.get(
-                                "total", value.get("sum", 0)
-                            )
-                        else:
-                            complexity_metrics[metric_name] = value
+            # Totales del proyecto
+            totals = project_report["totals"]
+            cc_total = totals["cyclomatic_complexity"]
+            cog_total = totals["cognitive_complexity"]
+            loc_total = totals["lines_of_code"]
 
-                if complexity_metrics:
-                    cc_total = complexity_metrics.get("cyclomatic_complexity", 0)
-                    cog_total = complexity_metrics.get("cognitive_complexity", 0)
-                    loc_total = complexity_metrics.get("lines_of_code", 0)
+            cc_color = self._get_complexity_color(cc_total / max(len(results.files), 1))
+            cog_color = self._get_complexity_color(cog_total / max(len(results.files), 1))
 
-                    cc_color = self._get_complexity_color(cc_total / max(len(results.files), 1))
-                    cog_color = self._get_complexity_color(cog_total / max(len(results.files), 1))
-
-                    self.print(
-                        f"   🔄 Total Complexity: CC {self.colorize(f'{cc_total:.0f}', cc_color)}, "
-                        f"Cognitive {self.colorize(f'{cog_total:.0f}', cog_color)}"
-                    )
-                    self.print(
-                        f"   📊 Code Volume: {self.colorize(f'{loc_total:,}', Colors.CYAN)} lines"
-                    )
+            self.print(
+                f"   🔄 Total Complexity: CC {self.colorize(f'{cc_total:.0f}', cc_color)}, "
+                f"Cognitive {self.colorize(f'{cog_total:.0f}', cog_color)}"
+            )
+            self.print(f"   📊 Code Volume: {self.colorize(f'{loc_total:,}', Colors.CYAN)} lines")
 
         except Exception as e:
             logger.debug(f"Error en project overview: {e}")
@@ -452,30 +434,13 @@ class ConsoleReporter:
                     }.get(level, Colors.GRAY)
                     self.print(f"      {level.title()}: {self.colorize(str(count), color)}")
 
-            # Top métricas
-            if results.project_metrics:
-                self.print("   📊 Key Metrics:")
-                key_metrics = [
-                    "cyclomatic_complexity",
-                    "cognitive_complexity",
-                    "lines_of_code",
-                    "lcom4",
-                ]
-                for metric_name in key_metrics:
-                    if metric_name in results.project_metrics.metrics:
-                        value = results.project_metrics.metrics[metric_name]
-                        if isinstance(value, dict):
-                            total_val = value.get(
-                                "total",
-                                value.get("sum", value.get("average", 0)),
-                            )
-                            self.print(
-                                f"      {metric_name.replace('_', ' ').title()}: {self.colorize(f'{total_val:.1f}', Colors.CYAN)}"
-                            )
-                        else:
-                            self.print(
-                                f"      {metric_name.replace('_', ' ').title()}: {self.colorize(f'{value:.1f}', Colors.CYAN)}"
-                            )
+            # Totales del proyecto
+            self.print("   📊 Key Metrics:")
+            for metric_name, value in project_report["totals"].items():
+                self.print(
+                    f"      {metric_name.replace('_', ' ').title()}: "
+                    f"{self.colorize(f'{value:,}', Colors.CYAN)}"
+                )
 
         except Exception as e:
             logger.debug(f"Error en project statistics: {e}")

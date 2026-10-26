@@ -412,6 +412,56 @@ class ResultsProcessor:
 
         return recommendations
 
+    def create_project_report(self, results: ProjectAnalysisResult) -> dict[str, dict[str, int]]:
+        """Genera distribuciones y totales del proyecto para los reportes.
+
+        - file_size_distribution: ficheros small (<100 líneas), medium (100-500)
+          y large (>500).
+        - complexity_distribution: funciones y métodos clasificados según los
+          umbrales "low" y "medium" de la complejidad ciclomática.
+        - totals: suma de complejidad ciclomática y cognitiva de funciones y
+          métodos, y líneas de código del proyecto.
+        """
+        file_size_distribution = {"small": 0, "medium": 0, "large": 0}
+        for file_result in results.files.values():
+            if file_result.line_count < 100:
+                file_size_distribution["small"] += 1
+            elif file_result.line_count <= 500:
+                file_size_distribution["medium"] += 1
+            else:
+                file_size_distribution["large"] += 1
+
+        thresholds = get_threshold_config().get_thresholds("cyclomatic_complexity")
+        complexity_distribution = {"low": 0, "medium": 0, "high": 0}
+        totals = {"cyclomatic_complexity": 0, "cognitive_complexity": 0}
+
+        def classify(entity: EntityAnalysisResult) -> None:
+            if entity.entity_type in ("function", "method"):
+                cognitive = entity.metrics.get_metric_value("cognitive_complexity")
+                if cognitive is not None:
+                    totals["cognitive_complexity"] += int(cognitive)
+                value = entity.metrics.get_metric_value("cyclomatic_complexity")
+                if value is not None:
+                    totals["cyclomatic_complexity"] += int(value)
+                    if value <= thresholds["low"]:
+                        complexity_distribution["low"] += 1
+                    elif value <= thresholds["medium"]:
+                        complexity_distribution["medium"] += 1
+                    else:
+                        complexity_distribution["high"] += 1
+            for child in entity.children:
+                classify(child)
+
+        for file_result in results.files.values():
+            for entity in file_result.entities:
+                classify(entity)
+
+        return {
+            "file_size_distribution": file_size_distribution,
+            "complexity_distribution": complexity_distribution,
+            "totals": {**totals, "lines_of_code": results.total_lines_of_code},
+        }
+
     def create_performance_report(self, results: ProjectAnalysisResult) -> dict[str, Any]:
         """Genera un reporte de rendimiento del análisis."""
 
