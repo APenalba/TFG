@@ -8,11 +8,7 @@ Autor: Alejandro Penalba Tarrida
 Licencia: MIT
 """
 
-try:
-    from importlib.metadata import version, PackageNotFoundError
-except ImportError:
-    # Python < 3.8 fallback
-    from importlib_metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("pypex")
