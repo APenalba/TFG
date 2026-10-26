@@ -45,7 +45,7 @@ class MetricsDocumentationGenerator:
 
     def _organize_metrics_by_category(self) -> dict[str, list[Any]]:
         """Organiza las métricas por categorías."""
-        categories = {
+        categories: dict[str, list[Any]] = {
             "🧮 Complejidad": [],
             "📏 Tamaño": [],
             "🔗 Acoplamiento": [],
@@ -221,7 +221,7 @@ class MetricsDocumentationGenerator:
         """Parsea un docstring en secciones."""
         sections = {}
         current_section = None
-        current_content = []
+        current_content: list[str] = []
 
         lines = doc.split("\n")
 
@@ -272,7 +272,7 @@ class MetricsDocumentationGenerator:
 
         # Convertir líneas a párrafos
         paragraphs = []
-        current_para = []
+        current_para: list[str] = []
 
         for line in formatted.split("\n"):
             stripped = line.strip()
@@ -300,7 +300,7 @@ class MetricsDocumentationGenerator:
 
     def _generate_metric_examples(self, metric) -> str:
         """Genera ejemplos específicos para cada métrica."""
-        examples = {
+        examples: dict[str, dict[str, dict[str, Any]]] = {
             "cyclomatic_complexity": {
                 "simple": {
                     "code": """def simple_function(x):
@@ -471,9 +471,9 @@ class MetricsDocumentationGenerator:
 
         return f"<p>{descriptions.get(category, 'Descripción no disponible')}</p>"
 
-    def _get_metric_display_name(self, metric) -> str:
+    def _get_metric_display_name(self, metric: Any) -> str:
         """Convierte el nombre técnico a un nombre legible."""
-        display_names = {
+        display_names: dict[str, str] = {
             "cyclomatic_complexity": "Complejidad Ciclomática",
             "cognitive_complexity": "Complejidad Cognitiva",
             "halstead": "Métricas de Halstead",
@@ -492,7 +492,8 @@ class MetricsDocumentationGenerator:
             "design_complexity": "Complejidad de Diseño",
         }
 
-        return display_names.get(metric.name, metric.name.replace("_", " ").title())
+        name = str(metric.name)
+        return display_names.get(name, name.replace("_", " ").title())
 
     def _sanitize_id(self, text: str) -> str:
         """Convierte texto a ID válido para HTML."""

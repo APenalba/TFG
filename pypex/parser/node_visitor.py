@@ -16,6 +16,7 @@ Note:
 
 import ast
 from pathlib import Path
+from typing import Any
 
 from pypex.services.logging_service import get_logger
 
@@ -214,7 +215,7 @@ class ASTNodeVisitor(ast.NodeVisitor):
             self.variables.add(node.target.id)
         self.generic_visit(node)
 
-    def get_metrics(self) -> dict[str, any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Obtiene las métricas básicas recolectadas."""
         return {
             "function_count": self.function_count,

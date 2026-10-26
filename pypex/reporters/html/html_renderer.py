@@ -26,7 +26,7 @@ class HTMLRenderer:
         self.organizer = None  # Se establece al generar el reporte
         self.metrics_doc_generator = MetricsDocumentationGenerator()
 
-    def set_project_root(self, project_root: str):
+    def set_project_root(self, project_root: str | Path) -> None:
         """Establece la raíz del proyecto para las rutas relativas."""
         self.organizer = PackageOrganizer(project_root)
 
@@ -625,7 +625,7 @@ class HTMLRenderer:
         </table>
         """
 
-    def _get_metric_interpretation(self, metric_name: str, value: any) -> str:
+    def _get_metric_interpretation(self, metric_name: str, value: Any) -> str:
         """Obtiene la interpretación de una métrica basada en thresholds."""
         try:
             if not isinstance(value, (int, float)):

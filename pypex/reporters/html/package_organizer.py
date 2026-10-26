@@ -29,7 +29,7 @@ class PackageNode:
 class PackageOrganizer:
     """Organiza los módulos en una estructura jerárquica de packages."""
 
-    def __init__(self, project_root: str = None):
+    def __init__(self, project_root: str | Path | None = None):
         """
         Inicializa el organizador de packages.
 
@@ -78,7 +78,7 @@ class PackageOrganizer:
 
         return root
 
-    def _get_relative_path(self, file_path: str) -> str:
+    def _get_relative_path(self, file_path: str) -> str | None:
         """
         Convierte una ruta absoluta a relativa del proyecto, ignorando la estructura superior.
 
@@ -202,7 +202,7 @@ class PackageOrganizer:
         Returns:
             Diccionario con estadísticas
         """
-        stats = {
+        stats: dict[str, Any] = {
             "total_packages": 0,
             "total_files": 0,
             "max_depth": 0,
