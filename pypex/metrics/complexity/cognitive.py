@@ -194,7 +194,7 @@ class CognitiveComplexity(BaseMetric):
         return complexity
 
     def _calculate_cognitive_complexity_astroid(
-        self, node: astroid.NodeNG, nesting_level: int = 0
+        self, node: astroid.nodes.NodeNG, nesting_level: int = 0
     ) -> int:
         """Calcula la complejidad cognitiva de un nodo Astroid.
 

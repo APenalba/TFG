@@ -72,14 +72,14 @@ class ASTParser(IASTParser):
             logger.error(f"Error inesperado parseando {file_path}: {str(e)}")
             raise
 
-    def parse_with_astroid(self, file_path: Union[str, Path]) -> astroid.Module:
+    def parse_with_astroid(self, file_path: Union[str, Path]) -> astroid.nodes.Module:
         """Parsea un archivo Python usando astroid para análisis más avanzados.
 
         Args:
             file_path: Ruta al archivo a parsear.
 
         Returns:
-            astroid.Module: El árbol de sintaxis abstracta del archivo.
+            astroid.nodes.Module: El árbol de sintaxis abstracta del archivo.
 
         Raises:
             FileNotFoundError: Si el archivo no existe.
