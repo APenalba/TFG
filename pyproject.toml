@@ -52,6 +52,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "E501",   # el formateador controla la longitud; quedan textos y HTML largos
+    "UP040",  # TypeAlias se mantiene: los alias con `type` no sirven en isinstance()
+]
 
 [tool.mypy]
 python_version = "3.12"

@@ -3,9 +3,9 @@
 import logging
 import sys
 import time
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from pathlib import Path
-from typing import Any, ContextManager, Protocol
+from typing import Any, Protocol
 
 # Import RichHandler and Progress
 try:
@@ -183,7 +183,7 @@ class ProgressBarManager:
     @contextmanager
     def create_progress_bar(
         self, total: int, description: str = "Progress", disable: bool = False
-    ) -> ContextManager[IProgressBar]:
+    ) -> AbstractContextManager[IProgressBar]:
         """Crea una barra de progreso usando la mejor implementación disponible.
 
         Args:

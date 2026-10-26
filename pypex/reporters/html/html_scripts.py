@@ -97,18 +97,18 @@ function initializeSidebar() {
 
 function switchMainContent(contentType) {
     const contentPanels = document.querySelectorAll('.main-content-panel');
-    
+
     // Hide all content panels
     contentPanels.forEach(panel => {
         panel.classList.remove('active');
     });
-    
+
     // Show the appropriate content panel
     const targetPanel = document.getElementById(`content-${contentType}`);
     if (targetPanel) {
         targetPanel.classList.add('active');
     }
-    
+
     // Save active content type
     localStorage.setItem('active-main-content', contentType);
 }
@@ -120,7 +120,7 @@ function switchMainTab(tabName) {
         'analysis': 0,      // Explorer tab
         'metrics-docs': 2   // Metrics tab
     };
-    
+
     const tabIndex = contentMap[tabName];
     if (tabIndex !== undefined) {
         const targetTab = document.querySelectorAll('.sidebar-tab')[tabIndex];

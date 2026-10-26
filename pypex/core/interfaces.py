@@ -19,14 +19,14 @@ Exceptions:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 # Importar las estructuras principales
 from pypex.core.results import FileAnalysisResult, ProjectAnalysisResult
 
 # Tipos básicos
-ProjectPath = Union[str, Path]
-FilePath = Union[str, Path]
+ProjectPath = str | Path
+FilePath = str | Path
 
 
 # Definición de excepciones personalizadas

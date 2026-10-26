@@ -391,7 +391,7 @@ class AssertionHelpers:
     @staticmethod
     def assert_threshold_consistency(metric: IMetric, test_values: list[float]) -> None:
         """Verifica que los umbrales sean consistentes con los valores de test."""
-        thresholds = metric.get_thresholds()
+        metric.get_thresholds()
 
         for value in test_values:
             interpretation = metric.interpret(value)

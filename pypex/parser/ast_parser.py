@@ -66,7 +66,7 @@ class ASTParser(IASTParser):
             return ast_tree
         except SyntaxError as e:
             logger.error(f"Error de sintaxis parseando {file_path}: {str(e)}")
-            raise SyntaxError(f"Error al parsear {file_path}: {str(e)}")
+            raise SyntaxError(f"Error al parsear {file_path}: {str(e)}") from e
         except Exception as e:
             logger.error(f"Error inesperado parseando {file_path}: {str(e)}")
             raise
@@ -100,7 +100,7 @@ class ASTParser(IASTParser):
             return astroid_tree
         except Exception as e:
             logger.error(f"Error parseando {file_path} con Astroid: {str(e)}")
-            raise Exception(f"Error al parsear {file_path} con astroid: {str(e)}")
+            raise Exception(f"Error al parsear {file_path} con astroid: {str(e)}") from e
 
     def extract_functions(self, tree: ast.Module) -> list[ast.FunctionDef]:
         """Extrae todas las definiciones de funciones del AST.

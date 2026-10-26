@@ -134,7 +134,7 @@ class HTMLReporter:
             <div class='main-content-panel active' id='content-analysis'>
                 {analysis_content}
             </div>
-            
+
             <!-- Contenido de Documentación de Métricas -->
             <div class='main-content-panel' id='content-metrics-docs'>
                 {self.renderer.render_metrics_documentation()}

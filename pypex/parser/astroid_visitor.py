@@ -141,7 +141,7 @@ class AstroidNodeVisitor:
         if not args_node:
             return params
 
-        for i, arg in enumerate(args_node.posonlyargs):
+        for arg in args_node.posonlyargs:
             default_val_str = None
             annotation_str = getattr(arg, "annotation", None)
             if annotation_str:
@@ -269,7 +269,6 @@ class AstroidNodeVisitor:
         }
 
         start_line = self._get_line_number(entity_node, "fromlineno", 1)
-        end_line = self._get_line_number(entity_node, "tolineno", start_line)
 
         docstring_actual_sloc = 0
         doc_start_src_line, doc_end_src_line = -1, -1
@@ -424,16 +423,16 @@ class AstroidNodeVisitor:
             for arg in func_node.args.posonlyargs:
                 local_vars_set.add(arg.name)
 
-        for sub_node in func_node.nodes_of_class((astroid_nodes.Yield, astroid_nodes.YieldFrom)):
+        for _ in func_node.nodes_of_class((astroid_nodes.Yield, astroid_nodes.YieldFrom)):
             yield_expressions_count += 1
             is_generator = True
-        for sub_node in func_node.nodes_of_class(astroid_nodes.Assert):
+        for _ in func_node.nodes_of_class(astroid_nodes.Assert):
             assert_statements_count += 1
-        for sub_node in func_node.nodes_of_class(astroid_nodes.Raise):
+        for _ in func_node.nodes_of_class(astroid_nodes.Raise):
             raise_statements_count += 1
-        for sub_node in func_node.nodes_of_class(astroid_nodes.With):  # also AsyncWith
+        for _ in func_node.nodes_of_class(astroid_nodes.With):  # also AsyncWith
             with_statements_count += 1
-        for sub_node in func_node.nodes_of_class(astroid_nodes.Return):
+        for _ in func_node.nodes_of_class(astroid_nodes.Return):
             return_points_count += 1
         for sub_node in func_node.nodes_of_class(
             astroid_nodes.Try
@@ -664,20 +663,16 @@ class AstroidNodeVisitor:
         for m in methods_list:
             if m.name.startswith("__") and m.name.endswith("__"):
                 dunder_methods_count += 1
-            is_static = False
-            is_class = False
             for dec in m.decorators:
                 if dec.name == "staticmethod" or (
                     dec.qualified_name and dec.qualified_name.endswith("staticmethod")
                 ):
                     static_methods_count += 1
-                    is_static = True
                     break
                 if dec.name == "classmethod" or (
                     dec.qualified_name and dec.qualified_name.endswith("classmethod")
                 ):
                     class_methods_count += 1
-                    is_class = True
                     break
                 if dec.name == "property" or (
                     dec.qualified_name and dec.qualified_name.endswith("property")
@@ -922,7 +917,7 @@ class AstroidNodeVisitor:
             try:
                 with open(self.file_path, encoding="utf-8") as f_len:
                     end_line = len(f_len.readlines())
-            except:
+            except OSError:
                 pass
 
         try:

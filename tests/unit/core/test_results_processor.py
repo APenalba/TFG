@@ -229,7 +229,7 @@ class TestResultsProcessor:
 
         # Crear múltiples entidades con valores diferentes
         entities = []
-        for i, value in enumerate([5, 10, 15, 20]):
+        for value in [5, 10, 15, 20]:
             entity = Mock(spec=EntityAnalysisResult)
             entity.entity_type = "function"
             entity.children = []
@@ -1107,7 +1107,7 @@ class TestResultsProcessorAdditionalCoverage:
 
         # Crear múltiples entidades
         entities = []
-        for i in range(10):
+        for _ in range(10):
             entity = Mock(spec=EntityAnalysisResult)
             entity.children = []
             entities.append(entity)

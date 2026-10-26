@@ -145,14 +145,14 @@ def simple_func(x, y):
 def process_data(items):
     if not items:           # Validación normal
         return []
-    
+
     result = []
     for item in items:      # Bucle normal
         if item is None:
             continue        # +1 (excepcional - continue en bucle)
         if len(result) > 10:
             break           # +1 (excepcional - break en bucle)
-    
+
     return result
 """
         func = self.factory.create_function_from_code(code, "process_data")
@@ -173,7 +173,7 @@ def complex_func(data):
         if i == 2:
             return i        # +1 (excepcional)
         if i == 3:
-            continue        # +1 (excepcional) 
+            continue        # +1 (excepcional)
         if i == 4:
             break           # +1 (excepcional)
         if i == 5:
@@ -630,27 +630,27 @@ class TestEssentialComplexityAST:
 def complex_ast_func(data, options=None):
     if not data:
         return []           # +1 (excepcional - return temprano)
-    
+
     results = []
     try:
         for item in data:
             if item is None:
                 continue    # +1 (excepcional)
-            
+
             if hasattr(item, 'invalid'):
                 break       # +1 (excepcional)
-            
+
             if options and options.get('strict'):
                 if not item.valid:
                     raise ValueError("Invalid item")  # +1 (excepcional)
-            
+
             results.append(item)
-            
+
     except Exception as e:
         if options and options.get('reraise'):
             raise           # +1 (excepcional)
         return []           # +1 (excepcional)
-    
+
     return results
 """
         func = self.factory.create_function_from_code(complex_code, "complex_ast_func")
@@ -693,10 +693,10 @@ def generator_func(items):
     for item in items:
         if item is None:
             continue            # +1 (excepcional)
-        
+
         if item < 0:
             return              # +1 (excepcional)
-        
+
         if item % 2 == 0:
             yield item          # +1 (excepcional - yield)
         else:
@@ -772,10 +772,10 @@ def exception_handling_func(data):
             break               # +1 (excepcional)
         except Exception:
             raise RuntimeError("Processing failed")  # +1 (excepcional)
-    
+
     if not results:
         raise ValueError("No valid results")  # +1 (excepcional)
-    
+
     return results
 """
         func = self.factory.create_function_from_code(exception_code, "exception_handling_func")
@@ -972,19 +972,18 @@ def both_sources_func(data):
         # Test con entidad no soportada
         unsupported_entity = {"type": "unknown", "name": "test"}
 
-        try:
-            result = self.metric.calculate(unsupported_entity)
-            # La implementación base debería lanzar InvalidEntityError
-            assert False, "Debería haber lanzado excepción"
-        except Exception as e:
-            # Debe manejar entidades no soportadas - acepta diferentes tipos de error
-            error_msg = str(e).lower()
-            assert (
-                "not supported" in error_msg
-                or "invalid" in error_msg
-                or "attribute" in error_msg
-                or "dict" in error_msg
-            )
+        # La implementación base debería lanzar InvalidEntityError
+        with pytest.raises(Exception) as exc_info:  # noqa: B017
+            self.metric.calculate(unsupported_entity)
+
+        # Debe manejar entidades no soportadas - acepta diferentes tipos de error
+        error_msg = str(exc_info.value).lower()
+        assert (
+            "not supported" in error_msg
+            or "invalid" in error_msg
+            or "attribute" in error_msg
+            or "dict" in error_msg
+        )
 
     def test_thresholds_and_interpretation_comprehensive(self):
         """Test comprehensivo de umbrales e interpretación."""

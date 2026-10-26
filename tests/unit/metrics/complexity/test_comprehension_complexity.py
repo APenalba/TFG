@@ -357,7 +357,7 @@ class TestComprehensionComplexityEdgeCases:
         """Test función con comprensión de muchas condiciones."""
         code = """
 def high_cond():
-    result = [x for x in range(100) 
+    result = [x for x in range(100)
               if x > 0 if x < 90 if x % 2 == 0 if x % 3 == 0 if x % 5 == 0
               if x not in excluded if x > min_val if x < max_val
               if check_validity(x) if x in allowed_set]  # 10 condiciones
@@ -454,12 +454,12 @@ class TestComprehensionComplexityIntegration:
 def process_data(data_list, filters):
     # Comprensión con múltiples condiciones
     filtered_data = [
-        item for item in data_list 
+        item for item in data_list
         if item['status'] == 'active'
         if item['value'] > 0
         if item['category'] in filters
     ]  # 3 condiciones
-    
+
     # Comprensión de diccionario con condiciones
     result_dict = {
         item['id']: item['value']
@@ -467,7 +467,7 @@ def process_data(data_list, filters):
         if item['id'] not in excluded_ids
         if item['value'] < max_value
     }  # 2 condiciones
-    
+
     return result_dict
 """
         func = self.factory.create_function_from_code(code, "process_data")

@@ -119,11 +119,11 @@ def function_with_loops(items, limit):
     count = 0
     for item in items:      # +1 (nivel 0) = 1
         count += 1
-    
+
     i = 0
     while i < limit:        # +1 (nivel 0) = 1
         i += 1
-        
+
     return count + i
 """
         func = self.factory.create_function_from_code(code, "function_with_loops")
@@ -139,11 +139,11 @@ def function_with_booleans(a, b, c, d):
     # Secuencia de 3 términos and: a and b and c = 2 operadores adicionales
     if a and b and c:       # +1 (if) + 2 (and operators) = 3
         return True
-        
-    # Secuencia de 2 términos or: a or b = 1 operador adicional  
+
+    # Secuencia de 2 términos or: a or b = 1 operador adicional
     if d or a:              # +1 (if) + 1 (or operator) = 2
         return False
-        
+
     return None
 """
         func = self.factory.create_function_from_code(code, "function_with_booleans")
@@ -410,7 +410,7 @@ class TestCognitiveComplexityIntegration:
             (20.0, "complejidad muy alta"),
         ]
 
-        for value, expected_level in test_cases:
+        for value, _expected_level in test_cases:
             interpretation = self.metric.interpret(value)
             assert isinstance(interpretation, str), (
                 f"Interpretación debe ser string para valor {value}"
@@ -422,13 +422,13 @@ class TestCognitiveComplexityIntegration:
 def validate_and_process(data, rules):
     if not data:                        # +1 (nivel 0) = 1
         return False
-    
+
     for item in data:                   # +1 + 1 (nivel 1) = 2
         if not item.is_valid():         # +1 + 2 (nivel 2) = 3
             return False
         if item.needs_special_processing(): # +1 + 2 (nivel 2) = 3
             return False
-    
+
     return True
 """
         func = self.factory.create_function_from_code(code, "validate_and_process")

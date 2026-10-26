@@ -182,7 +182,7 @@ class MetricsRegistry:
                     try:
                         module = importlib.import_module(name)
                         # Buscar clases que implementen IMetric
-                        for member_name, obj in inspect.getmembers(module):
+                        for _, obj in inspect.getmembers(module):
                             if (
                                 inspect.isclass(obj)
                                 and issubclass(obj, IMetric)

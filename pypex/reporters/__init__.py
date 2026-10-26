@@ -4,8 +4,6 @@ Autor: Alejandro Penalba Tarrida
 Licencia: MIT
 """
 
-from typing import Dict, Type
-
 from pypex.reporters.console_reporter import ConsoleReporter
 from pypex.reporters.html import HTMLReporter
 from pypex.reporters.json_reporter import JSONReporter

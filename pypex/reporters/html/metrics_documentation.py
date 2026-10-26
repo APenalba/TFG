@@ -28,15 +28,15 @@ class MetricsDocumentationGenerator:
         <div class='card metrics-documentation' id='metrics-docs'>
             <h2>📚 Documentación de Métricas</h2>
             <div class='metrics-intro'>
-                <p>PyPex implementa <strong>{len(self.registry.get_all_metrics_instances())} métricas</strong> organizadas en {len(metrics_by_category)} categorías principales. 
+                <p>PyPex implementa <strong>{len(self.registry.get_all_metrics_instances())} métricas</strong> organizadas en {len(metrics_by_category)} categorías principales.
                 Cada métrica incluye fundamentación teórica, interpretación de valores y ejemplos prácticos.</p>
             </div>
-            
+
             <div class='metrics-toc'>
                 <h3>📋 Índice de Métricas</h3>
                 {toc}
             </div>
-            
+
             <div class='metrics-content'>
                 {"".join(content_sections)}
             </div>
@@ -151,19 +151,19 @@ class MetricsDocumentationGenerator:
                 <span class='metric-id'>({metric.name})</span>
                 <span class='metric-toggle-icon'>▼</span>
             </summary>
-            
+
             <div class='metric-content'>
                 <div class='metric-description'>
                     <p><strong>Descripción:</strong> {description}</p>
                 </div>
-                
+
                 {doc_content}
-                
+
                 <div class='metric-thresholds'>
                     <h5>🎯 Umbrales de Interpretación</h5>
                     {thresholds}
                 </div>
-                
+
                 <div class='metric-examples'>
                     <h5>💡 Ejemplos</h5>
                     {examples}
@@ -361,13 +361,13 @@ class MetricsDocumentationGenerator:
     """Valida datos de usuario."""
     if not user_data:
         raise ValueError("Datos requeridos")
-    
+
     if len(user_data.get('name', '')) < 2:
         raise ValueError("Nombre muy corto")
-    
+
     if '@' not in user_data.get('email', ''):
         raise ValueError("Email inválido")
-    
+
     return True''',
                     "score": 8,
                     "explanation": "Función mediana: 8 SLOC",

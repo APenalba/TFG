@@ -95,11 +95,11 @@ def hello_world():
 
 class Calculator:
     """Calculadora simple."""
-    
+
     def add(self, a, b):
         """Suma dos números."""
         return a + b
-    
+
     def multiply(self, a, b):
         """Multiplica dos números."""
         result = a * b
@@ -760,7 +760,7 @@ class TestAnalyzerEdgeCases:
             # No errors = successful by default
             mock_analyze_file.return_value = mock_file_result
 
-            result = analyzer.analyze_project(temp_project_dir, config=config)
+            analyzer.analyze_project(temp_project_dir, config=config)
 
         # Progress bar should be disabled
         self.mock_progress_manager.create_progress_bar.assert_called_once()

@@ -275,7 +275,7 @@ class LCOM4(BaseMetric):
                 attribute_to_methods[attr].add(method.name)
 
         # Conectar métodos que acceden al mismo atributo
-        for attr, methods in attribute_to_methods.items():
+        for methods in attribute_to_methods.values():
             if len(methods) > 1:
                 method_list = list(methods)
                 for i, method1 in enumerate(method_list):

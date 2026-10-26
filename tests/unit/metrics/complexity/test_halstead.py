@@ -885,6 +885,7 @@ class TestHalsteadMetricAdvancedEdgeCases:
         expected_effort = expected_difficulty * expected_volume
 
         assert abs(result["vocabulary"] - expected_vocabulary) < 0.001
+        assert abs(result["length"] - expected_length) < 0.001
         assert abs(result["volume"] - expected_volume) < 0.001
         assert abs(result["difficulty"] - expected_difficulty) < 0.001
         assert abs(result["effort"] - expected_effort) < 0.001

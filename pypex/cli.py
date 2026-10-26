@@ -77,9 +77,13 @@ def load_config_file(config_path: str) -> dict:
                 # Intentar YAML por defecto
                 return yaml.safe_load(f) or {}
     except (yaml.YAMLError, json.JSONDecodeError) as e:
-        raise click.ClickException(f"Error al parsear archivo de configuración {config_path}: {e}")
+        raise click.ClickException(
+            f"Error al parsear archivo de configuración {config_path}: {e}"
+        ) from e
     except Exception as e:
-        raise click.ClickException(f"Error al leer archivo de configuración {config_path}: {e}")
+        raise click.ClickException(
+            f"Error al leer archivo de configuración {config_path}: {e}"
+        ) from e
 
 
 def validate_metrics_list(metrics: list[str], exclude_metrics: list[str]) -> list[str]:
@@ -449,7 +453,7 @@ def analyze(
 
             except Exception as e:
                 logger.error(f"Error al generar reporte: {e}")
-                raise click.ClickException(f"Error al generar reporte {format}: {e}")
+                raise click.ClickException(f"Error al generar reporte {format}: {e}") from e
         else:
             # Sin archivo de salida: usar ConsoleReporter o fallback
             if format == "console":
@@ -463,7 +467,9 @@ def analyze(
                     console_reporter.generate_report(results, verbosity=verbosity, show_files=True)
                 except Exception as e:
                     logger.error(f"Error usando ConsoleReporter: {e}")
-                    raise click.ClickException(f"Error al mostrar resultados en consola: {e}")
+                    raise click.ClickException(
+                        f"Error al mostrar resultados en consola: {e}"
+                    ) from e
             else:
                 # Para formatos html/json sin output, mostrar error
                 raise click.ClickException(
@@ -474,7 +480,7 @@ def analyze(
         raise  # Re-lanzar excepciones de Click sin modificar
     except Exception as e:
         logger.error(f"Error durante el análisis: {str(e)}", exc_info=True)
-        raise click.ClickException(f"Error durante el análisis: {str(e)}")
+        raise click.ClickException(f"Error durante el análisis: {str(e)}") from e
 
 
 @main.command()

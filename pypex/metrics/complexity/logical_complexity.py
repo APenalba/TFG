@@ -208,7 +208,7 @@ class LogicalComplexityMetric(BaseMetric):
             "max": max(method_logicals),
             "min": min(method_logicals),
             "method_count": float(len(cls.methods)),
-            "complex_logic_methods": len([l for l in method_logicals if l >= 6]),
+            "complex_logic_methods": len([v for v in method_logicals if v >= 6]),
         }
 
         return result

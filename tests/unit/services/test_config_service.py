@@ -64,7 +64,6 @@ class TestConfigService:
         config.set("test_marker", "initialized")
 
         # Simular que _initialized ya está True
-        original_init = config._initialized
         config._initialized = True
 
         # Llamar __init__ nuevamente
@@ -469,7 +468,6 @@ class TestConfigService:
         )
 
         # Obtener configuración original
-        original_thresholds = config.get("thresholds")
         original_patterns = config.get("ignore_patterns")
 
         # Actualizar con nueva configuración

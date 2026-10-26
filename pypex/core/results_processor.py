@@ -167,7 +167,8 @@ class ResultsProcessor:
             # Si el valor es un diccionario complejo, usar valor agregado
             if value is None or isinstance(value, dict):
                 try:
-                    metric_instance = registry.get_metric(metric_name)
+                    # Lanza una excepción si la métrica no existe
+                    registry.get_metric(metric_name)
                     # Necesitaríamos la entidad original para calcular valor agregado
                     # Por ahora, extraer valor total si existe
                     if isinstance(value, dict):
@@ -641,7 +642,6 @@ class ResultsProcessor:
         from pypex.metrics import get_registry
 
         registry = get_registry()
-        threshold_config = get_threshold_config()
 
         # Obtener todas las métricas registradas dinámicamente
         metrics_to_analyze = self._get_all_registered_metrics()

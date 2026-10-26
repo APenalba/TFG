@@ -528,7 +528,7 @@ class TestLinesOfCodeProjects:
         total_functions = 0
         total_classes = 0
 
-        for i, (module, config) in enumerate(zip(project.modules, module_configs)):
+        for i, (module, config) in enumerate(zip(project.modules, module_configs, strict=True)):
             module.line_start = 1
             module.line_end = config["loc"]  # length será config["loc"]
             module.source_lines_of_code = config["sloc"]
@@ -706,7 +706,7 @@ class TestLinesOfCodeIntegration:
         # Configurar módulos con tamaños realistas
         realistic_sizes = [150, 300, 250, 400, 200]
 
-        for i, (module, size) in enumerate(zip(project.modules, realistic_sizes)):
+        for i, (module, size) in enumerate(zip(project.modules, realistic_sizes, strict=True)):
             module.line_start = 1
             module.line_end = size + 50  # Incluir espacios y comentarios
             module.source_lines_of_code = size

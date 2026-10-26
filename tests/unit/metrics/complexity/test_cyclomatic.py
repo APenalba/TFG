@@ -114,14 +114,14 @@ def function_with_loops(data):
     result = []
     for item in data:  # +1
         result.append(item)
-    
+
     i = 0
     while i < 10:      # +1
         i += 1
-    
+
     async for x in async_iter:  # +1
         process(x)
-    
+
     return result
 """
         func = self.factory.create_function_from_code(code, "function_with_loops")
@@ -184,19 +184,19 @@ def function_with_boolean_ops(x, y, z):
 def complex_function(data, threshold):
     if not data:              # +1
         return []
-    
+
     result = []
     for item in data:         # +1
         if item > threshold:  # +1
             result.append(item)
         elif item < 0:        # +1
             continue
-    
+
     try:
         total = sum(result)
     except Exception:         # +1
         total = 0
-    
+
     return result if total > 0 else []  # No extra complexity for ternary in return
 """
         func = self.factory.create_function_from_code(code, "complex_function")

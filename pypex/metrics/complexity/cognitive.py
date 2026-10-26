@@ -249,7 +249,6 @@ class CognitiveComplexity(BaseMetric):
         # Recursivamente analizar hijos, aplicando el new_nesting_level
         for child in node.get_children():
             current_child_nesting_level = new_nesting_level
-            child_increment = 0
 
             if isinstance(node, astroid.nodes.Match) and isinstance(child, astroid.nodes.MatchCase):
                 # Cada MatchCase (case) añade +1 a la complejidad

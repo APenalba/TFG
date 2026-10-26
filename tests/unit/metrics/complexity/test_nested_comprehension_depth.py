@@ -472,10 +472,10 @@ def process_nested_data(matrix_data, filters):
         ]
         for submatrix in matrix_data if submatrix in filters
     ]
-    
+
     # Comprensión simple nivel 1
     flattened = [item for sublist in filtered_matrix for item in sublist]
-    
+
     return filtered_matrix, flattened
 """
         func = self.factory.create_function_from_code(code, "process_nested_data")

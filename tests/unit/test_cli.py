@@ -316,7 +316,7 @@ class TestMainCommand:
         runner = CliRunner()
 
         # Use a callback to trigger the main function
-        result = runner.invoke(main, ["--verbose", "thresholds", "--help"])
+        runner.invoke(main, ["--verbose", "thresholds", "--help"])
 
         # Verificar que se llamó configure_logging
         mock_configure_logging.assert_called()
@@ -342,7 +342,7 @@ class TestMainCommand:
         runner = CliRunner()
 
         with runner.isolated_filesystem():
-            result = runner.invoke(main, ["--log-file", "test.log", "thresholds", "--help"])
+            runner.invoke(main, ["--log-file", "test.log", "thresholds", "--help"])
 
             # Verificar que se configuró el archivo de log
             mock_configure_logging.assert_called()

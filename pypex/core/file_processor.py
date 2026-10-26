@@ -279,10 +279,10 @@ class FileProcessor(IFileProcessor):
                 logger.error(
                     f"No se puede leer el archivo {file_path} con ninguna codificación: {str(e)}"
                 )
-                raise ValueError(f"No se puede leer el archivo {file_path}: {str(e)}")
+                raise ValueError(f"No se puede leer el archivo {file_path}: {str(e)}") from e
         except Exception as e:
             logger.error(f"Error inesperado leyendo {file_path}: {str(e)}")
-            raise ValueError(f"Error al leer el archivo {file_path}: {str(e)}")
+            raise ValueError(f"Error al leer el archivo {file_path}: {str(e)}") from e
 
     def process_file(self, file_path: str | Path) -> dict[str, any]:
         """Procesa un archivo Python y extrae su información estructural.
@@ -319,4 +319,4 @@ class FileProcessor(IFileProcessor):
 
             return file_info
         except Exception as e:
-            raise ParsingError(f"Error al procesar el archivo {file_path}: {str(e)}")
+            raise ParsingError(f"Error al procesar el archivo {file_path}: {str(e)}") from e

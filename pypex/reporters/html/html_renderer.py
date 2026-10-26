@@ -49,7 +49,7 @@ class HTMLRenderer:
             html_parts.append('<div class="package-tree">')
 
         # Renderizar sub-packages primero (directorios)
-        for child_name, child_node in sorted(node.children.items()):
+        for _, child_node in sorted(node.children.items()):
             # Aplicar padding basado en la profundidad usando CSS classes o inline styles
             indent_style = f"padding-left: {(depth + 1) * 16}px" if depth > 0 else ""
 
@@ -207,11 +207,9 @@ class HTMLRenderer:
             profile_description = (
                 f"Thresholds {threshold_level.upper()} (detección inclusiva de problemas)"
             )
-            algorithm_description = "Algoritmo inclusivo que detecta problemas leves, moderados y serios para ayudar en la mejora continua del código."
         else:  # normal
             title = "🎯 Análisis de Calidad - Detección Balanceada"
             profile_description = f"Thresholds {threshold_level.upper()} (detección balanceada)"
-            algorithm_description = "Algoritmo balanceado que detecta problemas moderados y serios, ideal para desarrollo activo."
 
         return f"""
         <div class='card quality-card' id='quality'>
@@ -402,7 +400,7 @@ class HTMLRenderer:
         html_parts = []
 
         # Renderizar sub-packages primero
-        for child_name, child_node in sorted(node.children.items()):
+        for _, child_node in sorted(node.children.items()):
             html_parts.append(
                 f"""
             <div class='package-section' style='margin-left: {depth * 20}px'>
