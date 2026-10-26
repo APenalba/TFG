@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TextIO
 
 from pypex.core.results import (
+    AnalysisError,
     FileAnalysisResult,
     MetricsResult,
     ProjectAnalysisResult,
@@ -717,7 +718,7 @@ class ConsoleReporter:
         self.print(self.colorize(f"⚠️ Error Analysis ({len(all_errors)} total):", Colors.BOLD))
 
         # Agrupar por severidad
-        by_severity = {}
+        by_severity: dict[str, list[AnalysisError]] = {}
         for error in all_errors:
             severity = error.severity.value
             if severity not in by_severity:
