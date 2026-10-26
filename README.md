@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/APenalba/TFG)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-green.svg)](https://github.com/APenalba/TFG)
@@ -90,7 +90,7 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 
 ### Requisitos Previos
 
-- **Python 3.8+** (recomendado 3.9+)
+- **Python 3.12+**
 - **Poetry** (gestor de dependencias)
 
 ### Instalación desde Código Fuente
