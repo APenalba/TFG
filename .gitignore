@@ -1,202 +1,38 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
-# Poetry
+# Virtual environments
 .venv/
+venv/
+.env
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
+# Test and coverage reports
+.pytest_cache/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
 coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
+htmlcov/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Tool caches
+.mypy_cache/
+.ruff_cache/
 
-# pyenv
-.python-version
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# PyCharm project settings
+# Editors
 .idea/
-
-# Visual Studio Code
 .vscode/
 
-# Report outputs and examples
+# PyPex report outputs
 /reports/
-*.html
-*.json
-*.csv
-!/examples/*.html
-!/examples/*.json
-!/examples/*.csv
-!/docs/index.html
+/site/
+pypex_*.json
+pypex_*.html
+pypex_report.*
 
 # Logs
-logs/
 *.log
-
-# Temporary files
-.temp/
-.tmp/
-
-# ================================================================================
-# LaTeX
-# ================================================================================
-
-# Core LaTeX auxiliary files
-*.aux
-*.lof
-*.log
-*.lot
-*.fls
-*.out
-*.toc
-*.fmt
-*.fot
-*.cb
-*.cb2
-.*.lb
-
-# Intermediate documents
-*.dvi
-*.xdv
-*-converted-to.*
-
-# Bibliography auxiliary files
-*.bbl
-*.bcf
-*.blg
-*-blx.aux
-*-blx.bib
-*.run.xml
-
-# Build tool auxiliary files
-*.fdb_latexmk
-*.figlist
-*.makefile
-*.xmpdata
-*.upa
-*.upb
-
-# Compilation cache
-*.synctex
-*.synctex.gz
-*.synctex.bz2
-*.pdfsync
-
-# Build directories and outputs
-build/
-latex.out/
-
-# Specific to memoir class
-*.glo
-*.idx
-*.ilg
-*.ind
-*.ist
-
-# Specific to the algorithm2e package
-*.loa
-
-# Specific to the glossaries package
-*.acn
-*.acr
-*.glg
-*.glo
-*.gls
-*.glsdefs
-*.lzo
-*.lzs
-
-# Specific to the hyperref package
-*.brf
-
-# Specific to the listings package
-*.lol
-
-# Specific to the minted package
-_minted*
-*.pyg
-
-# Specific to the nomencl package
-*.nlg
-*.nlo
-*.nls
-
-# Specific to the sagetex package
-*.sagetex.sage
-*.sagetex.py
-*.sagetex.scmd
-
-# Specific to the standalone class
-*.sta
-
-# Specific to beamer
-*.beamer
-*.figlist
-*.makefile
-*.nav
-*.snm
-*.vrb
-
-# Specific to tikzexternalize
-*.figlist
-*.makefile
-
-# Backup files
-*.bak
-*~
-

@@ -72,5 +72,6 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 python_classes = "Test*"
-# Temporarily remove for our initial tests
-addopts = "--cov=pypex --cov-report=term-missing --cov-report=html"
+addopts = "--cov=pypex --cov-report=term-missing"
+# Las deprecaciones de dependencias fallan los tests para detectarlas pronto
+filterwarnings = ["error"]

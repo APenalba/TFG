@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/APenalba/TFG)
-[![Code Quality](https://img.shields.io/badge/code%20quality-A-green.svg)](https://github.com/APenalba/TFG)
+[![CI](https://github.com/APenalba/TFG/actions/workflows/ci.yml/badge.svg)](https://github.com/APenalba/TFG/actions/workflows/ci.yml)
 
 **Analizador profesional de métricas de calidad, complejidad, cohesión y mantenibilidad para proyectos Python**
 
@@ -125,9 +125,6 @@ uv run pytest
 ```bash
 # Si no se puede usar como comando
 python -m pypex --help
-
-# O usar el script ejecutable
-python pypex.py --help
 ```
 
 ---
@@ -707,13 +704,8 @@ pypex/
 
 PyPex incluye una **suite completa de tests** para garantizar calidad y robustez:
 
-### Estadísticas Actuales del Proyecto
-
-- **📊 Tests**: 861 tests totales (799 pasados, 62 en desarrollo)
-- **📈 Coverage**: 49% de cobertura de código
-- **📁 Archivos**: 59 archivos de código fuente
-- **📝 Líneas de código**: +21,000 líneas de código fuente
-- **🔢 Total proyecto**: +37,000 líneas (código + tests)
+La CI ejecuta los tests en Python 3.12, 3.13 y 3.14 en cada push y pull request.
+`uv run pytest` muestra la cobertura al terminar.
 
 ### Estructura de Tests
 
@@ -728,12 +720,10 @@ tests/
 │   │   ├── design/          # Tests de diseño
 │   │   └── size/            # Tests de tamaño
 │   ├── parser/              # Tests del parser
+│   ├── reporters/           # Tests de reporters
 │   ├── services/            # Tests de servicios
 │   ├── test_cli.py          # Tests de CLI
 │   └── test_main.py         # Tests principales
-│
-└── integration/             # Tests de integración
-    └── test_full_analysis.py # Tests end-to-end
 ```
 
 ### Ejecutar Tests
@@ -773,8 +763,6 @@ uv run pre-commit run --all-files
 
 ### Métricas de Calidad del Código
 
-- **Cobertura de código**: 49% (en crecimiento constante)
-- **Tests totales**: 861 tests implementados
 - **Linting y formateo**: Ruff
 - **Type hints**: Mypy
 - **Líneas de código**: +37,000 líneas totales (código + tests)

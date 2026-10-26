@@ -6,7 +6,7 @@ y genera reportes detallados sobre la calidad y mantenibilidad del código.
 
 Características principales:
 - 14 métricas de complejidad diferentes
-- Múltiples formatos de reporte (HTML, JSON, CSV, texto)
+- Múltiples formatos de reporte (HTML, JSON y consola)
 - Análisis a nivel de función, clase, módulo y proyecto
 - Configuración flexible con perfiles de umbrales
 - Filtros y exclusiones personalizables
@@ -156,7 +156,7 @@ def main(verbose: bool, log_file: str | None = None):
     🎯 CARACTERÍSTICAS PRINCIPALES:
     • 16 métricas de complejidad diferentes (ciclomática, cognitiva, etc.)
     • Análisis multi-nivel: función, clase, módulo y proyecto
-    • Múltiples formatos de salida: HTML, JSON, CSV, texto
+    • Múltiples formatos de salida: HTML, JSON y consola
     • Configuración flexible con archivos YAML/JSON
     • Perfiles de umbrales personalizables (strict/normal/permissive)
     • Filtros y exclusiones avanzadas
