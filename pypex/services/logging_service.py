@@ -513,6 +513,10 @@ def _configure_logger_handlers(logger: logging.Logger, log_file: str | Path | No
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
 
+    # Los loggers de PyPex tienen sus propios handlers; sin esto el mensaje
+    # se emitiría también por el handler raíz que añade logging.basicConfig()
+    logger.propagate = False
+
     # Handler de consola
     if _RICH_AVAILABLE:
         console_handler = RichHandler(
