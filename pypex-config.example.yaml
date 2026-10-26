@@ -216,69 +216,69 @@ log_file: null
 
 thresholds:
   # === MÉTRICAS DE COMPLEJIDAD ===
-  
+
   # Complejidad Ciclomática (caminos de ejecución independientes)
   cyclomatic_complexity:
     low: 10      # 1-10: Baja complejidad
     medium: 20   # 11-20: Complejidad moderada
     high: 50     # 21-50: Alta complejidad, 50+: Muy alta
-  
+
   # Complejidad Cognitiva (dificultad de comprensión)
   cognitive_complexity:
     low: 15      # 0-15: Fácil de entender
     medium: 25   # 16-25: Moderadamente complejo
     high: 50     # 26+: Difícil de entender
-  
+
   # Profundidad de Anidamiento
   nesting_depth:
     low: 3       # 1-3: Anidamiento simple
     medium: 6    # 4-6: Anidamiento moderado
     high: 9      # 7+: Anidamiento excesivo
-  
+
   # === MÉTRICAS DE COHESIÓN ===
-  
+
   # LCOM4 (Lack of Cohesion of Methods 4)
   lcom4:
     low: 1       # 1: Excelente cohesión
     medium: 2    # 2: Buena cohesión
     high: 4      # 3-4: Cohesión pobre
-  
+
   # === MÉTRICAS DE ACOPLAMIENTO ===
-  
+
   # Fan-In/Fan-Out (dependencias)
   fan_in_out:
     low: 5       # 1-5: Bajo acoplamiento
     medium: 10   # 6-10: Acoplamiento moderado
     high: 20     # 11+: Alto acoplamiento
-  
+
   # === MÉTRICAS DE TAMAÑO ===
-  
+
   # Número de Parámetros
   parameter_count:
     low: 3       # 1-3: Pocos parámetros
     medium: 5    # 4-5: Parámetros moderados
     high: 7      # 6+: Muchos parámetros
-  
+
   # Líneas de Código
   lines_of_code:
     low: 30      # 1-30: Función pequeña
     medium: 75   # 31-75: Función moderada
     high: 150    # 76+: Función grande
-  
+
   # === MÉTRICAS AVANZADAS ===
-  
+
   # Complejidad Esencial
   essential_complexity:
     low: 1       # 1: Estructura simple
     medium: 3    # 2-3: Estructura moderada
     high: 6      # 4+: Estructura compleja
-  
+
   # Complejidad Lógica
   logical_complexity:
     low: 2       # 1-2: Lógica simple
     medium: 5    # 3-5: Lógica moderada
     high: 10     # 6+: Lógica compleja
-  
+
   # Métricas de Halstead (volumen del programa)
   halstead:
     low: 500     # 0-500: Programa pequeño

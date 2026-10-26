@@ -368,16 +368,16 @@ ignore_patterns:
   - ".mypy_cache"
   - "venv"
   - "env"
-  
+
   # Archivos de prueba
   - "test_*.py"
   - "*_test.py"
   - "tests.py"
-  
+
   # Configuración
   - "setup.py"
   - "conftest.py"
-  
+
   # Temporales
   - "*.tmp"
   - "*.bak"
