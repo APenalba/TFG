@@ -2,6 +2,7 @@
 
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from pypex.core.results import ProjectAnalysisResult
@@ -54,6 +55,7 @@ class HTMLReporter:
             html_content = self._build_complete_html(analysis_results)
 
             # Escribir el archivo
+            Path(self.output_path).parent.mkdir(parents=True, exist_ok=True)
             with open(self.output_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
@@ -66,11 +68,13 @@ class HTMLReporter:
                 f"Error al escribir el reporte HTML en {self.output_path}: {e}",
                 exc_info=True,
             )
+            raise
         except Exception as e:
             logger.error(
                 f"Error inesperado al generar el reporte HTML: {e}",
                 exc_info=True,
             )
+            raise
 
     def _build_complete_html(self, results: ProjectAnalysisResult) -> str:
         """

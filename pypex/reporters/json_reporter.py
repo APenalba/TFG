@@ -77,6 +77,7 @@ class JSONReporter:
 
             # Escribir el archivo
             indent = 2 if pretty_print else None
+            Path(self.output_path).parent.mkdir(parents=True, exist_ok=True)
             with open(self.output_path, "w", encoding="utf-8") as f:
                 json.dump(
                     json_data,

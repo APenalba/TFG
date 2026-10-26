@@ -957,6 +957,37 @@ class TestCLIIntegration:
         assert result.exit_code == 0
         assert "umbrales configurados" in result.output
 
+    @pytest.mark.parametrize("output_format", ["html", "json"])
+    def test_analyze_creates_missing_output_directory(self, tmp_path, output_format):
+        """El reporte se escribe aunque su directorio aún no exista."""
+        source = tmp_path / "src"
+        source.mkdir()
+        (source / "module.py").write_text("def add(a, b):\n    return a + b\n")
+        output = tmp_path / "reports" / "nested" / f"report.{output_format}"
+
+        result = self.runner.invoke(
+            main, ["analyze", "--format", output_format, "--output", str(output), str(source)]
+        )
+
+        assert result.exit_code == 0, result.output
+        assert output.stat().st_size > 0
+
+    def test_analyze_fails_when_report_cannot_be_written(self, tmp_path):
+        """Un error al escribir el reporte HTML no se presenta como éxito."""
+        source = tmp_path / "src"
+        source.mkdir()
+        (source / "module.py").write_text("x = 1\n")
+        blocker = tmp_path / "blocker"
+        blocker.write_text("no es un directorio")
+
+        result = self.runner.invoke(
+            main,
+            ["analyze", "--format", "html", "--output", str(blocker / "r.html"), str(source)],
+        )
+
+        assert result.exit_code != 0
+        assert "exitosamente" not in result.output
+
 
 # Fixtures adicionales para casos edge
 @pytest.fixture
