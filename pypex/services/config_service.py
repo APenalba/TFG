@@ -23,8 +23,13 @@ class ConfigService:
         if getattr(self, "_initialized", False):
             return
 
+        self._set_defaults()
+        self._initialized = True
+
+    def _set_defaults(self) -> None:
+        """Restablece la configuración a sus valores predeterminados."""
         # Configuración por defecto
-        self._config = {
+        self._config: dict[str, Any] = {
             # Configuración general
             "verbose": False,
             "log_file": None,
@@ -53,8 +58,6 @@ class ConfigService:
             # Los usuarios pueden personalizar estos valores via configuración
             "thresholds": {},
         }
-
-        self._initialized = True
 
     def load_from_file(self, file_path: str | Path) -> None:
         """Carga la configuración desde un archivo JSON.
@@ -128,7 +131,7 @@ class ConfigService:
         # Soporte para notación con puntos (ej: "thresholds.cyclomatic_complexity.high")
         if "." in key:
             parts = key.split(".")
-            value = self._config
+            value: Any = self._config
             for part in parts:
                 if not isinstance(value, dict) or part not in value:
                     return default
@@ -147,7 +150,7 @@ class ConfigService:
         # Soporte para notación con puntos
         if "." in key:
             parts = key.split(".")
-            config = self._config
+            config: dict[str, Any] = self._config
 
             # Navegar hasta el último nivel
             for part in parts[:-1]:
@@ -174,7 +177,7 @@ class ConfigService:
         Este método solo debe utilizarse durante las pruebas para
         asegurarse de que cada test tenga un estado limpio.
         """
-        self.__init__()
+        self._set_defaults()
 
 
 # Función para obtener la instancia del servicio
