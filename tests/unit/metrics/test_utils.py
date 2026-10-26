@@ -76,7 +76,7 @@ class TestEntityFactory:
             module_node = astroid.parse(code)
             
             # Buscar la función por nombre
-            for node in module_node.nodes_of_class(astroid.FunctionDef):
+            for node in module_node.nodes_of_class(astroid.nodes.FunctionDef):
                 if node.name == function_name:
                     # Crear entidad Function con nodo astroid
                     function = Function(
@@ -87,7 +87,7 @@ class TestEntityFactory:
                     )
                     
                     # Determinar si es async
-                    function.is_async = isinstance(node, astroid.AsyncFunctionDef)
+                    function.is_async = isinstance(node, astroid.nodes.AsyncFunctionDef)
                     
                     # Extraer parámetros básicos
                     if node.args:

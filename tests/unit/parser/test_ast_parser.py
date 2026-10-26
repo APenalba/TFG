@@ -98,13 +98,13 @@ class TestASTParser:
         astroid_tree = ast_parser.parse_with_astroid(valid_python_file)
 
         # Verificar que es un módulo astroid válido
-        assert isinstance(astroid_tree, astroid.Module)
+        assert isinstance(astroid_tree, astroid.nodes.Module)
 
         # Verificar que contiene las estructuras esperadas
-        functions = list(astroid_tree.nodes_of_class(astroid.FunctionDef))
-        classes = list(astroid_tree.nodes_of_class(astroid.ClassDef))
-        imports = list(astroid_tree.nodes_of_class(astroid.Import))
-        imports_from = list(astroid_tree.nodes_of_class(astroid.ImportFrom))
+        functions = list(astroid_tree.nodes_of_class(astroid.nodes.FunctionDef))
+        classes = list(astroid_tree.nodes_of_class(astroid.nodes.ClassDef))
+        imports = list(astroid_tree.nodes_of_class(astroid.nodes.Import))
+        imports_from = list(astroid_tree.nodes_of_class(astroid.nodes.ImportFrom))
 
         assert len(functions) == 3  # hello, __init__, greet
         assert len(classes) == 1  # Person

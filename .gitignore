@@ -27,7 +27,6 @@ MANIFEST
 
 # Poetry
 .venv/
-poetry.lock
 
 # PyInstaller
 *.manifest
