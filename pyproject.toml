@@ -1,14 +1,12 @@
-[tool.poetry]
+[project]
 name = "pypex"
 version = "0.1.0"
 description = "Analizador de Complejidad de Código para Python"
-authors = ["Alejandro Penalba <apenalbatarrida@gmail.com>"]
+authors = [{ name = "Alejandro Penalba", email = "apenalbatarrida@gmail.com" }]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/APenalba/TFG"
-packages = [
-    { include = "pypex" }
-]
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -18,39 +16,42 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
+dependencies = [
+    "astroid>=4.3.4,<5",
+    "click>=8.5.0,<9",
+    "rich>=15.0.0",
+    "pyyaml>=6.0.3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-astroid = "^4.3.4"
-click = "^8.5.0"
-rich = "^15.0.0"
-pyyaml = "^6.0.3"
+[project.urls]
+Repository = "https://github.com/APenalba/TFG"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^9.1.1"
-pytest-cov = "^7.1.0"
-black = "^26.10.1"
-flake8 = "^7.4.1"
-mypy = "^2.4.0"
-isort = "^9.0.2"
-pre-commit = "^4.7.0"
-autoflake = "^2.4.0"
-
-[tool.poetry.scripts]
+[project.scripts]
 pypex = "pypex.cli:main"
 
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.2",
+    "mypy>=2.4.0",
+    "types-pyyaml",
+    "pre-commit>=4.7.0",
+]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.13.5,<0.14"]
+build-backend = "uv_build"
 
-[tool.black]
-line-length = 79
-target-version = ["py312"]
-include = '\.pyi?$'
+[tool.uv.build-backend]
+module-root = ""
 
-[tool.isort]
-profile = "black"
-line_length = 79
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.mypy]
 python_version = "3.12"

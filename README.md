@@ -91,7 +91,7 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 ### Requisitos Previos
 
 - **Python 3.12+**
-- **Poetry** (gestor de dependencias)
+- **[uv](https://docs.astral.sh/uv/)** (gestor de dependencias y entornos)
 
 ### Instalación desde Código Fuente
 
@@ -100,27 +100,24 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 git clone https://github.com/APenalba/TFG.git
 cd TFG
 
-# Instalar dependencias con Poetry
-poetry install
-
-# Activar el entorno virtual
-poetry shell
+# Crear el entorno e instalar dependencias
+uv sync
 
 # Verificar instalación
-pypex --help
+uv run pypex --help
 ```
 
 ### Instalación en Modo Desarrollo
 
 ```bash
-# Para desarrollo con herramientas adicionales
-poetry install --with dev
+# uv sync instala también el grupo de desarrollo (pytest, ruff, mypy...)
+uv sync
 
 # Instalar pre-commit hooks
-pre-commit install
+uv run pre-commit install
 
 # Ejecutar tests
-pytest
+uv run pytest
 ```
 
 ### Uso con Python directo
@@ -761,30 +758,25 @@ pytest -s
 ### Herramientas de Calidad
 
 ```bash
-# Linting con flake8
-flake8 pypex/
+# Linting (incluye orden de imports)
+uv run ruff check .
 
-# Formateo con black
-black pypex/
-
-# Ordenar imports con isort
-isort pypex/
+# Formateo
+uv run ruff format .
 
 # Type checking con mypy
-mypy pypex/
+uv run mypy pypex/
 
 # Ejecutar todas las validaciones
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Métricas de Calidad del Código
 
 - **Cobertura de código**: 49% (en crecimiento constante)
 - **Tests totales**: 861 tests implementados
-- **Linting**: Cumple estándares flake8
-- **Type hints**: Mypy compliant
-- **Formateo**: Black standard
-- **Import organization**: isort compliant
+- **Linting y formateo**: Ruff
+- **Type hints**: Mypy
 - **Líneas de código**: +37,000 líneas totales (código + tests)
 
 ---
@@ -839,7 +831,7 @@ refactor: mejorar estructura del registry
 
 #### Code Style
 
-- **Python**: PEP 8 + Black formatter
+- **Python**: PEP 8 + Ruff formatter
 - **Docstrings**: Google style
 - **Type hints**: Obligatorios
 - **Tests**: Para toda nueva funcionalidad
