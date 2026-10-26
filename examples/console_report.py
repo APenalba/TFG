@@ -5,11 +5,14 @@ de verbosidad y opciones de configuración.
 """
 
 import sys
+from pathlib import Path
 
 from pypex.core.analyzer import Analyzer
 from pypex.core.file_processor import FileProcessor
 from pypex.parser.ast_parser import ASTParser
 from pypex.reporters.console_reporter import ConsoleReporter
+
+PYPEX_DIR = Path(__file__).resolve().parent.parent / "pypex"
 
 
 def analyze_and_show_console_reports(
@@ -31,7 +34,7 @@ def analyze_and_show_console_reports(
     # Configurar componentes del analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     try:
         # Realizar análisis
@@ -77,7 +80,7 @@ def demo_different_outputs() -> None:
     """Demuestra diferentes tipos de salida del ConsoleReporter."""
 
     # Ejemplo de uso con diferentes configuraciones
-    sample_project = "./pypex"  # Analizarse a sí mismo
+    sample_project = str(PYPEX_DIR)  # Analizarse a sí mismo
 
     print("🎨 Demo de diferentes salidas del ConsoleReporter")
     print("=" * 60)
@@ -133,7 +136,7 @@ def demo_colors_and_formatting() -> None:
 def demo_without_colors() -> None:
     """Demuestra la salida sin colores (para CI/CD)."""
 
-    sample_project = "./pypex"
+    sample_project = str(PYPEX_DIR)
 
     print("\n📄 Demo SIN colores (ideal para CI/CD o redirección):")
     print("-" * 60)
@@ -169,7 +172,7 @@ def main():
 
             print("\n✅ Demos completadas!")
             print("\n💡 Para analizar un proyecto específico:")
-            print("   python example_console_usage.py <ruta_proyecto> [verbosity]")
+            print("   python examples/console_report.py <ruta_proyecto> [verbosity]")
             print("   Donde verbosity puede ser: quiet, normal, verbose, debug")
 
         except Exception as e:

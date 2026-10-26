@@ -4,6 +4,7 @@ Este archivo demuestra cómo utilizar el JSONReporter con diferentes niveles
 de detalle y configuraciones.
 """
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +24,7 @@ def analyze_and_generate_json_reports(project_path: str) -> None:
     # Configurar componentes del analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar el proyecto
     print(f"Analizando proyecto: {project_path}")
@@ -53,8 +54,10 @@ def analyze_and_generate_json_reports(project_path: str) -> None:
 
     # 4. Reporte solo de métricas
     print("🔢 Generando reporte de métricas...")
-    metrics_reporter = JSONReporter("pypex_metrics.json")
-    metrics_data = metrics_reporter.generate_metrics_only(results)
+    metrics_data = JSONReporter().generate_metrics_only(results)
+    Path("pypex_metrics.json").write_text(
+        json.dumps(metrics_data, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
     # Mostrar estadísticas básicas
     print("\n✅ Análisis completado:")
@@ -78,7 +81,7 @@ def generate_custom_json_report(project_path: str, output_config: dict[str, Any]
     # Configurar analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar
     results = analyzer.analyze_project(project_path)
@@ -111,7 +114,7 @@ def analyze_single_file_to_json(file_path: str) -> dict[str, Any]:
     # Configurar analyzer
     file_processor = FileProcessor()
     ast_parser = ASTParser()
-    analyzer = Analyzer(file_processor, ast_parser)
+    analyzer = Analyzer(parser=ast_parser, file_processor=file_processor)
 
     # Analizar archivo único
     results = analyzer.analyze(file_path)
@@ -137,7 +140,7 @@ def main():
 
     if not project_path:
         # Usar el propio proyecto PyPex como ejemplo
-        project_path = str(Path(__file__).parent.parent)
+        project_path = str(Path(__file__).resolve().parent.parent / "pypex")
         print(f"Usando proyecto PyPex como ejemplo: {project_path}")
 
     try:
