@@ -8,8 +8,10 @@ Classes:
 
 Functions:
     _calculate_sloc: Función auxiliar para cálculo de líneas de código
+    _iter_scope_statements: Recorre las sentencias de un ámbito aplanando bloques condicionales
 """
 
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +29,41 @@ from pypex.parser.code_entities import (
 from pypex.services.logging_service import get_logger
 
 logger = get_logger(__name__)
+
+# Sentencias compuestas que NO abren un ámbito nuevo: las definiciones que contienen
+# pertenecen al ámbito que las rodea (módulo o clase). With/For incluyen sus variantes async.
+_BLOCK_STATEMENT_NODES: tuple[type[astroid_nodes.NodeNG], ...] = (
+    astroid_nodes.If,
+    astroid_nodes.Try,
+    astroid_nodes.TryStar,
+    astroid_nodes.ExceptHandler,
+    astroid_nodes.With,
+    astroid_nodes.For,
+    astroid_nodes.While,
+    astroid_nodes.Match,
+    astroid_nodes.MatchCase,
+)
+
+
+def _iter_scope_statements(
+    statements: Iterable[astroid_nodes.NodeNG],
+) -> Iterator[astroid_nodes.NodeNG]:
+    """Recorre las sentencias de un ámbito aplanando bloques if/try/with/for/while/match.
+
+    Devuelve, en orden de código fuente, las sentencias que pertenecen al ámbito
+    (módulo o cuerpo de clase) aunque estén dentro de bloques condicionales, p. ej.
+    ``if TYPE_CHECKING:`` o ``try: import x / except ImportError: def ...``. No
+    desciende en funciones, clases ni lambdas: lo anidado ahí sigue siendo de su padre.
+    """
+    for node in statements:
+        if isinstance(node, _BLOCK_STATEMENT_NODES):
+            yield from _iter_scope_statements(
+                child
+                for child in node.get_children()
+                if child.is_statement or isinstance(child, _BLOCK_STATEMENT_NODES)
+            )
+        else:
+            yield node
 
 
 class AstroidNodeVisitor:
@@ -547,29 +584,17 @@ class AstroidNodeVisitor:
         line_counts = self._analyze_code_block_lines(cls_node, docstring_node)
 
         methods_list: list[Function] = []
-        # Direct methods (not from base classes)
-        for method_node in cls_node.mymethods():  # type: ignore
-            if isinstance(
-                method_node,
-                (astroid_nodes.FunctionDef, astroid_nodes.AsyncFunctionDef),
-            ):
-                methods_list.append(
-                    self._create_function_entity(method_node, parent_class_qname=cls_node.qname())
-                )
-            elif isinstance(
-                method_node, astroid_nodes.Lambda
-            ):  # Lambdas assigned to class attributes?
-                # Typically lambdas aren't methods in the traditional sense for these metrics.
-                # If they need to be captured, it would be as attributes.
-                pass
-
         inner_classes_list: list[Class] = []
-        for inner_cls_node in cls_node.nodes_of_class(
-            astroid_nodes.ClassDef, skip_klass=astroid_nodes.ClassDef
-        ):
-            # Ensure it's a direct inner class, not a grandchild
-            if inner_cls_node.parent == cls_node:
-                inner_classes_list.append(self._create_class_entity(inner_cls_node, is_inner=True))
+        # Se recorre el cuerpo sintáctico (incluidos bloques if/try/...) en vez de mymethods():
+        # mymethods() deduplica por nombre (pierde ramas alternativas, @overload y setters de
+        # property) e incluye miembros sintéticos de los brains de astroid (p. ej. Enum.name).
+        for stmt in _iter_scope_statements(cls_node.body):
+            if isinstance(stmt, (astroid_nodes.FunctionDef, astroid_nodes.AsyncFunctionDef)):
+                methods_list.append(
+                    self._create_function_entity(stmt, parent_class_qname=cls_node.qname())
+                )
+            elif isinstance(stmt, astroid_nodes.ClassDef):
+                inner_classes_list.append(self._create_class_entity(stmt, is_inner=True))
 
         base_class_qnames = []
         for base_expr_node in cls_node.bases:
@@ -841,9 +866,9 @@ class AstroidNodeVisitor:
         functions_list: list[Function] = []
         classes_list: list[Class] = []
 
-        for item in (
-            self.module_node.body
-        ):  # Iterate over module body to maintain order and catch lambdas assigned at module level
+        # Se mantiene el orden del código e incluye definiciones y lambdas asignadas dentro de
+        # bloques if/try/with/for/while/match.
+        for item in _iter_scope_statements(self.module_node.body):
             if isinstance(
                 item,
                 (astroid_nodes.FunctionDef, astroid_nodes.AsyncFunctionDef),
@@ -852,9 +877,8 @@ class AstroidNodeVisitor:
                 if not item.is_method():
                     functions_list.append(self._create_function_entity(item))
             elif isinstance(item, astroid_nodes.ClassDef):
-                # Ensure it's not an inner class (already handled by outer Class)
-                if isinstance(item.parent, astroid_nodes.Module):
-                    classes_list.append(self._create_class_entity(item))
+                # _iter_scope_statements no entra en clases ni funciones: toda ClassDef aquí es de módulo
+                classes_list.append(self._create_class_entity(item))
             elif isinstance(
                 item, astroid_nodes.Assign
             ):  # Check for lambdas assigned to module-level variables
@@ -965,7 +989,7 @@ class AstroidNodeVisitor:
     def _extract_defined_instance_attributes(self, cls_node: astroid_nodes.ClassDef) -> set[str]:
         """Extrae los atributos definidos vía self.atributo en la clase (en métodos, typically __init__)."""
         attrs = set()
-        for method_node in cls_node.mymethods():  # type: ignore
+        for method_node in _iter_scope_statements(cls_node.body):
             if not isinstance(
                 method_node,
                 (astroid_nodes.FunctionDef, astroid_nodes.AsyncFunctionDef),
