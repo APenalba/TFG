@@ -8,8 +8,9 @@ Classes:
     FileProcessor: Procesador principal de archivos y directorios
 
 Note:
-    Utiliza patrones glob compilados para optimizar rendimiento y soporta
-    tanto patrones absolutos como relativos con validación de permisos.
+    Utiliza patrones glob compilados para optimizar rendimiento. Todos los patrones
+    se evalúan contra la ruta relativa a la raíz del escaneo, de modo que los
+    directorios situados por encima de la raíz nunca provocan exclusiones.
 """
 
 import os
@@ -30,9 +31,9 @@ class FileProcessor(IFileProcessor):
     Esta clase implementa la interfaz IFileProcessor y proporciona funcionalidades
     completas para el manejo de archivos Python en proyectos de análisis estático.
 
-    Gestiona patrones de exclusión complejos usando sintaxis glob, con soporte
-    para patrones absolutos y relativos. Incluye validación de tamaños de archivo,
-    manejo de permisos y lectura robusta con múltiples encodings.
+    Gestiona patrones de exclusión complejos usando sintaxis glob. Todos los patrones
+    se evalúan contra la ruta relativa a la raíz del escaneo. Incluye validación de
+    tamaños de archivo, manejo de permisos y lectura robusta con múltiples encodings.
 
     Attributes:
         ignore_patterns: Lista de patrones glob para ignorar archivos/directorios
@@ -90,8 +91,10 @@ class FileProcessor(IFileProcessor):
 
         Returns:
             Tuple[List[Pattern], List[Pattern]]: Un par de listas:
-                - Patrones compilados para matching absoluto (contienen '**' o similar).
-                - Patrones compilados para matching relativo (anclados ^...$).
+                - Patrones "absolutos" (contienen '**' o similar): sin ancla, se buscan
+                  con ``search`` en cualquier posición de la ruta relativa a la raíz.
+                - Patrones "relativos" (anclados ^...$): se usan con ``fullmatch`` sobre
+                  la ruta relativa a la raíz.
         """
         compiled_absolute_patterns: list[Pattern] = []
         compiled_relative_patterns: list[Pattern] = []
@@ -137,45 +140,55 @@ class FileProcessor(IFileProcessor):
                 compiled_relative_patterns.append(re.compile(temp_re_core, re_flags))
         return compiled_absolute_patterns, compiled_relative_patterns
 
+    @staticmethod
+    def _relative_to_scan_root(path: Path, scan_root: Path) -> str | None:
+        """Devuelve la ruta de ``path`` relativa a ``scan_root`` en formato POSIX.
+
+        Se intenta primero de forma léxica (sin resolver enlaces simbólicos) y después
+        con rutas resueltas. Devuelve None si ``path`` está fuera de ``scan_root`` o es
+        la propia raíz: los componentes por encima de la raíz nunca deben provocar exclusión.
+        """
+        candidates = (
+            (Path(os.path.abspath(path)), Path(os.path.abspath(scan_root))),
+            (path.resolve(), scan_root.resolve()),
+        )
+        for candidate, root in candidates:
+            try:
+                relative = candidate.relative_to(root)
+            except ValueError:
+                continue
+            return relative.as_posix() if relative.parts else None
+        return None
+
     def should_ignore(self, path_to_check: str | Path, scan_root_abs: Path) -> bool:
         """Determina si un archivo o directorio debe ser ignorado.
 
         Args:
             path_to_check: Ruta del archivo o directorio.
-            scan_root_abs: Ruta absoluta raíz del escaneo actual.
+            scan_root_abs: Raíz del escaneo; todos los patrones se evalúan contra la
+                ruta relativa a ella.
 
         Returns:
             bool: True si el archivo debe ser ignorado, False en caso contrario.
         """
-        path_to_check_abs = Path(path_to_check).resolve()
-        path_to_check_str_abs = str(path_to_check_abs)
+        path_obj = Path(path_to_check)
+        relative_path_str = self._relative_to_scan_root(path_obj, Path(scan_root_abs))
 
-        if os.name == "nt":
-            path_to_check_str_abs = path_to_check_str_abs.replace("\\", "/")
-
-        # 1. Check absolute patterns against the full absolute path
-        for regex_pattern in self._compiled_absolute_patterns:
-            if regex_pattern.search(path_to_check_str_abs):
-                return True
-
-        # 2. Check relative patterns against path relative to scan_root_abs
-        try:
-            relative_path_str = str(path_to_check_abs.relative_to(scan_root_abs))
-            if os.name == "nt":
-                relative_path_str = relative_path_str.replace("\\", "/")
-
+        if relative_path_str is not None:
+            # Patrones sin ancla ("**/x/**", "x/**", "**/x"): se buscan en cualquier
+            # posición de la ruta RELATIVA a la raíz del escaneo.
+            for regex_pattern in self._compiled_absolute_patterns:
+                if regex_pattern.search(relative_path_str):
+                    return True
+            # Patrones anclados: deben coincidir con la ruta relativa completa.
             for regex_pattern in self._compiled_relative_patterns:
                 if regex_pattern.fullmatch(relative_path_str):
                     return True
-        except ValueError:
-            # path_to_check_abs is not under scan_root_abs.
-            # Relative patterns should not match.
-            pass
 
-        # 3. Check file size (only for files)
-        if path_to_check_abs.is_file():
+        # Límite de tamaño (solo archivos)
+        if path_obj.is_file():
             try:
-                if path_to_check_abs.stat().st_size > self.max_file_size:
+                if path_obj.stat().st_size > self.max_file_size:
                     return True
             except OSError:
                 pass
@@ -195,7 +208,8 @@ class FileProcessor(IFileProcessor):
             FileNotFoundError: Si la ruta no existe.
         """
         path_obj = Path(path).resolve()
-        scan_root_abs = path_obj
+        # Para un archivo suelto la raíz es su directorio, de modo que solo cuenta su nombre.
+        scan_root_abs = path_obj.parent if path_obj.is_file() else path_obj
 
         logger.debug(f"Iniciando búsqueda de archivos Python en: {path_obj}")
 

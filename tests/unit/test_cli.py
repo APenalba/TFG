@@ -1046,3 +1046,72 @@ class TestMainExecution:
         finally:
             # Restaurar el valor original
             pypex.cli.__name__ = original_name
+
+
+class TestAnalyzeNoPythonFiles:
+    """Tests de la CLI real (sin mocks) cuando no hay archivos Python que analizar."""
+
+    def setup_method(self):
+        """Configuración inicial para cada test."""
+        self.runner = pytest.importorskip("click.testing").CliRunner()
+
+    def test_analyze_project_under_venv_directory(self, tmp_path):
+        proj = tmp_path / "venv" / "proj"
+        (proj / ".venv" / "lib").mkdir(parents=True)
+        (proj / "mod.py").write_text("def add(a, b):\n    return a + b\n")
+        (proj / ".venv" / "lib" / "dep.py").write_text("x = 1\n")
+        output = tmp_path / "r.json"
+
+        result = self.runner.invoke(
+            main, ["analyze", str(proj), "--format", "json", "--output", str(output)]
+        )
+
+        assert result.exit_code == 0, result.output
+        report = json.loads(output.read_text())
+        assert report["project"]["summary_stats"]["total_files"] == 1
+        assert not any(".venv" in key for key in report["files"])
+
+    def test_analyze_directory_without_python_files_fails(self, tmp_path):
+        proj = tmp_path / "docs"
+        proj.mkdir()
+        (proj / "README.md").write_text("# Docs\n")
+        output = tmp_path / "out.json"
+
+        result = self.runner.invoke(
+            main, ["analyze", str(proj), "--format", "json", "-o", str(output)]
+        )
+
+        assert result.exit_code == 1
+        assert "No se encontraron archivos Python" in result.output
+        assert not output.exists()
+
+    def test_analyze_directory_with_all_files_ignored_fails(self, tmp_path):
+        proj = tmp_path / "proj"
+        (proj / ".venv").mkdir(parents=True)
+        (proj / "node_modules").mkdir()
+        (proj / ".venv" / "x.py").write_text("x = 1\n")
+        (proj / "node_modules" / "y.py").write_text("y = 1\n")
+
+        result = self.runner.invoke(main, ["analyze", str(proj)])
+
+        assert result.exit_code == 1
+        assert "No se encontraron archivos Python" in result.output
+        assert "exitosamente" not in result.output
+
+    def test_analyze_custom_ignore_excluding_everything_fails(self, tmp_path):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        (proj / "a.py").write_text("x = 1\n")
+
+        result = self.runner.invoke(main, ["analyze", str(proj), "--ignore", "*.py"])
+
+        assert result.exit_code == 1
+
+    def test_analyze_non_python_file_fails(self, tmp_path):
+        notes = tmp_path / "notes.txt"
+        notes.write_text("hola\n")
+
+        result = self.runner.invoke(main, ["analyze", str(notes)])
+
+        assert result.exit_code == 1
+        assert "no es un archivo Python" in result.output

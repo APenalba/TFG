@@ -515,3 +515,92 @@ class TestFileProcessor:
         # Test patrón normal sin **
         processor3 = FileProcessor(ignore_patterns=["build/temp/*"])
         assert len(processor3._compiled_relative_patterns) == 1
+
+
+def _touch(path):
+    """Crea un archivo Python mínimo, incluyendo los directorios padre."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("x = 1\n")
+    return path
+
+
+class TestScanRootRelativeMatching:
+    """Los patrones se evalúan contra la ruta relativa a la raíz del escaneo."""
+
+    def test_project_under_venv_directory_is_scanned(self, tmp_path):
+        proj = tmp_path / "venv" / "proj"
+        _touch(proj / "main.py")
+        _touch(proj / "pkg" / "mod.py")
+
+        files = FileProcessor().find_python_files(proj)
+
+        assert len(files) == 2
+
+    @pytest.mark.parametrize(
+        "name",
+        ["venv", ".venv", "node_modules", ".git", "__pycache__", ".tox", ".mypy_cache"],
+    )
+    def test_ancestor_directory_names_do_not_exclude_project(self, tmp_path, name):
+        proj = tmp_path / name / "proj"
+        _touch(proj / "app.py")
+
+        files = FileProcessor().find_python_files(proj)
+
+        assert len(files) == 1
+
+    def test_default_patterns_still_exclude_inside_project(self, tmp_path):
+        proj = tmp_path / "venv" / "proj"
+        _touch(proj / ".venv" / "x.py")
+        _touch(proj / "venv" / "lib" / "y.py")
+        _touch(proj / "node_modules" / "z.py")
+        _touch(proj / ".git" / "hooks" / "h.py")
+        _touch(proj / "pkg" / "__pycache__" / "c.py")
+        _touch(proj / ".tox" / "t.py")
+        _touch(proj / "pkg" / "ok.py")
+
+        files = FileProcessor().find_python_files(proj)
+
+        assert {f.name for f in files} == {"ok.py"}
+
+    def test_custom_build_pattern_excludes_only_inside_project(self, tmp_path):
+        proj = tmp_path / "build" / "proj"
+        _touch(proj / "src" / "a.py")
+        _touch(proj / "build" / "gen.py")
+        _touch(proj / "sub" / "build" / "gen2.py")
+
+        files = FileProcessor(ignore_patterns=["build/**"]).find_python_files(proj)
+
+        assert {f.name for f in files} == {"a.py"}
+
+    def test_relative_pattern_ignores_ancestors(self, tmp_path):
+        proj = tmp_path / "build" / "proj"
+        _touch(proj / "x.py")
+        _touch(proj / "build" / "y.py")
+        processor = FileProcessor(ignore_patterns=["build/*"])
+
+        assert processor.should_ignore(proj / "x.py", proj) is False
+        assert processor.should_ignore(proj / "build" / "y.py", proj) is True
+
+    def test_should_ignore_scan_root_itself_is_never_ignored(self, tmp_path):
+        root = tmp_path / ".venv"
+        root.mkdir()
+
+        assert FileProcessor().should_ignore(root, root) is False
+
+    def test_find_python_files_single_file_under_ignored_ancestor(self, tmp_path):
+        file = _touch(tmp_path / ".venv" / "tool.py")
+
+        files = FileProcessor().find_python_files(file)
+
+        assert files == [file.resolve()]
+
+    @pytest.mark.skipif(
+        os.name == "nt", reason="Los enlaces simbólicos requieren permisos en Windows"
+    )
+    def test_should_ignore_symlink_inside_project_pointing_outside(self, tmp_path):
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        _touch(tmp_path / "real_env" / "x.py")
+        (proj / ".venv").symlink_to(tmp_path / "real_env", target_is_directory=True)
+
+        assert FileProcessor().should_ignore(proj / ".venv", proj) is True
