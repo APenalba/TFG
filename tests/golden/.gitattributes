@@ -1,0 +1,2 @@
+corpus/*.py text eol=lf
+expected/*.json text eol=lf

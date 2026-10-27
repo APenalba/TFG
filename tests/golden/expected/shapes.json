@@ -1,0 +1,1154 @@
+{
+  "file": "shapes.py",
+  "line_count": 81,
+  "file_errors": [],
+  "module_metrics": {
+    "advanced_coupling": {
+      "abstract_classes": 1.0,
+      "abstractness": 0.2,
+      "ca": 0.0,
+      "ce": 2.0,
+      "distance_main_sequence": 0.2,
+      "imports_count": 2.0,
+      "instability": 1.0,
+      "total_classes": 5.0
+    },
+    "fan_in_out": 1.176471,
+    "halstead": {
+      "avg_difficulty": 1.897759,
+      "avg_volume": 21.726366,
+      "entity_count": 17.0,
+      "high_difficulty_entities": 0,
+      "high_volume_entities": 0,
+      "max_difficulty": 7.0,
+      "max_volume": 46.506993,
+      "min_volume": 0.0,
+      "volume_distribution": 13.715813
+    },
+    "lines_of_code": 54.0,
+    "parameter_count": 0.0
+  },
+  "module_metric_errors": [],
+  "entities": [
+    {
+      "name": "total_area",
+      "type": "function",
+      "line_start": 80,
+      "line_end": 81,
+      "metrics": {
+        "cognitive_complexity": 0.0,
+        "comprehension_complexity": 1.0,
+        "cyclomatic_complexity": 1.0,
+        "design_complexity": 2.0,
+        "essential_complexity": 1.0,
+        "exception_handling_complexity": 0.0,
+        "fan_in_out": 2,
+        "generator_complexity": 0.0,
+        "halstead": {
+          "N1": 4.0,
+          "N2": 10.0,
+          "bugs": 0.014,
+          "difficulty": 1.666667,
+          "effort": 70.0,
+          "eta1": 2.0,
+          "eta2": 6.0,
+          "length": 14,
+          "time": 3.888889,
+          "vocabulary": 8,
+          "volume": 42.0
+        },
+        "lines_of_code": 2.0,
+        "logical_complexity": 1.0,
+        "nested_comprehension_depth": 1.0,
+        "nesting_depth": 1.0,
+        "parameter_count": 1.0
+      },
+      "metric_errors": []
+    },
+    {
+      "name": "Shape",
+      "type": "class",
+      "line_start": 7,
+      "line_end": 21,
+      "metrics": {
+        "advanced_coupling": {
+          "cbo": 2.0,
+          "external_classes_used": 1.0,
+          "external_methods_called": 1.0,
+          "inheritance_coupling": 1.0,
+          "mpc": 1.0,
+          "rfc": 4.0
+        },
+        "cognitive_complexity": {
+          "average": 0.0,
+          "high_complexity_methods": 0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "min": 0.0
+        },
+        "comprehension_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "methods_with_comprehensions": 0
+        },
+        "cyclomatic_complexity": {
+          "average": 1.0,
+          "high_complexity_methods": 0,
+          "max": 1.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "design_complexity": {
+          "average": 0.333333,
+          "max": 1.0,
+          "method_count": 3.0,
+          "methods_with_calls": 1
+        },
+        "essential_complexity": {
+          "average": 1.333333,
+          "high_essential_methods": 0,
+          "max": 2.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "exception_handling_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "methods_with_exceptions": 0
+        },
+        "fan_in_out": 0.333333,
+        "generator_complexity": {
+          "average": 0.0,
+          "generator_methods": 0,
+          "max": 0.0,
+          "method_count": 3.0
+        },
+        "halstead": {
+          "avg_difficulty": 0.75,
+          "avg_volume": 12.486422,
+          "high_difficulty_methods": 0,
+          "high_volume_methods": 0,
+          "max_difficulty": 1.75,
+          "max_volume": 25.849625,
+          "method_count": 3.0,
+          "min_volume": 0.0
+        },
+        "lcom4": {
+          "attribute_connections": 0.0,
+          "connected_components": 2,
+          "lcom4": 2.0,
+          "method_connections": 1.0,
+          "total": 2.0,
+          "total_methods": 3
+        },
+        "lines_of_code": 17.0,
+        "logical_complexity": {
+          "average": 1.0,
+          "complex_logic_methods": 0,
+          "max": 1.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "nested_comprehension_depth": {
+          "average_depth": 0.0,
+          "max_depth": 0.0,
+          "method_count": 3.0,
+          "methods_with_nested": 0
+        },
+        "nesting_depth": {
+          "avg_depth": 0.0,
+          "high_nesting_methods": 0,
+          "max_depth": 0.0,
+          "method_count": 3.0,
+          "min_depth": 0.0
+        },
+        "parameter_count": 0.333333
+      },
+      "metric_errors": [],
+      "children": [
+        {
+          "name": "__init__",
+          "type": "method",
+          "line_start": 12,
+          "line_end": 14,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 1.0,
+              "N2": 4.0,
+              "bugs": 0.00387,
+              "difficulty": 0.5,
+              "effort": 5.80482,
+              "eta1": 1.0,
+              "eta2": 4.0,
+              "length": 5,
+              "time": 0.32249,
+              "vocabulary": 5,
+              "volume": 11.60964
+            },
+            "lines_of_code": 3.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "area",
+          "type": "method",
+          "line_start": 16,
+          "line_end": 18,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 2.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 0.0,
+              "N2": 1.0,
+              "bugs": 0.0,
+              "difficulty": 0.0,
+              "effort": 0.0,
+              "eta1": 0.0,
+              "eta2": 1.0,
+              "length": 1,
+              "time": 0.0,
+              "vocabulary": 1,
+              "volume": 0.0
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "describe",
+          "type": "method",
+          "line_start": 20,
+          "line_end": 21,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 1.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 1,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 3.0,
+              "N2": 7.0,
+              "bugs": 0.008617,
+              "difficulty": 1.75,
+              "effort": 45.236844,
+              "eta1": 2.0,
+              "eta2": 4.0,
+              "length": 10,
+              "time": 2.513158,
+              "vocabulary": 6,
+              "volume": 25.849625
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        }
+      ]
+    },
+    {
+      "name": "Circle",
+      "type": "class",
+      "line_start": 24,
+      "line_end": 34,
+      "metrics": {
+        "advanced_coupling": {
+          "cbo": 3.0,
+          "external_classes_used": 2.0,
+          "external_methods_called": 3.0,
+          "inheritance_coupling": 1.0,
+          "mpc": 3.0,
+          "rfc": 6.0
+        },
+        "cognitive_complexity": {
+          "average": 0.0,
+          "high_complexity_methods": 0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "min": 0.0
+        },
+        "comprehension_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "methods_with_comprehensions": 0
+        },
+        "cyclomatic_complexity": {
+          "average": 1.0,
+          "high_complexity_methods": 0,
+          "max": 1.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "design_complexity": {
+          "average": 1.0,
+          "max": 3.0,
+          "method_count": 3.0,
+          "methods_with_calls": 1
+        },
+        "essential_complexity": {
+          "average": 1.0,
+          "high_essential_methods": 0,
+          "max": 1.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "exception_handling_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 3.0,
+          "methods_with_exceptions": 0
+        },
+        "fan_in_out": 1.0,
+        "generator_complexity": {
+          "average": 0.0,
+          "generator_methods": 0,
+          "max": 0.0,
+          "method_count": 3.0
+        },
+        "halstead": {
+          "avg_difficulty": 1.916667,
+          "avg_volume": 22.711279,
+          "high_difficulty_methods": 0,
+          "high_volume_methods": 0,
+          "max_difficulty": 2.5,
+          "max_volume": 34.869175,
+          "method_count": 3.0,
+          "min_volume": 10.0
+        },
+        "lcom4": {
+          "attribute_connections": 1.0,
+          "connected_components": 2,
+          "lcom4": 2.0,
+          "method_connections": 0.0,
+          "total": 2.0,
+          "total_methods": 3
+        },
+        "lines_of_code": 16.0,
+        "logical_complexity": {
+          "average": 1.0,
+          "complex_logic_methods": 0,
+          "max": 1.0,
+          "method_count": 3.0,
+          "min": 1.0
+        },
+        "nested_comprehension_depth": {
+          "average_depth": 0.0,
+          "max_depth": 0.0,
+          "method_count": 3.0,
+          "methods_with_nested": 0
+        },
+        "nesting_depth": {
+          "avg_depth": 0.0,
+          "high_nesting_methods": 0,
+          "max_depth": 0.0,
+          "method_count": 3.0,
+          "min_depth": 0.0
+        },
+        "parameter_count": 0.333333
+      },
+      "metric_errors": [],
+      "children": [
+        {
+          "name": "__init__",
+          "type": "method",
+          "line_start": 25,
+          "line_end": 27,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 3.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 3,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 4.0,
+              "N2": 7.0,
+              "bugs": 0.011623,
+              "difficulty": 1.75,
+              "effort": 61.021056,
+              "eta1": 3.0,
+              "eta2": 6.0,
+              "length": 11,
+              "time": 3.390059,
+              "vocabulary": 9,
+              "volume": 34.869175
+            },
+            "lines_of_code": 3.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "area",
+          "type": "method",
+          "line_start": 29,
+          "line_end": 30,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 4.0,
+              "N2": 5.0,
+              "bugs": 0.007755,
+              "difficulty": 2.5,
+              "effort": 58.161656,
+              "eta1": 3.0,
+              "eta2": 3.0,
+              "length": 9,
+              "time": 3.231203,
+              "vocabulary": 6,
+              "volume": 23.264663
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "diameter",
+          "type": "method",
+          "line_start": 32,
+          "line_end": 34,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 2.0,
+              "N2": 3.0,
+              "bugs": 0.003333,
+              "difficulty": 1.5,
+              "effort": 15.0,
+              "eta1": 2.0,
+              "eta2": 2.0,
+              "length": 5,
+              "time": 0.833333,
+              "vocabulary": 4,
+              "volume": 10.0
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        }
+      ]
+    },
+    {
+      "name": "Rectangle",
+      "type": "class",
+      "line_start": 37,
+      "line_end": 57,
+      "metrics": {
+        "advanced_coupling": {
+          "cbo": 3.0,
+          "external_classes_used": 2.0,
+          "external_methods_called": 6.0,
+          "inheritance_coupling": 1.0,
+          "mpc": 7.0,
+          "rfc": 11.0
+        },
+        "cognitive_complexity": {
+          "average": 0.6,
+          "high_complexity_methods": 0,
+          "max": 2.0,
+          "method_count": 5.0,
+          "min": 0.0
+        },
+        "comprehension_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 5.0,
+          "methods_with_comprehensions": 0
+        },
+        "cyclomatic_complexity": {
+          "average": 1.4,
+          "high_complexity_methods": 0,
+          "max": 2.0,
+          "method_count": 5.0,
+          "min": 1.0
+        },
+        "design_complexity": {
+          "average": 1.4,
+          "max": 3.0,
+          "method_count": 5.0,
+          "methods_with_calls": 3
+        },
+        "essential_complexity": {
+          "average": 1.2,
+          "high_essential_methods": 0,
+          "max": 2.0,
+          "method_count": 5.0,
+          "min": 1.0
+        },
+        "exception_handling_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 5.0,
+          "methods_with_exceptions": 0
+        },
+        "fan_in_out": 1.4,
+        "generator_complexity": {
+          "average": 0.0,
+          "generator_methods": 0,
+          "max": 0.0,
+          "method_count": 5.0
+        },
+        "halstead": {
+          "avg_difficulty": 3.119048,
+          "avg_volume": 28.226211,
+          "high_difficulty_methods": 0,
+          "high_volume_methods": 0,
+          "max_difficulty": 7.0,
+          "max_volume": 46.506993,
+          "method_count": 5.0,
+          "min_volume": 7.924813
+        },
+        "lcom4": {
+          "attribute_connections": 2.0,
+          "connected_components": 4,
+          "lcom4": 4.0,
+          "method_connections": 0.0,
+          "total": 4.0,
+          "total_methods": 5
+        },
+        "lines_of_code": 31.0,
+        "logical_complexity": {
+          "average": 1.2,
+          "complex_logic_methods": 0,
+          "max": 2.0,
+          "method_count": 5.0,
+          "min": 1.0
+        },
+        "nested_comprehension_depth": {
+          "average_depth": 0.0,
+          "max_depth": 0.0,
+          "method_count": 5.0,
+          "methods_with_nested": 0
+        },
+        "nesting_depth": {
+          "avg_depth": 0.2,
+          "high_nesting_methods": 0,
+          "max_depth": 1.0,
+          "method_count": 5.0,
+          "min_depth": 0.0
+        },
+        "parameter_count": 1.0
+      },
+      "metric_errors": [],
+      "children": [
+        {
+          "name": "__init__",
+          "type": "method",
+          "line_start": 38,
+          "line_end": 41,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 3.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 3,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 5.0,
+              "N2": 9.0,
+              "bugs": 0.015502,
+              "difficulty": 1.928571,
+              "effort": 89.692059,
+              "eta1": 3.0,
+              "eta2": 7.0,
+              "length": 14,
+              "time": 4.982892,
+              "vocabulary": 10,
+              "volume": 46.506993
+            },
+            "lines_of_code": 4.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 3.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "area",
+          "type": "method",
+          "line_start": 43,
+          "line_end": 44,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 3.0,
+              "N2": 4.0,
+              "bugs": 0.003698,
+              "difficulty": 4.0,
+              "effort": 44.37895,
+              "eta1": 2.0,
+              "eta2": 1.0,
+              "length": 7,
+              "time": 2.465497,
+              "vocabulary": 3,
+              "volume": 11.094738
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "is_square",
+          "type": "method",
+          "line_start": 46,
+          "line_end": 47,
+          "metrics": {
+            "cognitive_complexity": 1.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 2.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 6.0,
+              "N2": 7.0,
+              "bugs": 0.011202,
+              "difficulty": 7.0,
+              "effort": 235.231588,
+              "eta1": 4.0,
+              "eta2": 2.0,
+              "length": 13,
+              "time": 13.068422,
+              "vocabulary": 6,
+              "volume": 33.604513
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 2.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "square",
+          "type": "method",
+          "line_start": 49,
+          "line_end": 51,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 1.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 1,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 1.0,
+              "N2": 4.0,
+              "bugs": 0.002642,
+              "difficulty": 1.0,
+              "effort": 7.924813,
+              "eta1": 1.0,
+              "eta2": 2.0,
+              "length": 5,
+              "time": 0.440267,
+              "vocabulary": 3,
+              "volume": 7.924813
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "from_pair",
+          "type": "method",
+          "line_start": 53,
+          "line_end": 57,
+          "metrics": {
+            "cognitive_complexity": 2.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 2.0,
+            "design_complexity": 3.0,
+            "essential_complexity": 2.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 3,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 4.0,
+              "N2": 10.0,
+              "bugs": 0.014,
+              "difficulty": 1.666667,
+              "effort": 70.0,
+              "eta1": 2.0,
+              "eta2": 6.0,
+              "length": 14,
+              "time": 3.888889,
+              "vocabulary": 8,
+              "volume": 42.0
+            },
+            "lines_of_code": 4.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 1.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        }
+      ]
+    },
+    {
+      "name": "Square",
+      "type": "class",
+      "line_start": 60,
+      "line_end": 62,
+      "metrics": {
+        "advanced_coupling": {
+          "cbo": 3.0,
+          "external_classes_used": 2.0,
+          "external_methods_called": 4.0,
+          "inheritance_coupling": 1.0,
+          "mpc": 4.0,
+          "rfc": 5.0
+        },
+        "cognitive_complexity": {
+          "average": 0.0,
+          "high_complexity_methods": 0,
+          "max": 0.0,
+          "method_count": 1.0,
+          "min": 0.0
+        },
+        "comprehension_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 1.0,
+          "methods_with_comprehensions": 0
+        },
+        "cyclomatic_complexity": {
+          "average": 1.0,
+          "high_complexity_methods": 0,
+          "max": 1.0,
+          "method_count": 1.0,
+          "min": 1.0
+        },
+        "design_complexity": {
+          "average": 4.0,
+          "max": 4.0,
+          "method_count": 1.0,
+          "methods_with_calls": 1
+        },
+        "essential_complexity": {
+          "average": 1.0,
+          "high_essential_methods": 0,
+          "max": 1.0,
+          "method_count": 1.0,
+          "min": 1.0
+        },
+        "exception_handling_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 1.0,
+          "methods_with_exceptions": 0
+        },
+        "fan_in_out": 4.0,
+        "generator_complexity": {
+          "average": 0.0,
+          "generator_methods": 0,
+          "max": 0.0,
+          "method_count": 1.0
+        },
+        "halstead": {
+          "avg_difficulty": 1.5,
+          "avg_volume": 23.264663,
+          "high_difficulty_methods": 0,
+          "high_volume_methods": 0,
+          "max_difficulty": 1.5,
+          "max_volume": 23.264663,
+          "method_count": 1.0,
+          "min_volume": 23.264663
+        },
+        "lcom4": {
+          "attribute_connections": 0.0,
+          "connected_components": 1,
+          "lcom4": 1.0,
+          "method_connections": 0.0,
+          "total": 1.0,
+          "total_methods": 1
+        },
+        "lines_of_code": 5.0,
+        "logical_complexity": {
+          "average": 1.0,
+          "complex_logic_methods": 0,
+          "max": 1.0,
+          "method_count": 1.0,
+          "min": 1.0
+        },
+        "nested_comprehension_depth": {
+          "average_depth": 0.0,
+          "max_depth": 0.0,
+          "method_count": 1.0,
+          "methods_with_nested": 0
+        },
+        "nesting_depth": {
+          "avg_depth": 0.0,
+          "high_nesting_methods": 0,
+          "max_depth": 0.0,
+          "method_count": 1.0,
+          "min_depth": 0.0
+        },
+        "parameter_count": 1.0
+      },
+      "metric_errors": [],
+      "children": [
+        {
+          "name": "__init__",
+          "type": "method",
+          "line_start": 61,
+          "line_end": 62,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 4.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 4,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 3.0,
+              "N2": 6.0,
+              "bugs": 0.007755,
+              "difficulty": 1.5,
+              "effort": 34.896994,
+              "eta1": 2.0,
+              "eta2": 4.0,
+              "length": 9,
+              "time": 1.938722,
+              "vocabulary": 6,
+              "volume": 23.264663
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "type": "class",
+      "line_start": 65,
+      "line_end": 77,
+      "metrics": {
+        "advanced_coupling": {
+          "cbo": 1.0,
+          "external_classes_used": 1.0,
+          "external_methods_called": 2.0,
+          "inheritance_coupling": 0.0,
+          "mpc": 3.0,
+          "rfc": 6.0
+        },
+        "cognitive_complexity": {
+          "average": 0.0,
+          "high_complexity_methods": 0,
+          "max": 0.0,
+          "method_count": 4.0,
+          "min": 0.0
+        },
+        "comprehension_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 4.0,
+          "methods_with_comprehensions": 0
+        },
+        "cyclomatic_complexity": {
+          "average": 1.0,
+          "high_complexity_methods": 0,
+          "max": 1.0,
+          "method_count": 4.0,
+          "min": 1.0
+        },
+        "design_complexity": {
+          "average": 0.75,
+          "max": 1.0,
+          "method_count": 4.0,
+          "methods_with_calls": 3
+        },
+        "essential_complexity": {
+          "average": 1.0,
+          "high_essential_methods": 0,
+          "max": 1.0,
+          "method_count": 4.0,
+          "min": 1.0
+        },
+        "exception_handling_complexity": {
+          "average": 0.0,
+          "max": 0.0,
+          "method_count": 4.0,
+          "methods_with_exceptions": 0
+        },
+        "fan_in_out": 0.75,
+        "generator_complexity": {
+          "average": 0.0,
+          "generator_methods": 0,
+          "max": 0.0,
+          "method_count": 4.0
+        },
+        "halstead": {
+          "avg_difficulty": 1.375,
+          "avg_volume": 14.33985,
+          "high_difficulty_methods": 0,
+          "high_volume_methods": 0,
+          "max_difficulty": 2.0,
+          "max_volume": 20.6797,
+          "method_count": 4.0,
+          "min_volume": 4.0
+        },
+        "lcom4": {
+          "attribute_connections": 1.0,
+          "connected_components": 3,
+          "lcom4": 3.0,
+          "method_connections": 0.0,
+          "total": 3.0,
+          "total_methods": 4
+        },
+        "lines_of_code": 19.0,
+        "logical_complexity": {
+          "average": 1.0,
+          "complex_logic_methods": 0,
+          "max": 1.0,
+          "method_count": 4.0,
+          "min": 1.0
+        },
+        "nested_comprehension_depth": {
+          "average_depth": 0.0,
+          "max_depth": 0.0,
+          "method_count": 4.0,
+          "methods_with_nested": 0
+        },
+        "nesting_depth": {
+          "avg_depth": 0.0,
+          "high_nesting_methods": 0,
+          "max_depth": 0.0,
+          "method_count": 4.0,
+          "min_depth": 0.0
+        },
+        "parameter_count": 0.5
+      },
+      "metric_errors": [],
+      "children": [
+        {
+          "name": "__init__",
+          "type": "method",
+          "line_start": 66,
+          "line_end": 68,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 0.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 0,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 2.0,
+              "N2": 2.0,
+              "bugs": 0.001333,
+              "difficulty": 1.0,
+              "effort": 4.0,
+              "eta1": 1.0,
+              "eta2": 1.0,
+              "length": 4,
+              "time": 0.222222,
+              "vocabulary": 2,
+              "volume": 4.0
+            },
+            "lines_of_code": 3.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "add",
+          "type": "method",
+          "line_start": 70,
+          "line_end": 71,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 1.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 1,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 3.0,
+              "N2": 5.0,
+              "bugs": 0.006893,
+              "difficulty": 1.25,
+              "effort": 25.849625,
+              "eta1": 2.0,
+              "eta2": 4.0,
+              "length": 8,
+              "time": 1.43609,
+              "vocabulary": 6,
+              "volume": 20.6797
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "count",
+          "type": "method",
+          "line_start": 73,
+          "line_end": 74,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 1.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 1,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 2.0,
+              "N2": 4.0,
+              "bugs": 0.004,
+              "difficulty": 2.0,
+              "effort": 24.0,
+              "eta1": 2.0,
+              "eta2": 2.0,
+              "length": 6,
+              "time": 1.333333,
+              "vocabulary": 4,
+              "volume": 12.0
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 1.0
+          },
+          "metric_errors": []
+        },
+        {
+          "name": "record",
+          "type": "method",
+          "line_start": 76,
+          "line_end": 77,
+          "metrics": {
+            "cognitive_complexity": 0.0,
+            "comprehension_complexity": 0.0,
+            "cyclomatic_complexity": 1.0,
+            "design_complexity": 1.0,
+            "essential_complexity": 1.0,
+            "exception_handling_complexity": 0.0,
+            "fan_in_out": 1,
+            "generator_complexity": 0.0,
+            "halstead": {
+              "N1": 3.0,
+              "N2": 5.0,
+              "bugs": 0.006893,
+              "difficulty": 1.25,
+              "effort": 25.849625,
+              "eta1": 2.0,
+              "eta2": 4.0,
+              "length": 8,
+              "time": 1.43609,
+              "vocabulary": 6,
+              "volume": 20.6797
+            },
+            "lines_of_code": 2.0,
+            "logical_complexity": 1.0,
+            "nested_comprehension_depth": 0.0,
+            "nesting_depth": 0.0,
+            "parameter_count": 2.0
+          },
+          "metric_errors": []
+        }
+      ]
+    }
+  ]
+}
