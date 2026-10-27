@@ -37,6 +37,7 @@ import yaml
 from pypex import __version__
 from pypex.core.analyzer import Analyzer
 from pypex.core.file_processor import FileProcessor
+from pypex.core.results import ErrorSeverity
 from pypex.metrics import get_registry
 from pypex.parser.ast_parser import ASTParser
 from pypex.reporters import ReporterRegistry
@@ -344,6 +345,10 @@ def analyze(
     try:
         logger.info(f"Analizando ruta: {path}")
 
+        path_obj = Path(path)
+        if path_obj.is_file() and path_obj.suffix != ".py":
+            raise click.ClickException(f"La ruta '{path}' no es un archivo Python (.py).")
+
         # Cargar configuración del archivo si se especifica
         file_config = {}
         if config:
@@ -434,6 +439,16 @@ def analyze(
 
         # Ejecutar el análisis
         results = analyzer.analyze(path)
+
+        if not results.files:
+            critical = [
+                e.message for e in results.global_errors if e.severity == ErrorSeverity.CRITICAL
+            ]
+            detail = f" Detalle: {critical[0]}" if critical else ""
+            raise click.ClickException(
+                f"No se encontraron archivos Python que analizar en '{path}'. Revisa la ruta y "
+                f"los patrones de exclusión (--ignore / ignore_patterns).{detail}"
+            )
 
         # Generar el reporte
         if output:
