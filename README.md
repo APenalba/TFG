@@ -241,8 +241,8 @@ describe exactamente qué cuenta cada métrica y en qué se diferencia de otras 
 - **Funciones**: funciones y funciones asíncronas, incluidas las lambdas asignadas a una variable.
 - **Métodos**: funciones definidas dentro de clases.
 - **Clases**: clases detectadas en el código.
-- **Funciones anidadas** (closures, funciones internas, lambdas y clases definidas dentro de una función)
-  **no** son entidades propias: su código forma parte de la función que las contiene y suma a sus métricas.
+- **Funciones anidadas** (closures y funciones internas) **no** son entidades propias: su código forma parte
+  de la función que las contiene y suma a sus métricas.
 
 Las métricas de función se calculan sobre todo el cuerpo de la función, incluidas sus funciones anidadas.
 El código suelto a nivel de módulo (fuera de funciones y clases) no se mide con métricas de función.
@@ -281,7 +281,9 @@ Los operadores `and`/`or` dentro de una comprensión o de una lambda sí suman.
    Se miden aparte con `comprehension_complexity`, `nested_comprehension_depth` y `nesting_depth`.
 2. **Funciones anidadas sumadas a la contenedora.** radon reporta los closures por separado y no los suma;
    PyPex los integra en la función que los define.
-3. **Ternarios, `else` de bucles y `try`, `assert` y `case _`** no suman en PyPex; en radon sí.
+3. **Ternarios, `else` de bucles y `try`, `assert` y `case _`** no suman en PyPex; en radon sí. En
+   particular, ambas herramientas suman cada `except`; la diferencia de `try / except / else` es que radon
+   suma +1 por el `else` de `try` y PyPex no.
 
 Ejemplo (verificado con PyPex y radon 6.0.1):
 
