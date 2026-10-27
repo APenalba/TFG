@@ -37,6 +37,7 @@ dev = [
     "mypy>=2.4.0",
     "types-pyyaml",
     "pre-commit>=4.7.0",
+    "radon>=6.0.1,<7",
 ]
 
 [build-system]
@@ -49,6 +50,7 @@ module-root = ""
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["tests/golden/corpus"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
@@ -75,3 +77,4 @@ python_classes = "Test*"
 addopts = "--cov=pypex --cov-report=term-missing"
 # Las deprecaciones de dependencias fallan los tests para detectarlas pronto
 filterwarnings = ["error"]
+markers = ["golden: tests de referencia end-to-end sobre tests/golden/corpus"]
