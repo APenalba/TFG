@@ -1,0 +1,64 @@
+{
+  "total_files": 4,
+  "successful_files": 4,
+  "failed_files": 0,
+  "total_lines_of_code": 276,
+  "global_errors": [],
+  "project_metrics": {
+    "advanced_coupling": {
+      "avg_abstractness": 0.05,
+      "avg_ca": 0.0,
+      "avg_cbo": 2.4,
+      "avg_ce": 0.75,
+      "avg_distance_main_sequence": 0.55,
+      "avg_instability": 0.5,
+      "avg_mpc": 3.6,
+      "avg_rfc": 6.4,
+      "class_count": 5.0,
+      "max_ca": 0.0,
+      "max_ce": 2.0,
+      "max_distance": 1.0,
+      "module_count": 4.0,
+      "total_dependencies": 3.0
+    },
+    "fan_in_out": {
+      "avg_coupling": 0.818182,
+      "entity_count": 44,
+      "highly_coupled_entities": 0,
+      "max_coupling": 4,
+      "module_count": 4,
+      "total_import_coupling": 3,
+      "total_inheritance_coupling": 4
+    },
+    "halstead": {
+      "avg_difficulty": 1.614539,
+      "avg_volume": 26.568394,
+      "high_difficulty_entities": 0,
+      "high_volume_entities": 0,
+      "max_difficulty": 7.0,
+      "max_volume": 81.409674,
+      "min_volume": 0.0,
+      "module_count": 4.0,
+      "module_volume_distribution": 7.346253,
+      "project_volume_distribution": 21.185287,
+      "total_entities": 44.0
+    },
+    "lines_of_code": {
+      "avg_entity_sloc": 6.666667,
+      "avg_module_sloc": 46.75,
+      "comment_ratio": 0.0,
+      "documentation_ratio": 0.02139,
+      "import_density": 0.01087,
+      "max_module_sloc": 66.0,
+      "module_count": 4.0,
+      "total_blank_lines": 85.0,
+      "total_comment_lines": 0.0,
+      "total_documentation_lines": 4.0,
+      "total_entities": 33.0,
+      "total_imports": 3.0,
+      "total_loc": 276.0,
+      "total_sloc": 187.0
+    }
+  },
+  "project_metric_errors": []
+}
