@@ -11,7 +11,7 @@
 
 [📊 Ver Reporte PyPex del Proyecto](https://apenalba.github.io/TFG)
 
-[🚀 Instalación](#-instalación) • [📊 Características](#-características) • [🎯 Uso Rápido](#-uso-rápido) • [📖 Documentación](#-documentación) • [🤝 Contribuir](#-contribuir)
+[🚀 Instalación](#-instalación) • [📊 Características](#-características-principales) • [🎯 Uso Rápido](#-uso-rápido) • [📖 Metodología](#metodología-de-las-métricas) • [🤝 Contribuir](#-contribuir)
 
 </div>
 
@@ -24,6 +24,7 @@
 - [🚀 Instalación](#-instalación)
 - [🎯 Uso Rápido](#-uso-rápido)
 - [📈 Métricas Disponibles](#-métricas-disponibles)
+- [Metodología de las métricas](#metodología-de-las-métricas)
 - [🖥️ Comandos CLI](#️-comandos-cli)
 - [⚙️ Configuración](#️-configuración)
 - [📊 Formatos de Salida](#-formatos-de-salida)
@@ -31,6 +32,7 @@
 - [🏗️ Arquitectura](#️-arquitectura)
 - [🧪 Testing](#-testing)
 - [🤝 Contribuir](#-contribuir)
+- [📞 Soporte y Contacto](#-soporte-y-contacto)
 - [📄 Licencia](#-licencia)
 
 ---
@@ -59,7 +61,7 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 - **Calidad de Diseño**: Métricas de Halstead, complejidad de diseño
 - **Tamaño y Documentación**: LOC, SLOC, ratio documentación/código
 - **Específicas Python**: Comprehensions, generadores, manejo excepciones
-- **Métricas de Proyecto**: Distribución de complejidad, patrones arquitectónicos
+- **Métricas de Proyecto**: LOC, Halstead, Fan-Out e indicadores de acoplamiento agregados
 
 ### 📊 **Análisis Multi-Nivel**
 - **Función**: Análisis detallado de métodos y funciones
@@ -73,7 +75,7 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 - **Consola**: Salida rica con colores, tablas e iconos
 
 ### ⚙️ **Configuración Flexible**
-- **Archivos de configuración** YAML
+- **Archivos de configuración** YAML o JSON
 - **Perfiles de umbrales** (strict/normal/permissive)
 - **Filtros avanzados** para archivos y directorios
 - **Métricas selectivas** - incluir/excluir específicas
@@ -82,7 +84,7 @@ Proporcionar a desarrolladores, equipos de desarrollo y auditores de código una
 - **CLI simple** con comandos intuitivos
 - **Configuración por argumentos** o archivos
 - **Logging detallado** para debugging
-- **API programática** para integraciones custom
+- **API programática** para integraciones custom ([ejemplos](examples/README.md))
 
 ---
 
@@ -124,12 +126,14 @@ uv run pytest
 
 ```bash
 # Si no se puede usar como comando
-python -m pypex --help
+uv run python -m pypex --help
 ```
 
 ---
 
 ## 🎯 Uso Rápido
+
+Los ejemplos usan `pypex` directamente. Con `uv`, antepón `uv run` o activa el entorno virtual del proyecto.
 
 ### Análisis Básico
 
@@ -185,44 +189,190 @@ PyPex implementa **16 métricas** organizadas en **5 categorías**:
 
 ### 🔄 **Complejidad Estructural**
 
-| Métrica | Descripción | Valores Típicos |
-|---------|-------------|-----------------|
-| **Complejidad Ciclomática** | Número de caminos de ejecución linealmente independientes | 1-10 (bueno), >20 (problemático) |
-| **Complejidad Cognitiva** | Dificultad mental para entender el código | 1-15 (bueno), >25 (problemático) |
-| **Profundidad de Anidamiento** | Niveles máximos de estructuras anidadas | 1-4 (bueno), >6 (problemático) |
-| **Complejidad Esencial** | Complejidad irreducible después de transformaciones | <3 (ideal), >5 (problemático) |
-| **Complejidad Lógica** | Complejidad de expresiones booleanas | <5 (bueno), >10 (problemático) |
+| Métrica (`nombre`) | Qué mide | Niveles |
+|--------------------|----------|---------|
+| Complejidad Ciclomática (`cyclomatic_complexity`) | 1 + puntos de decisión (McCabe) | Función (estadísticas en clase) |
+| Complejidad Cognitiva (`cognitive_complexity`) | Estructuras de control penalizadas por su anidamiento | Función (estadísticas en clase) |
+| Profundidad de Anidamiento (`nesting_depth`) | Máximo de bloques anidados | Función (estadísticas en clase) |
+| Complejidad Esencial (`essential_complexity`) | 1 + salidas no estructuradas (`break`, `continue`, `raise`, `yield`, `return` anticipado) | Función (estadísticas en clase) |
+| Complejidad Lógica (`logical_complexity`) | 1 + operadores `and`/`or` | Función (estadísticas en clase) |
 
 ### 🐍 **Específicas de Python**
 
-| Métrica | Descripción | Aplicación |
-|---------|-------------|------------|
-| **Complejidad de Comprensiones** | Complejidad de list/dict/set comprehensions | Código funcional Python |
-| **Profundidad de Comprensiones Anidadas** | Nivel de anidamiento en comprehensions | Expresiones complejas |
-| **Complejidad de Manejo de Excepciones** | Análisis de bloques try/except/finally | Robustez del código |
-| **Complejidad de Generadores** | Análisis de funciones con yield | Código asíncrono |
+| Métrica (`nombre`) | Qué mide | Niveles |
+|--------------------|----------|---------|
+| Complejidad de Comprensiones (`comprehension_complexity`) | Nº de cláusulas `if` en comprensiones y expresiones generadoras | Función (estadísticas en clase) |
+| Profundidad de Comprensiones Anidadas (`nested_comprehension_depth`) | Máximo anidamiento de comprensiones | Función (estadísticas en clase) |
+| Manejo de Excepciones (`exception_handling_complexity`) | Bloques `try` + cláusulas `except` | Función (estadísticas en clase) |
+| Complejidad de Generadores (`generator_complexity`) | Nº de `yield` / `yield from` | Función (estadísticas en clase) |
 
 ### 📏 **Métricas de Tamaño**
 
-| Métrica | Descripción | Componentes |
-|---------|-------------|-------------|
-| **Líneas de Código** | LOC físicas, lógicas, comentarios, documentación | SLOC, LLOC, CLOC, DLOC |
-| **Conteo de Parámetros** | Número de parámetros en funciones/métodos | Parámetros totales, opcionales |
+| Métrica (`nombre`) | Qué mide | Niveles |
+|--------------------|----------|---------|
+| Líneas de Código (`lines_of_code`) | SLOC: líneas que no están en blanco, no son solo comentario y no son docstring | Función, clase, módulo, proyecto |
+| Conteo de Parámetros (`parameter_count`) | Nº de parámetros (incluye `self`, `*args`, `**kwargs`) | Función (media sin `self` en clase) |
 
 ### 🔗 **Acoplamiento y Cohesión**
 
-| Métrica | Descripción | Nivel |
-|---------|-------------|-------|
-| **Fan-In/Fan-Out** | Dependencias entre componentes | Módulo/Clase |
-| **LCOM4** | Falta de cohesión en métodos (Lack of Cohesion) | Clase |
-| **Acoplamiento Avanzado** | Análisis profundo de dependencias | Proyecto |
+| Métrica (`nombre`) | Qué mide | Niveles |
+|--------------------|----------|---------|
+| Fan-In/Fan-Out (`fan_in_out`) | Fan-out: nº de destinos de llamada distintos. Fan-in aún no se calcula | Función, clase, módulo, proyecto |
+| LCOM4 (`lcom4`) | Componentes conexos del grafo de métodos | Clase |
+| Acoplamiento Avanzado (`advanced_coupling`) | CBO, RFC, MPC (clase); Ce, Ca, inestabilidad, abstracción, distancia a la secuencia principal (módulo y proyecto) | Clase, módulo, proyecto |
 
 ### 🏗️ **Calidad de Diseño**
 
-| Métrica | Descripción | Enfoque |
-|---------|-------------|---------|
-| **Complejidad de Diseño** | Complejidad de las interacciones entre módulos | Arquitectura |
-| **Métricas de Halstead** | Volumen, dificultad, esfuerzo de programación | Análisis léxico |
+| Métrica (`nombre`) | Qué mide | Niveles |
+|--------------------|----------|---------|
+| Complejidad de Diseño (`design_complexity`) | Nº de destinos de llamada distintos de la función | Función (estadísticas en clase) |
+| Halstead (`halstead`) | η1, η2, N1, N2, vocabulario, longitud, volumen, dificultad, esfuerzo, tiempo, bugs | Función, clase, módulo, proyecto |
+
+Detalles de cálculo en [Metodología de las métricas](#metodología-de-las-métricas).
+
+## Metodología de las métricas
+
+PyPex calcula las métricas sobre el AST de [astroid](https://github.com/pylint-dev/astroid). Esta sección
+describe exactamente qué cuenta cada métrica y en qué se diferencia de otras herramientas como
+[radon](https://radon.readthedocs.io/).
+
+### Entidades analizadas
+
+- **Funciones**: funciones y funciones asíncronas, incluidas las lambdas asignadas a una variable.
+- **Métodos**: funciones definidas dentro de clases.
+- **Clases**: clases detectadas en el código.
+- **Funciones anidadas** (closures y funciones internas) **no** son entidades propias: su código forma parte
+  de la función que las contiene y suma a sus métricas.
+
+Las métricas de función se calculan sobre todo el cuerpo de la función, incluidas sus funciones anidadas.
+El código suelto a nivel de módulo (fuera de funciones y clases) no se mide con métricas de función.
+
+### Niveles de cálculo
+
+- **Función / método**: valor numérico de cada métrica (Halstead devuelve un diccionario).
+- **Clase**: estadísticas sobre sus métodos (media, máximo, mínimo, nº de métodos y nº de métodos por
+  encima de un límite), además de LCOM4 y CBO/RFC/MPC. Para la complejidad no se suma el total de la clase.
+- **Módulo**: solo líneas de código, Halstead, Fan-Out (media) y acoplamiento avanzado (Ce, inestabilidad,
+  abstracción, distancia).
+- **Proyecto**: agregados de líneas de código, Halstead, Fan-Out y acoplamiento avanzado (incluido Ca).
+- La complejidad ciclomática, la cognitiva y el resto de métricas de función **no** se agregan a nivel de
+  módulo ni de proyecto.
+
+### Complejidad ciclomática (`cyclomatic_complexity`)
+
+`CC = 1 + puntos de decisión`. Suman:
+
+| Construcción | Incremento |
+|---|---|
+| `if` | +1 |
+| `elif` | +2 (ver [Limitaciones conocidas](#limitaciones-conocidas)) |
+| `for`, `async for`, `while` | +1 |
+| cada `except` de un `try` | +1 |
+| cada `case` de un `match` (incluido `case _`) | +1 |
+| expresión booleana con *n* operandos (`a and b and c`) | +(n − 1) |
+
+No suman: `else` (de `if`, bucles o `try`), `finally`, `with`, `assert`, expresiones condicionales
+(`x if c else y`), las cláusulas `for`/`if` de comprensiones y expresiones generadoras, ni `except*`.
+Los operadores `and`/`or` dentro de una comprensión o de una lambda sí suman.
+
+**Decisiones que difieren de radon:**
+
+1. **Comprensiones fuera de la CC.** Los `for` e `if` de comprensiones y expresiones generadoras no suman.
+   Se miden aparte con `comprehension_complexity`, `nested_comprehension_depth` y `nesting_depth`.
+2. **Funciones anidadas sumadas a la contenedora.** radon reporta los closures por separado y no los suma;
+   PyPex los integra en la función que los define.
+3. **Ternarios, `else` de bucles y `try`, `assert` y `case _`** no suman en PyPex; en radon sí. En
+   particular, ambas herramientas suman cada `except`; la diferencia de `try / except / else` es que radon
+   suma +1 por el `else` de `try` y PyPex no.
+
+Ejemplo (verificado con PyPex y radon 6.0.1):
+
+| Función | PyPex | radon |
+|---|---:|---:|
+| `return [x for x in xs if x > 0]` | 1 | 3 |
+| función con un closure que contiene un `if` | 2 | 1 (closure aparte con 2) |
+| `if / elif / else` | 4 | 3 |
+| `return 1 if x else 0` | 1 | 2 |
+| `match` con `case 1` y `case _` | 3 | 2 |
+| `for … if … break … else` | 3 | 4 |
+| `try / except / else` | 2 | 3 |
+| `assert x` | 1 | 2 |
+
+Sobre el código de click 8.5, el 79 % de las funciones obtiene la misma CC en ambas herramientas;
+el resto de diferencias se explica por las reglas anteriores.
+
+### Complejidad cognitiva (`cognitive_complexity`)
+
+Inspirada en la métrica de SonarSource, con estas reglas:
+
+- `if` (y cada `elif`, que se trata como un `if` anidado), `for`, `async for`, `while` y `match`:
+  +1 más el nivel de anidamiento actual; su contenido queda un nivel más anidado.
+- Cada `case` y cada `except`: +1 (sin penalización por anidamiento); su cuerpo queda un nivel más anidado.
+- Expresión booleana con *n* operandos: +(n − 1).
+- Una función anidada aumenta en 1 el nivel de anidamiento de su cuerpo.
+- El recorrido parte de la propia definición, de modo que el cuerpo de la función ya está en el nivel 1:
+  un `if` en el cuerpo principal suma 2.
+- No suman: `else`, `try`, `finally`, `with`, ternarios, comprensiones, `break`/`continue` ni recursión.
+
+### Profundidad de anidamiento (`nesting_depth`)
+
+Máximo de bloques anidados dentro del cuerpo. Cada uno de estos nodos añade un nivel: `if` (un `elif`
+añade otro), `for`, `while`, `try`, `except`, `with`, `match`, `case` y cada comprensión o expresión
+generadora. Por ejemplo, un `try/except` tiene profundidad 2. Las funciones anidadas no añaden nivel,
+pero su contenido se tiene en cuenta.
+
+### Complejidad esencial (`essential_complexity`)
+
+No es la complejidad esencial de McCabe (reducibilidad del grafo), sino una aproximación:
+`1 + nº de break + continue + raise + yield/yield from + return anticipados`. Un `return` no cuenta si
+es la última sentencia del cuerpo o está dentro de ella (por ejemplo, en el `if` final).
+
+### Métricas específicas de Python
+
+- `logical_complexity`: `1 + Σ(n − 1)` sobre todas las expresiones `and`/`or`.
+- `comprehension_complexity`: nº total de cláusulas `if` en comprensiones (`list`, `set`, `dict`) y
+  expresiones generadoras.
+- `nested_comprehension_depth`: máxima profundidad de comprensiones dentro de comprensiones (1 = sin anidar).
+- `exception_handling_complexity`: nº de bloques `try` + nº de cláusulas `except`.
+- `generator_complexity`: nº de expresiones `yield` y `yield from` (las expresiones generadoras no cuentan).
+
+### Tamaño
+
+- `lines_of_code`: SLOC = líneas que no están en blanco, no son solo un comentario y no forman parte del
+  docstring. En clases, módulos y proyecto el resultado incluye además líneas de documentación, comentarios,
+  ratios de documentación y comentarios, y nº de imports.
+- `parameter_count`: todos los parámetros de la firma (posicionales, solo-posicionales, solo-keyword,
+  `*args`, `**kwargs`, incluido `self`). En una clase se informa la media por método sin contar `self`.
+
+### Acoplamiento, cohesión y diseño
+
+- **Llamadas de una función**: destinos distintos que astroid consigue inferir (por ejemplo `builtins.len`).
+  Si la inferencia falla con error se usa el texto de la llamada; las llamadas no inferibles se descartan.
+  Incluye las llamadas hechas en funciones anidadas.
+- `design_complexity` y `fan_in_out` (en función) = nº de llamadas distintas (fan-out). El fan-in todavía
+  no se calcula. En clase, módulo y proyecto `fan_in_out` da la media de llamadas y añade acoplamiento por
+  herencia e imports.
+- `lcom4`: grafo cuyos nodos son los métodos de la clase. Hay arista si dos métodos acceden al mismo
+  atributo a través de su primer parámetro (`self.x`) o si uno llama al otro. El valor es el nº de
+  componentes conexos (1 = clase cohesionada).
+- `advanced_coupling`: en clase, CBO = clases base + clases externas usadas; RFC = métodos propios +
+  métodos externos llamados; MPC = nº de llamadas externas. En módulo, Ce = nº de imports, inestabilidad
+  I = Ce/(Ca+Ce), abstracción A = clases abstractas/clases y distancia D = |A + I − 1|. Ca solo se estima
+  a nivel de proyecto, contando cuántos módulos del proyecto importan a cada uno.
+
+### Halstead (`halstead`)
+
+Aproximación sobre el AST. Operadores: operadores binarios, unarios, booleanos y de comparación,
+asignaciones, llamadas y acceso a atributos. Operandos: nombres, constantes, expresión llamada y objeto
+base de un atributo. Con η1/η2 (únicos) y N1/N2 (totales):
+vocabulario η = η1 + η2, longitud N = N1 + N2, volumen V = N·log2 η, dificultad D = (η1/2)·(N2/η2),
+esfuerzo E = D·V, tiempo T = E/18 s y bugs B = V/3000. Los valores no son comparables con los de otras
+herramientas, porque cada una clasifica operadores y operandos de forma distinta.
+
+### Limitaciones conocidas
+
+- Cada `elif` suma 2 a la complejidad ciclomática (se cuenta como rama del `if` anterior y como `if` propio).
+- `try/except*` no se cuenta en la complejidad ciclomática ni en el manejo de excepciones.
 
 ---
 
@@ -310,7 +460,8 @@ pypex thresholds
 
 | Opción | Descripción | Aplicación |
 |--------|-------------|------------|
-| `--verbose` | Activar modo verboso | Todos los comandos |
+| `-v`, `--verbose` | Activar modo verboso | Todos los comandos |
+| `--version` | Mostrar la versión | Comando principal |
 | `--log-file` | Archivo para logs detallados | Debugging |
 | `--help` | Mostrar ayuda | Cada comando |
 
@@ -329,14 +480,8 @@ PyPex admite configuración a través de **archivos YAML/JSON** y **argumentos C
 # 🔧 CONFIGURACIÓN GENERAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Formato de salida por defecto
-output_format: "text"
-
 # Tamaño máximo de archivo a procesar (en bytes)
 max_file_size: 1048576  # 1MB
-
-# Perfil de umbrales para interpretación de métricas
-thresholds_profile: "normal"  # strict, normal, permissive
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 📊 CONFIGURACIÓN DE MÉTRICAS
@@ -391,35 +536,16 @@ verbose: false
 log_file: null
 ```
 
-### Perfiles Predefinidos
+### Umbrales personalizados
 
-#### 🔴 **Perfil Estricto** (Código de Alta Calidad)
-```yaml
-thresholds_profile: "strict"
-metrics:
-  - "cyclomatic_complexity"
-  - "cognitive_complexity"
-  - "nesting_depth"
-  - "parameter_count"
-  - "lines_of_code"
-```
+Se pueden definir los tres niveles para una métrica en la configuración:
 
-#### 🟡 **Perfil Legacy** (Código Existente)
 ```yaml
-thresholds_profile: "permissive"
-exclude_metrics:
-  - "essential_complexity"
-  - "logical_complexity"
-  - "design_complexity"
-```
-
-#### 🟢 **Perfil Arquitectónico** (Análisis de Diseño)
-```yaml
-metrics:
-  - "fan_in_out"
-  - "lcom4"
-  - "design_complexity"
-  - "lines_of_code"
+thresholds:
+  cyclomatic_complexity:
+    low: 5
+    medium: 10
+    high: 20
 ```
 
 ### Usar Configuración
@@ -443,51 +569,22 @@ PyPex admite **3 formatos principales** de salida, cada uno optimizado para caso
 Salida rica en la terminal con **4 niveles de verbosidad**:
 
 #### `--verbosity quiet`
-```
-✅ Análisis completado: 15 archivos, 42 funciones
-📊 Promedio de complejidad: 3.2 (BUENO)
-🔴 Hot spots encontrados: 3
+
+```text
+✅ pypex: 56/56 files, 20375 LOC, Quality: 53.7/100
 ```
 
 #### `--verbosity normal` *(por defecto)*
-```
-🐍 PyPex v0.1.0 - Análisis de Complejidad
 
-📁 Proyecto: ./mi_proyecto (15 archivos Python)
-⏱️  Tiempo de análisis: 2.3s
-
-📊 RESUMEN DE MÉTRICAS
-┌─────────────────────────┬─────────┬─────────┬─────────┬──────────┐
-│ Métrica                 │ Promedio│ Máximo  │ Hot Spots│ Estado   │
-├─────────────────────────┼─────────┼─────────┼─────────┼──────────┤
-│ Complejidad Ciclomática │ 3.2     │ 15      │ 3       │ 🟡 MEDIO │
-│ Complejidad Cognitiva   │ 4.1     │ 18      │ 2       │ 🟢 BUENO │
-│ Profundidad Anidamiento │ 2.8     │ 6       │ 1       │ 🟢 BUENO │
-└─────────────────────────┴─────────┴─────────┴─────────┴──────────┘
-
-🔥 HOT SPOTS (Complejidad Alta)
-• src/analyzer.py:process_complex_data() - CC:15, CN:18
-• src/utils.py:validate_config() - CC:12, CN:14
-• src/main.py:main() - CC:11, CN:12
-```
+Muestra el resumen del análisis, las métricas agregadas y los puntos de mayor complejidad.
 
 #### `--verbosity verbose`
-```
-# Incluye análisis detallado por archivo con:
-• Métricas individuales por función/clase
-• Recomendaciones específicas de refactoring
-• Distribución de complejidad por módulo
-• Análisis de tendencias y patrones
-```
+
+Añade detalles por archivo y entidad, además de recomendaciones.
 
 #### `--verbosity debug`
-```
-# Incluye información técnica completa:
-• Configuración utilizada
-• Tiempos de procesamiento por archivo
-• Estadísticas de memoria
-• Warnings y errores detallados
-```
+
+Incluye información de configuración, procesamiento, tiempos y errores para depuración.
 
 ### 🌐 **HTML (html)** - *Reportes Interactivos*
 
@@ -515,53 +612,66 @@ pypex analyze --format html --output reporte_completo.html ./proyecto
 
 ### 📄 **JSON (json)** - *Integración y Análisis*
 
-Datos estructurados para integración con herramientas externas:
+Datos estructurados para integración con herramientas externas. Este extracto real se generó al analizar
+`pypex/metrics/thresholds.py`; se muestran las claves de primer nivel y una entidad completa:
 
 ```json
 {
-  "metadata": {
-    "pypex_version": "0.1.0",
-    "analysis_date": "2024-01-15T10:30:00Z",
-    "project_path": "./mi_proyecto",
-    "total_files": 15,
-    "total_functions": 42,
-    "total_classes": 8,
-    "analysis_duration_seconds": 2.3
-  },
-  "configuration": {
-    "thresholds_profile": "normal",
-    "metrics_used": ["cyclomatic_complexity", "cognitive_complexity"],
-    "ignored_patterns": ["test_*.py"]
-  },
-  "project_summary": {
-    "cyclomatic_complexity": {
-      "mean": 3.2,
-      "median": 2.5,
-      "max": 15,
-      "min": 1,
-      "std_dev": 2.8,
-      "hot_spots_count": 3
-    }
-  },
-  "files": [
-    {
-      "path": "src/analyzer.py",
-      "metrics": {
-        "cyclomatic_complexity": 8.5,
-        "cognitive_complexity": 12.3
-      },
-      "functions": [
+  "pypex_report": "...",
+  "project": "...",
+  "quality_reports": "...",
+  "metrics_aggregation": "...",
+  "performance_analysis": "...",
+  "files": {
+    "pypex/metrics/thresholds.py": {
+      "file_info": "...",
+      "module_metrics": "...",
+      "entities": [
         {
-          "name": "process_data",
-          "line_start": 45,
+          "name": "get_threshold_config",
+          "type": "function",
           "metrics": {
-            "cyclomatic_complexity": 15,
-            "cognitive_complexity": 18
-          }
+            "entity_name": "get_threshold_config",
+            "entity_type": "function",
+            "metrics": {
+              "nesting_depth": 1.0,
+              "comprehension_complexity": 0.0,
+              "design_complexity": 1.0,
+              "exception_handling_complexity": 0.0,
+              "fan_in_out": 1,
+              "essential_complexity": 1.0,
+              "nested_comprehension_depth": 0.0,
+              "logical_complexity": 1.0,
+              "cyclomatic_complexity": 2.0,
+              "halstead": {
+                "eta1": 3.0,
+                "eta2": 3.0,
+                "N1": 3.0,
+                "N2": 5.0,
+                "vocabulary": 6,
+                "length": 8,
+                "volume": 20.67970000576925,
+                "difficulty": 2.5,
+                "effort": 51.69925001442312,
+                "time": 2.87218055635684,
+                "bugs": 0.006893233335256416
+              },
+              "cognitive_complexity": 2.0,
+              "generator_complexity": 0.0,
+              "parameter_count": 0.0,
+              "lines_of_code": 5.0
+            },
+            "metadata": {},
+            "errors": []
+          },
+          "source_info": {"line_start": 248, "line_end": 257}
         }
       ]
     }
-  ]
+  },
+  "hot_spots": "...",
+  "error_analysis": "...",
+  "recommendations": "..."
 }
 ```
 
@@ -575,59 +685,44 @@ Datos estructurados para integración con herramientas externas:
 
 ## 🎚️ Perfiles de Umbrales
 
-PyPex incluye **3 perfiles predefinidos** para interpretar las métricas según el contexto del proyecto:
+Cada métrica define tres umbrales (`low`, `medium`, `high`) que clasifican un valor en cuatro niveles:
+**Baja** (< low), **Media** (< medium), **Alta** (< high) y **Muy Alta** (≥ high).
 
-### 🔴 **Strict** - Código de Alta Calidad
+Umbrales por defecto (`pypex thresholds`):
 
-Para proyectos que requieren **máxima calidad**:
-- Bibliotecas públicas
-- Código crítico de seguridad
-- Sistemas de alta disponibilidad
+| Métrica | low | medium | high |
+|---|---:|---:|---:|
+| advanced_coupling | 5 | 10 | 20 |
+| cognitive_complexity | 15 | 25 | 50 |
+| comprehension_complexity | 2 | 5 | 8 |
+| cyclomatic_complexity | 10 | 20 | 50 |
+| design_complexity | 2 | 5 | 10 |
+| essential_complexity | 1 | 3 | 6 |
+| exception_handling_complexity | 1 | 3 | 6 |
+| fan_in_out | 5 | 10 | 20 |
+| generator_complexity | 1 | 3 | 6 |
+| halstead | 500 | 2000 | 8000 |
+| lcom4 | 1 | 2 | 4 |
+| lines_of_code | 30 | 75 | 150 |
+| logical_complexity | 2 | 5 | 10 |
+| nested_comprehension_depth | 1 | 2 | 3 |
+| nesting_depth | 3 | 6 | 9 |
+| parameter_count | 3 | 5 | 7 |
 
-| Métrica | Bajo | Medio | Alto |
-|---------|------|-------|------|
-| Complejidad Ciclomática | ≤3 | 4-6 | >6 |
-| Complejidad Cognitiva | ≤5 | 6-10 | >10 |
-| Profundidad Anidamiento | ≤2 | 3-4 | >4 |
-| Parámetros por Función | ≤3 | 4-5 | >5 |
+Los umbrales se pueden personalizar en el archivo de configuración indicando los tres valores en `thresholds:`.
 
-### 🟡 **Normal** - Proyectos Típicos *(por defecto)*
+### Perfil (`--thresholds-profile`)
 
-Para la **mayoría de proyectos**:
-- Aplicaciones empresariales
-- Scripts de automatización
-- Proyectos de desarrollo ágil
+El perfil no modifica los valores de las métricas ni los umbrales. Decide qué informes de calidad
+(`quality_reports` en JSON) se generan y con qué umbral se considera problemática una entidad:
 
-| Métrica | Bajo | Medio | Alto |
-|---------|------|-------|------|
-| Complejidad Ciclomática | ≤6 | 7-15 | >15 |
-| Complejidad Cognitiva | ≤10 | 11-25 | >25 |
-| Profundidad Anidamiento | ≤4 | 5-6 | >6 |
-| Parámetros por Función | ≤5 | 6-8 | >8 |
+| Perfil | Informe básico | Informe avanzado |
+|---|---|---|
+| `normal` (por defecto) | sí, umbral `medium` | sí, umbral `high` |
+| `strict` | no | sí, umbral `high` |
+| `permissive` | sí, umbral `low` | no |
 
-### 🟢 **Permissive** - Código Legacy
-
-Para **código existente** o en transición:
-- Sistemas legacy
-- Prototipos rápidos
-- Migración de código
-
-| Métrica | Bajo | Medio | Alto |
-|---------|------|-------|------|
-| Complejidad Ciclomática | ≤10 | 11-25 | >25 |
-| Complejidad Cognitiva | ≤15 | 16-40 | >40 |
-| Profundidad Anidamiento | ≤6 | 7-8 | >8 |
-| Parámetros por Función | ≤8 | 9-12 | >12 |
-
-### Usar Perfiles
-
-```bash
-# Aplicar perfil estricto
-pypex analyze --thresholds-profile strict ./src
-
-# Ver umbrales configurados
-pypex thresholds
-```
+El perfil se indica en la línea de comandos (`--thresholds-profile`).
 
 ---
 
@@ -644,6 +739,7 @@ pypex/
 │   ├── project.py           # Modelo de proyecto
 │   ├── file_processor.py    # Procesamiento de archivos
 │   ├── results.py           # Gestión de resultados
+│   ├── results_processor.py # Procesamiento de resultados
 │   └── interfaces.py        # Interfaces y contratos
 │
 ├── parser/                  # 🔍 Análisis de código
@@ -662,22 +758,19 @@ pypex/
 │   ├── coupling/            # Métricas de acoplamiento
 │   ├── cohesion/            # Métricas de cohesión
 │   ├── design/              # Métricas de diseño
-│   ├── size/                # Métricas de tamaño
-│   └── project/             # Métricas de proyecto
+│   └── size/                # Métricas de tamaño
 │
 ├── reporters/               # 📄 Sistema de reportes
 │   ├── console_reporter.py  # Salida en consola
 │   ├── json_reporter.py     # Exportación JSON
-│   └── html/                # Reportes HTML
-│       ├── html_reporter.py
-│       ├── html_renderer.py
-│       ├── html_styles.py
-│       └── html_scripts.py
+│   └── html/                # Reporte HTML
 │
+├── assets/                  # Recursos estáticos
 ├── services/                # 🔧 Servicios transversales
 │   ├── config_service.py    # Gestión de configuración
 │   └── logging_service.py   # Sistema de logging
 │
+├── __main__.py              # Entrada para python -m pypex
 └── cli.py                   # 🖥️ Interfaz de línea de comandos
 ```
 
@@ -692,11 +785,7 @@ pypex/
 
 ### Patrones de Diseño
 
-- **Singleton**: Registry de métricas
-- **Strategy**: Diferentes formatos de reporte
-- **Visitor**: Recorrido de AST
-- **Factory**: Creación de métricas
-- **Observer**: Sistema de logging
+- **Singleton**: `MetricsRegistry`, `ThresholdConfig` y `ConfigService`
 
 ---
 
@@ -704,45 +793,38 @@ pypex/
 
 PyPex incluye una **suite completa de tests** para garantizar calidad y robustez:
 
-La CI ejecuta los tests en Python 3.12, 3.13 y 3.14 en cada push y pull request.
-`uv run pytest` muestra la cobertura al terminar.
+La CI (`.github/workflows/ci.yml`) ejecuta lint (`ruff check` y `ruff format --check`), tests en Python 3.12, 3.13 y 3.14, y mypy (obligatorio). `pyproject.toml` configura `--cov=pypex --cov-report=term-missing` por defecto.
 
 ### Estructura de Tests
 
 ```
 tests/
-├── unit/                    # Tests unitarios
-│   ├── core/                # Tests de componentes core
-│   ├── metrics/             # Tests de métricas individuales
-│   │   ├── complexity/      # Tests de métricas de complejidad
-│   │   ├── coupling/        # Tests de acoplamiento
-│   │   ├── cohesion/        # Tests de cohesión
-│   │   ├── design/          # Tests de diseño
-│   │   └── size/            # Tests de tamaño
-│   ├── parser/              # Tests del parser
-│   ├── reporters/           # Tests de reporters
-│   ├── services/            # Tests de servicios
-│   ├── test_cli.py          # Tests de CLI
-│   └── test_main.py         # Tests principales
+├── conftest.py             # Restaura el MetricsRegistry global
+└── unit/
+    ├── core/
+    ├── metrics/<categoría>/
+    ├── parser/
+    ├── reporters/
+    └── services/
 ```
 
 ### Ejecutar Tests
 
 ```bash
 # Ejecutar todos los tests
-pytest
+uv run pytest
 
 # Tests con cobertura
-pytest --cov=pypex --cov-report=term-missing --cov-report=html
+uv run pytest --cov-report=html
 
 # Tests específicos
-pytest tests/unit/metrics/complexity/
+uv run pytest tests/unit/metrics/complexity/
 
 # Tests verbose
-pytest -v
+uv run pytest -v
 
 # Tests con output detallado
-pytest -s
+uv run pytest -s
 ```
 
 ### Herramientas de Calidad
@@ -764,8 +846,8 @@ uv run pre-commit run --all-files
 ### Métricas de Calidad del Código
 
 - **Linting y formateo**: Ruff
-- **Type hints**: Mypy
-- **Líneas de código**: +37,000 líneas totales (código + tests)
+- **Tipos**: mypy debe pasar (check obligatorio en CI y hook de pre-commit)
+- **Líneas de código**: ~36 500 líneas de Python (código + tests)
 
 ---
 
@@ -789,40 +871,40 @@ uv run pre-commit run --all-files
 #### Añadir Nueva Métrica
 
 ```python
-# pypex/metrics/complexity/mi_metrica.py
-from pypex.metrics.base import IMetric
-from pypex.parser.code_entities import CodeEntity
+from pypex.metrics.base import BaseMetric
+from pypex.metrics.registry import get_registry
+from pypex.parser.code_entities import Function
 
 
-class MiMetrica(IMetric):
-    @property
-    def name(self) -> str:
-        return "mi_metrica"
+class MiMetrica(BaseMetric):
+    def __init__(self) -> None:
+        super().__init__("mi_metrica", "Descripción de mi métrica")
 
-    @property
-    def description(self) -> str:
-        return "Descripción de mi métrica"
+    def calculate_function(self, function: Function) -> float:
+        return float(len(function.parameters))
 
-    def calculate(self, entity: CodeEntity) -> float:
-        # Implementar cálculo
-        return 0.0
+    def get_default_thresholds(self) -> dict[str, float]:
+        return {"low": 3.0, "medium": 5.0, "high": 7.0}
+
+
+get_registry().register_metric(MiMetrica())
 ```
 
 #### Estructura de Commits
 
 ```
-feat: añadir métrica de complejidad ABC
-fix: corregir cálculo de cohesión LCOM4
-docs: actualizar documentación de métricas
-test: añadir tests para fan-in/fan-out
-refactor: mejorar estructura del registry
+Add complexity metric ABC
+Fix LCOM4 cohesion calculation
+Update metric documentation
+Add tests for fan-in/fan-out
+Refactor the registry
 ```
 
 #### Code Style
 
 - **Python**: PEP 8 + Ruff formatter
 - **Docstrings**: Google style
-- **Type hints**: Obligatorios
+- **Tipos**: mypy debe pasar (check obligatorio en CI y hook de pre-commit)
 - **Tests**: Para toda nueva funcionalidad
 - **Logging**: Para debugging y errores
 
@@ -830,7 +912,6 @@ refactor: mejorar estructura del registry
 #### v1.0.0
 - [ ] Plugin system para métricas custom
 - [ ] Integración con IDEs (VS Code, PyCharm)
-- [ ] Soporte para configuración JSON
 - [ ] Cobertura de tests >85%
 
 ---
@@ -861,7 +942,7 @@ Este proyecto está licenciado bajo la **Licencia MIT** - ver el archivo [LICENS
 ```
 MIT License
 
-Copyright (c) 2024 Alejandro Penalba Tarrida
+Copyright (c) 2025 Alejandro Penalba Tarrida
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -880,6 +961,6 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 <div align="center">
 
-[⬆️ Volver al inicio](#-pypex-analizador-avanzado-de-complejidad-de-código-python)
+[⬆️ Volver al inicio](#-pypex-analizador-integral-de-métricas-y-calidad-de-código-python)
 
 </div>
