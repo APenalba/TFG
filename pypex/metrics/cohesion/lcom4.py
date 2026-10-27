@@ -147,8 +147,11 @@ class LCOM4(BaseMetric):
         """
         logger.debug(f"Calculando LCOM4 para clase: {cls.name}")
 
+        # Definiciones con el mismo nombre representan un único método en ejecución.
+        method_names = {method.name for method in cls.methods}
+
         # Si no hay métodos, LCOM4 = 0 (sin cohesión porque no hay métodos)
-        if len(cls.methods) == 0:
+        if len(method_names) == 0:
             return {
                 "lcom4": 0.0,
                 "total_methods": 0,
@@ -159,7 +162,7 @@ class LCOM4(BaseMetric):
             }
 
         # Si hay un solo método, la cohesión es perfecta
-        if len(cls.methods) == 1:
+        if len(method_names) == 1:
             return {
                 "lcom4": 1.0,
                 "total_methods": 1,
@@ -176,7 +179,7 @@ class LCOM4(BaseMetric):
         components_count = self._count_connected_components(method_graph)
 
         # Calcular estadísticas adicionales
-        total_methods = len(cls.methods)
+        total_methods = len(method_names)
         method_connections = self._count_method_call_connections(cls)
         attribute_connections = self._count_attribute_connections(cls)
 
@@ -237,6 +240,10 @@ class LCOM4(BaseMetric):
 
     def _build_method_connection_graph(self, cls: Class) -> dict[str, set[str]]:
         """Construye un grafo de conexiones entre métodos de una clase.
+
+        Cada nodo representa un nombre de método distinto. Definiciones con el mismo
+        nombre (ramas alternativas, overloads o getter/setter) se agrupan en ese nodo;
+        sus atributos y llamadas contribuyen a la unión de sus conexiones.
 
         Args:
             cls: Clase a analizar.
@@ -428,15 +435,16 @@ class LCOM4(BaseMetric):
             float: Número de conexiones por llamadas de método.
         """
         method_names = {method.name for method in cls.methods}
-        connections = 0
+        connections: set[tuple[str, str]] = set()
 
         for method in cls.methods:
             for called in method.calls:
                 called_method = self._extract_method_name(called)
                 if called_method in method_names and called_method != method.name:
-                    connections += 1
+                    first, second = sorted((method.name, called_method))
+                    connections.add((first, second))
 
-        return float(connections)
+        return float(len(connections))
 
     def _count_attribute_connections(self, cls: Class) -> float:
         """Cuenta conexiones por atributos compartidos.
