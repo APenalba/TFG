@@ -7,6 +7,7 @@ from typing import Any
 
 import astroid
 
+from pypex.metrics.cohesion.lcom4 import LCOM4
 from pypex.metrics.complexity.cyclomatic import CyclomaticComplexity
 from pypex.metrics.size.lines_of_code import LinesOfCodeMetric
 from pypex.parser.ast_parser import ASTParser
@@ -394,3 +395,91 @@ def test_module_loc_entity_count_includes_conditional_definitions(tmp_path: Path
     assert result["total_sloc"] == float(
         len([line for line in source.splitlines() if line.strip()])
     )
+
+
+class TestLcom4WithDuplicateDefinitions:
+    """Las definiciones homónimas se agrupan como un único método en LCOM4."""
+
+    @staticmethod
+    def _class(source: str):
+        return _analyze(source).classes[0]
+
+    def test_overloads_are_one_method_and_share_attributes(self) -> None:
+        cls = self._class(
+            """
+            from typing import overload
+
+            class Store:
+                @overload
+                def get(self, k: str) -> str: ...
+                @overload
+                def get(self, k: int) -> int: ...
+                def get(self, k):
+                    return self.data[k]
+                def size(self):
+                    return len(self.data)
+            """
+        )
+
+        result = LCOM4().calculate_class(cls)
+
+        assert result["total_methods"] == 2
+        assert result["lcom4"] == 1.0
+
+    def test_property_getter_and_setter_group_with_reset(self) -> None:
+        cls = self._class(
+            """
+            class Item:
+                @property
+                def x(self):
+                    return self._x
+                @x.setter
+                def x(self, value):
+                    self._x = value
+                def reset(self):
+                    return self._x
+            """
+        )
+
+        result = LCOM4().calculate_class(cls)
+
+        assert result["total_methods"] == 2
+        assert result["lcom4"] == 1.0
+
+    def test_conditional_definitions_union_their_attributes(self) -> None:
+        cls = self._class(
+            """
+            class Item:
+                if FLAG:
+                    def a(self):
+                        return self.p
+                else:
+                    def a(self):
+                        return self.q
+                def b(self):
+                    return self.q
+            """
+        )
+
+        result = LCOM4().calculate_class(cls)
+
+        assert result["total_methods"] == 2
+        assert result["lcom4"] == 1.0
+
+    def test_only_duplicate_definitions_count_as_one_method(self) -> None:
+        cls = self._class(
+            """
+            class Item:
+                @property
+                def x(self):
+                    return self._x
+                @x.setter
+                def x(self, value):
+                    self._x = value
+            """
+        )
+
+        result = LCOM4().calculate_class(cls)
+
+        assert result["total_methods"] == 1
+        assert result["lcom4"] == 1.0
